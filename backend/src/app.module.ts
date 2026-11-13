@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
 
@@ -23,4 +22,3 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
   providers: [AppService],
 })
 export class AppModule {}
-
