@@ -1,0 +1,36 @@
+meta {
+  name: Update - status and title
+  type: http
+  seq: 25
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book1Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Atomic Habits (Revised)",
+    "status": "COMPLETED"
+  }
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("field yang dikirim berubah, yang lain tetap", function () {
+    expect(res.body.title).to.equal("Atomic Habits (Revised)"); expect(res.body.status).to.equal("COMPLETED"); expect(res.body.author).to.equal("James Clear");
+  });
+
+  test("updatedAt diperbarui", function () {
+    expect(new Date(res.body.updatedAt).getTime()).to.be.greaterThan(new Date(res.body.createdAt).getTime());
+  });
+}

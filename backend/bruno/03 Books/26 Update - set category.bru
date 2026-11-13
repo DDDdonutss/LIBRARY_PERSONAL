@@ -1,0 +1,27 @@
+meta {
+  name: Update - set category
+  type: http
+  seq: 26
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book1Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "categoryId": "{{categoryScienceId}}"
+  }
+}
+
+tests {
+  test("status 200 dan kategori terpasang", function () {
+    expect(res.status).to.equal(200); expect(res.body.category.name).to.equal("Science");
+  });
+}

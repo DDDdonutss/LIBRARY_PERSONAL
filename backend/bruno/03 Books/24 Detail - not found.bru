@@ -1,0 +1,25 @@
+meta {
+  name: Detail - not found
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{baseUrl}}/books/00000000-0000-4000-8000-000000000000
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 404", function () {
+    expect(res.status).to.equal(404);
+  });
+
+  test("pesan buku tidak ditemukan", function () {
+    expect(res.body.message).to.equal("Buku tidak ditemukan");
+  });
+}

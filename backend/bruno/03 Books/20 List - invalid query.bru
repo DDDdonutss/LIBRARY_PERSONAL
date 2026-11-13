@@ -1,0 +1,21 @@
+meta {
+  name: List - invalid query
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/books?page=abc&status=DIBACA
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

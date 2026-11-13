@@ -1,0 +1,21 @@
+meta {
+  name: List - limit over max
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{baseUrl}}/books?limit=101
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 400 (limit maksimal 100)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

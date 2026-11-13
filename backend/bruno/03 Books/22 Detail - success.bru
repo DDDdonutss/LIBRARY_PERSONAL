@@ -1,0 +1,25 @@
+meta {
+  name: Detail - success
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{baseUrl}}/books/{{book2Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("mengembalikan buku yang diminta", function () {
+    expect(res.body.id).to.equal(bru.getVar("book2Id")); expect(res.body.title).to.equal("Clean Code");
+  });
+}

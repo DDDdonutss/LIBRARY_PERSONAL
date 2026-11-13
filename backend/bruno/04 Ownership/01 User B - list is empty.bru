@@ -1,0 +1,25 @@
+meta {
+  name: User B - list is empty
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/books
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("user B tidak melihat buku user A", function () {
+    expect(res.body.data).to.have.lengthOf(0); expect(res.body.meta.total).to.equal(0);
+  });
+}

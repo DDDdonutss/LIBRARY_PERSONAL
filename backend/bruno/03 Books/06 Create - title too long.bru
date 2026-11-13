@@ -1,0 +1,32 @@
+meta {
+  name: Create - title too long
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "{{longTitle}}",
+    "author": "Penulis"
+  }
+}
+
+script:pre-request {
+  bru.setVar("longTitle", "a".repeat(201));
+}
+
+tests {
+  test("status 400 (judul > 200 karakter)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

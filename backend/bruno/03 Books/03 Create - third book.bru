@@ -1,0 +1,34 @@
+meta {
+  name: Create - third book
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "status": "COMPLETED",
+    "categoryId": "{{categoryFictionId}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("book3Id", res.body.id);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

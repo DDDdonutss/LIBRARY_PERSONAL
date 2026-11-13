@@ -1,0 +1,21 @@
+meta {
+  name: User B - read book of A
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/books/{{book2Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+tests {
+  test("status 404 (bukan 403, agar keberadaan buku tidak bocor)", function () {
+    expect(res.status).to.equal(404);
+  });
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Create - with status and category
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "  Clean Code  ",
+    "author": "Robert C. Martin",
+    "status": "READING",
+    "categoryId": "{{categoryScienceId}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("book2Id", res.body.id);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("status dan kategori tersimpan", function () {
+    expect(res.body.status).to.equal("READING"); expect(res.body.category).to.deep.equal({ id: bru.getVar("categoryScienceId"), name: "Science" });
+  });
+
+  test("judul di-trim", function () {
+    expect(res.body.title).to.equal("Clean Code");
+  });
+}

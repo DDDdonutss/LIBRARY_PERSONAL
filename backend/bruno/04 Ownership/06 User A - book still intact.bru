@@ -1,0 +1,21 @@
+meta {
+  name: User A - book still intact
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/books/{{book2Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("buku user A tidak berubah dan tidak terhapus", function () {
+    expect(res.status).to.equal(200); expect(res.body.title).to.equal("Clean Code"); expect(res.body.status).to.equal("READING");
+  });
+}

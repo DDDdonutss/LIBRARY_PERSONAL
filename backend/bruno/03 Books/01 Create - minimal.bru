@@ -1,0 +1,40 @@
+meta {
+  name: Create - minimal
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  }
+}
+
+script:post-response {
+  bru.setVar("book1Id", res.body.id);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("default status WANT_TO_READ dan tanpa kategori", function () {
+    expect(res.body.status).to.equal("WANT_TO_READ"); expect(res.body.categoryId).to.equal(null); expect(res.body.category).to.equal(null);
+  });
+
+  test("tidak mengembalikan userId", function () {
+    expect(res.body).to.have.keys(["id", "title", "author", "status", "categoryId", "category", "createdAt", "updatedAt"]);
+  });
+}

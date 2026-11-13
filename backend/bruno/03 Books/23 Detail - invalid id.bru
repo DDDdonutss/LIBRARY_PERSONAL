@@ -1,0 +1,21 @@
+meta {
+  name: Detail - invalid id
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{baseUrl}}/books/bukan-uuid
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

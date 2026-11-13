@@ -1,0 +1,21 @@
+meta {
+  name: Detail - after delete
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{baseUrl}}/books/{{book3Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 404 (buku sudah dihapus)", function () {
+    expect(res.status).to.equal(404);
+  });
+}

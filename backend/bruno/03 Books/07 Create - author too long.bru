@@ -1,0 +1,32 @@
+meta {
+  name: Create - author too long
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Buku",
+    "author": "{{longAuthor}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("longAuthor", "a".repeat(151));
+}
+
+tests {
+  test("status 400 (penulis > 150 karakter)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

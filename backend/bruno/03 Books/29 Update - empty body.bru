@@ -1,0 +1,29 @@
+meta {
+  name: Update - empty body
+  type: http
+  seq: 29
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book1Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("pesan tidak ada perubahan", function () {
+    expect(res.body.message).to.equal("Tidak ada data yang diubah");
+  });
+}

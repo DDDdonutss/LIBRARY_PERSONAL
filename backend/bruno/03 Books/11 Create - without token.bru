@@ -1,0 +1,24 @@
+meta {
+  name: Create - without token
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Buku",
+    "author": "Penulis"
+  }
+}
+
+tests {
+  test("status 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}

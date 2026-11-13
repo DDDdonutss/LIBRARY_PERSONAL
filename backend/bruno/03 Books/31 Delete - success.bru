@@ -1,0 +1,25 @@
+meta {
+  name: Delete - success
+  type: http
+  seq: 31
+}
+
+delete {
+  url: {{baseUrl}}/books/{{book3Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("pesan dan id buku yang dihapus", function () {
+    expect(res.body).to.deep.equal({ message: "Buku berhasil dihapus", id: bru.getVar("book3Id") });
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: User B - create own book
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+body:json {
+  {
+    "title": "Buku Milik B",
+    "author": "Penulis B"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
