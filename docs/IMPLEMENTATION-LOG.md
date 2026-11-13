@@ -410,12 +410,12 @@ Dijalankan ulang terhadap build `22bd949` atas permintaan Team Lead: **15 reques
    - Verifikasi: di setiap branch, satu-satunya perbedaan isi dengan riwayat lama adalah hilangnya `docs/MASTER-PROMPT.md`; riwayat baru tidak memuat file itu di commit mana pun.
    - File tetap ada di komputer lokal sebagai dokumen internal dan ditambahkan ke `.gitignore`.
    - Cadangan lengkap riwayat lama dibuat (git bundle) sebelum penulisan ulang.
-   - Setelah repository baru terverifikasi, repository `PENYIMPAN_BUKU` dan `PERSONAL_LIBRARY01` dihapus atas permintaan Team Lead.
+   - Setelah repository baru terverifikasi, penghapusan `PENYIMPAN_BUKU` dan `PERSONAL_LIBRARY01` dicoba lewat integrasi GitHub tetapi ditolak (`403 Resource not accessible by integration`); penghapusan dilakukan manual oleh Team Lead melalui Settings → Danger Zone. Kedua repository masih memuat riwayat lama yang berisi `docs/MASTER-PROMPT.md`.
 
 ### Catatan
 
 - `gh` CLI tidak terpasang; Pull Request dibuat Team Lead melalui web GitHub.
-- Repository `DDDdonutss/Personal_Library` tidak dipakai dan dapat dihapus.
+- Repository `DDDdonutss/Personal_Library`, `PENYIMPAN_BUKU`, dan `PERSONAL_LIBRARY01` tidak dipakai dan perlu dihapus manual.
 
 ---
 
