@@ -1,0 +1,17 @@
+meta {
+  name: Me - without token
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+tests {
+  test("status 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}

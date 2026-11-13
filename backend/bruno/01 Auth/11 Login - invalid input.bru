@@ -1,0 +1,23 @@
+meta {
+  name: Login - invalid input
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "bukan-email"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

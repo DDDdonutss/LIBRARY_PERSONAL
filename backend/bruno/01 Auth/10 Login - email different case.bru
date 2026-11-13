@@ -1,0 +1,24 @@
+meta {
+  name: Login - email different case
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{userAEmailUpper}}",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("status 200 (email dinormalisasi)", function () {
+    expect(res.status).to.equal(200);
+  });
+}

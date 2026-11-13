@@ -1,0 +1,26 @@
+meta {
+  name: Me - forged token
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDAiLCJlbWFpbCI6ImZvcmdlZEBleGFtcGxlLmNvbSIsImlhdCI6MTc5NDU1OTQzNCwiZXhwIjoyMTA5OTE5NDM0fQ.6QVMg-7CyfWUwCLZBNIXi0cRuhFDBjRk-qzl3UqX27w
+}
+
+docs {
+  Token ini ditandatangani dengan secret lain (bukan JWT_SECRET server).
+  Server harus menolaknya walaupun format dan masa berlakunya valid.
+}
+
+tests {
+  test("status 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}
