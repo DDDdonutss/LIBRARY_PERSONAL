@@ -37,8 +37,8 @@ personal-library-management/
 Prasyarat: Node.js 22.12+, PostgreSQL 14+.
 
 ```bash
-git clone https://github.com/DDDdonutss/PERSONAL_LIBRARY01.git
-cd PERSONAL_LIBRARY01/backend
+git clone https://github.com/DDDdonutss/PENYIMPAN_BUKU.git
+cd PENYIMPAN_BUKU/backend
 npm install
 cp .env.example .env          # lalu isi DATABASE_URL dan JWT_SECRET
 npm run db:migrate

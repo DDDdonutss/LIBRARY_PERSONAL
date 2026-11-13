@@ -103,7 +103,7 @@ Tanggung jawab:
 | class-validator | DTO validation |
 | Bruno | API testing manual/CLI (`backend/bruno/`) |
 | Vitest + supertest | E2E test otomatis (`backend/test/`) |
-| Git & GitHub | Version control (https://github.com/DDDdonutss/PERSONAL_LIBRARY01) |
+| Git & GitHub | Version control (https://github.com/DDDdonutss/PENYIMPAN_BUKU) |
 
 ## 4. Database Design
 

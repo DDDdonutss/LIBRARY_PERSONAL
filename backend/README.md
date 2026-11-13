@@ -21,8 +21,8 @@ Kontrak API lengkap (endpoint, request, response, error): [`docs/API-CONTRACT.md
 **0. Clone repository**
 
 ```bash
-git clone https://github.com/DDDdonutss/PERSONAL_LIBRARY01.git
-cd PERSONAL_LIBRARY01/backend
+git clone https://github.com/DDDdonutss/PENYIMPAN_BUKU.git
+cd PENYIMPAN_BUKU/backend
 ```
 
 Semua perintah berikutnya dijalankan di folder `backend/`.

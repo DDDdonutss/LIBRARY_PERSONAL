@@ -3,7 +3,7 @@
 
 Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
-**Repository:** https://github.com/DDDdonutss/PERSONAL_LIBRARY01
+**Repository:** https://github.com/DDDdonutss/PENYIMPAN_BUKU
 **Terakhir diperbarui:** 2026-11-13
 
 ## Legenda Status
@@ -60,7 +60,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 2 | `feature/backend-auth` | `2fd9e63` | Di-push; PR menunggu PR 1 |
 | 3 | `feature/backend-categories` | `0a64742` | Di-push; PR menunggu PR 2 |
 | 4 | `feature/backend-books` | `e672bb2` | Di-push; PR menunggu PR 3 |
-| 5 | `docs/sync-project-docs` | — | Sinkronisasi dokumen; PR setelah PR 4 |
+| 5 | `docs/sync-project-docs` | — | Di-push; PR setelah PR 4 |
 
 Branch dibuat bertumpuk (setiap branch dari branch sebelumnya). Merge harus berurutan dengan **"Create a merge commit"** — bukan squash/rebase — agar PR berikutnya hanya menampilkan commit miliknya.
 
@@ -391,7 +391,7 @@ Dijalankan ulang terhadap build `e672bb2` atas permintaan Team Lead: **15 reques
 
 ## 2026-11-13 — Remote GitHub dan Push
 
-**Repository:** https://github.com/DDDdonutss/PERSONAL_LIBRARY01
+**Repository aktif:** https://github.com/DDDdonutss/PENYIMPAN_BUKU (lihat langkah 6)
 
 ### Kronologi
 
@@ -401,12 +401,13 @@ Dijalankan ulang terhadap build `e672bb2` atas permintaan Team Lead: **15 reques
    - repository Git bersarang `backend/.git` dengan satu commit README yang sudah ter-push ke repository lain (`DDDdonutss/Personal_Library`). Tidak ada `.env` atau secret di commit tersebut.
 3. Dengan persetujuan Team Lead: `backend/.git` dihapus dan `backend/README.md` dipulihkan ke versi ter-commit. Repo utama tetap utuh (dicek lewat reflog), `backend/` kembali menjadi folder biasa tanpa embedded repo.
 4. Audit sebelum push: tidak ada `.env` di commit mana pun; kredensial di riwayat hanya placeholder; 0 attribution AI di pesan commit dan dokumen.
-5. Push (`git push -u`): `main`, `feature/backend-setup`, `feature/backend-auth`, `feature/backend-categories`, `feature/backend-books`. Hash di remote sama dengan lokal.
+5. Push (`git push -u`) ke `DDDdonutss/PERSONAL_LIBRARY01`: `main`, `feature/backend-setup`, `feature/backend-auth`, `feature/backend-categories`, `feature/backend-books`. Hash di remote sama dengan lokal.
+6. Atas permintaan Team Lead, proyek dipindahkan ke repository kosong baru `DDDdonutss/PENYIMPAN_BUKU` (opsi C, prosedur sama: repository dicek kosong, tidak ada repo bersarang, encoding dokumen UTF-8). Remote `origin` diarahkan ke repository baru, lalu semua branch di-push, termasuk `docs/sync-project-docs`. URL di dokumen diperbarui ke repository baru.
 
 ### Catatan
 
 - `gh` CLI tidak terpasang; Pull Request dibuat Team Lead melalui web GitHub.
-- Repository `DDDdonutss/Personal_Library` tidak dipakai dan dapat dihapus.
+- Repository `DDDdonutss/Personal_Library` dan `DDDdonutss/PERSONAL_LIBRARY01` tidak dipakai lagi dan dapat dihapus.
 
 ---
 
