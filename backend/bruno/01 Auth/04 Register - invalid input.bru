@@ -1,0 +1,32 @@
+meta {
+  name: Register - invalid input
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "",
+    "email": "bukan-email",
+    "password": "123"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("berisi pesan validasi untuk name, email, dan password", function () {
+    const messages = res.body.message.join(" ");
+    expect(messages).to.include("name");
+    expect(messages).to.include("email");
+    expect(messages).to.include("password");
+  });
+}

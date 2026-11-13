@@ -1,0 +1,26 @@
+meta {
+  name: Register - unknown field rejected
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "User X",
+    "email": "userx@example.com",
+    "password": "password123",
+    "userId": "00000000-0000-0000-0000-000000000000"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}
