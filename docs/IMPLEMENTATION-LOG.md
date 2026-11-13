@@ -316,8 +316,46 @@ Setiap run Bruno membuat 2 user baru (`usera.<timestamp>@example.com`, `userb.<t
 
 README bawaan scaffold NestJS diganti dengan panduan: prasyarat, instalasi (env, database, migration, seed), daftar script, endpoint, cara menjalankan Bruno, struktur proyek, aturan keamanan. Langkah yang terdokumentasi diverifikasi: `npm run db:migrate` (tidak ada migration tertunda), `npm run db:seed`, dan aplikasi tetap start tanpa variabel `OBSERVE_*`.
 
+## 2026-11-13 — Perbaikan E2E Test dan Penghapusan Endpoint Hello World
+
+**Pelaksana:** Panji
+**Branch:** `feature/backend-books`
+**Commit:**
+- `2fcaa53` `refactor(backend): extract global app configuration into configureApp`
+- `6b60c76` `refactor(backend): remove scaffold Hello World endpoint`
+- `3aba2cf` `test(e2e): replace scaffold test with end-to-end API suite`
+
+### Penyebab e2e lama gagal
+
+1. Vitest tidak memuat `.env` → `JWT_SECRET` kosong → aplikasi menolak start.
+2. Test membuat aplikasi tanpa konfigurasi `main.ts` (prefix `/api/v1`, ValidationPipe, CORS), sehingga yang diuji berbeda dengan yang berjalan.
+3. Test masih mengharapkan `GET /` → "Hello World!".
+
+### Perubahan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| `configureApp()`: prefix, CORS, ValidationPipe dalam satu fungsi, dipakai `main.ts` dan e2e | `src/app.setup.ts`, `src/main.ts` | ✅ | ✅ | ✅ | — |
+| Hapus `AppController`, `AppService`, dan unit test-nya (`GET /api/v1` kini 404 JSON) | `src/app.*`, `src/app.module.ts` | ✅ | ✅ | ✅ | — |
+| E2E suite baru: 26 test (auth, kategori, buku, ownership); membersihkan hanya user yang dibuatnya | `test/app.e2e-spec.ts` | ✅ | ✅ | ✅ | ✅ |
+| `vitest.config.e2e.ts` memuat `.env` (`loadEnv` dari Vite), timeout 30 detik | `vitest.config.e2e.ts` | ✅ | ✅ | ✅ | — |
+| `passWithNoTests` agar `npm test` tidak gagal saat belum ada unit test | `vitest.config.ts` | ✅ | ✅ | ✅ | — |
+| ObserveModule `enabled: NODE_ENV !== 'test'` — tidak mengirim telemetri saat test | `src/app.module.ts` | ✅ | ✅ | ✅ | ✅ |
+
+### Verifikasi
+
+- `tsc` (seluruh proyek termasuk test), oxlint: lolos. `npm test`: exit 0 (belum ada unit test).
+- `npm run test:e2e`: **26/26 lolos**, dijalankan dua kali; setelah run, 0 user `e2e.*` tersisa di database.
+- Nilai `.env` hasil `loadEnv` Vite dibandingkan dengan pembacaan Node `--env-file`: keempat variabel identik.
+- Server sungguhan setelah refactor: 9 route terdaftar (Hello World hilang), `GET /api/v1` → 404 JSON, Bruno **60 request, 91/91 lolos**, ObserveModule tetap aktif.
+
+### Temuan terkait ObserveModule (isu #8)
+
+- Pada server sungguhan, Observe **terhubung** dan mengirim telemetri ke `observe.nestjs.com` (log: "collector accepted this app's first batch") — kredensial di `.env` valid.
+- Pada e2e (tanpa `ObserveInstrument`), collector menolak dengan 401. Penyebab pastinya tidak diketahui; diatasi dengan menonaktifkan Observe saat test, yang memang dianjurkan dokumentasi paket. ObserveModule tetap dipertahankan sesuai keputusan Team Lead.
+
 ## Pekerjaan Tersisa (belum disetujui sebagai urutan resmi)
 
 - Keputusan tim: daftar kategori final; apakah `GET /categories` perlu publik.
 - Remote GitHub, push, dan Pull Request bertahap: `feature/backend-setup` → `feature/backend-auth` → `feature/backend-categories` → `feature/backend-books` → `main`.
-- Finalisasi: evaluasi ObserveModule (isu #8), rate limiting login, `AppController` "Hello World" bawaan, e2e test bawaan (`test/app.e2e-spec.ts`) yang belum menyesuaikan prefix/env.
+- Finalisasi: evaluasi ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal), rate limiting login, unit test (opsional).

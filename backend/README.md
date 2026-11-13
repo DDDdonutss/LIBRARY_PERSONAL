@@ -79,7 +79,8 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest) |
+| `npm test` | Unit test (Vitest) — saat ini belum ada unit test |
+| `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
 
@@ -101,7 +102,21 @@ Base URL: `http://localhost:3001/api/v1`. 🔒 = membutuhkan header `Authorizati
 
 Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 
-## 5. Pengujian API (Bruno)
+## 5. Pengujian API
+
+### E2E test (otomatis)
+
+```bash
+npm run test:e2e
+```
+
+Menjalankan 26 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+
+- Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
+- Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
+- Telemetri NestJS Observe dimatikan selama test (`NODE_ENV=test`).
+
+### Bruno (manual atau CLI)
 
 Koleksi Bruno ada di [`bruno/`](./bruno): 60 request dan 91 tes untuk auth, kategori, buku, dan kepemilikan data.
 
@@ -126,6 +141,8 @@ backend/
 │   ├── migrations/        # Migration SQL
 │   └── seed.ts            # Seed kategori global
 ├── prisma7.config.ts      # Konfigurasi Prisma (schema, migration, seed, DATABASE_URL)
+├── test/
+│   └── app.e2e-spec.ts    # E2E test API
 └── src/
     ├── auth/              # Register, login, JWT strategy/guard, /auth/me
     ├── books/             # CRUD buku, search, filter, pagination, ownership
@@ -133,7 +150,8 @@ backend/
     ├── prisma/            # PrismaService (koneksi database)
     ├── generated/prisma/  # Prisma Client hasil generate (tidak di-commit)
     ├── app.module.ts
-    └── main.ts            # Prefix /api/v1, CORS, ValidationPipe, port
+    ├── app.setup.ts       # Prefix /api/v1, CORS, ValidationPipe (dipakai main.ts dan e2e)
+    └── main.ts            # Membuat aplikasi dan listen di PORT
 ```
 
 ## 7. Aturan Keamanan yang Diterapkan
@@ -146,4 +164,4 @@ backend/
 
 ## 8. Observability (Opsional)
 
-Proyek ini menyertakan `ObserveModule` dari scaffold NestJS. Untuk menghubungkannya ke NestJS Observe, isi `OBSERVE_APP_KEY` dan `OBSERVE_APP_SECRET` di `.env` (lihat `.env.example`). Tanpa variabel ini aplikasi tetap berjalan normal. Keberadaan modul ini akan dievaluasi saat finalisasi.
+Proyek ini menyertakan `ObserveModule` dari scaffold NestJS. Untuk menghubungkannya ke NestJS Observe, isi `OBSERVE_APP_KEY` dan `OBSERVE_APP_SECRET` di `.env` (lihat `.env.example`). Tanpa variabel ini aplikasi tetap berjalan normal. Observe tidak aktif saat test (`NODE_ENV=test`). Keberadaan modul ini akan dievaluasi saat finalisasi.
