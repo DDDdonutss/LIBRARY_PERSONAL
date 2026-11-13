@@ -310,9 +310,14 @@ Setiap run Bruno membuat 2 user baru (`usera.<timestamp>@example.com`, `userb.<t
 5. ~~Category API (sebelum Book Management)~~ — selesai (`88409d0`, `e602b86`, `727ff1a`)
 6. ~~Book Management~~ — selesai (`153469f`, `9850c76`)
 
+## 2026-11-13 — README Backend
+
+**Commit:** `2ee506b` `docs(backend): replace scaffold README with setup and usage guide` (branch `feature/backend-books`)
+
+README bawaan scaffold NestJS diganti dengan panduan: prasyarat, instalasi (env, database, migration, seed), daftar script, endpoint, cara menjalankan Bruno, struktur proyek, aturan keamanan. Langkah yang terdokumentasi diverifikasi: `npm run db:migrate` (tidak ada migration tertunda), `npm run db:seed`, dan aplikasi tetap start tanpa variabel `OBSERVE_*`.
+
 ## Pekerjaan Tersisa (belum disetujui sebagai urutan resmi)
 
-- README backend (instalasi dan penggunaan).
 - Keputusan tim: daftar kategori final; apakah `GET /categories` perlu publik.
 - Remote GitHub, push, dan Pull Request bertahap: `feature/backend-setup` → `feature/backend-auth` → `feature/backend-categories` → `feature/backend-books` → `main`.
 - Finalisasi: evaluasi ObserveModule (isu #8), rate limiting login, `AppController` "Hello World" bawaan, e2e test bawaan (`test/app.e2e-spec.ts`) yang belum menyesuaikan prefix/env.
