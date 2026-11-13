@@ -187,7 +187,32 @@ Mengembalikan data user yang sedang login. Cocok dipanggil saat aplikasi dibuka 
 
 ## 3. Categories
 
-*Belum diimplementasikan.*
+Kategori bersifat **global**: daftar yang sama untuk semua user, disediakan lewat seed database (`npm run db:seed`). User tidak dapat membuat, mengubah, atau menghapus kategori.
+
+Daftar awal (usulan PRD §4.3, dapat diubah di `backend/prisma/seed.ts`): `Fiction`, `Science`, `Technology`, `History`, `Education`, `Other`.
+
+### 3.1 `GET /categories` 🔒
+
+**Response `200 OK`** — array, diurutkan berdasarkan `name` (A–Z):
+
+```json
+[
+  { "id": "0b6f1f0e-8d2c-4c8a-9a4e-3f1d2c5b7a90", "name": "Education" },
+  { "id": "5d1e7c3a-2b4f-4e6d-8c9a-1f2e3d4c5b6a", "name": "Fiction" },
+  { "id": "9a8b7c6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d", "name": "History" },
+  { "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d", "name": "Other" },
+  { "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "Science" },
+  { "id": "3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f", "name": "Technology" }
+]
+```
+
+ID di atas hanya contoh; ID sebenarnya dibuat saat seed dan berbeda di setiap database. Frontend harus mengambil ID dari endpoint ini, bukan menulisnya secara hard-code.
+
+**Error**
+
+| Status | Kondisi |
+|---|---|
+| 401 | Token tidak ada atau tidak valid |
 
 ## 4. Books
 
@@ -200,3 +225,4 @@ Mengembalikan data user yang sedang login. Cocok dipanggil saat aplikasi dibuka 
 | Tanggal | Perubahan |
 |---|---|
 | 2026-11-13 | Draft awal: konvensi umum, `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
+| 2026-11-13 | Tambah `GET /categories` |
