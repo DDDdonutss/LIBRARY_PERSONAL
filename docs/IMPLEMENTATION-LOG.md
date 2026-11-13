@@ -31,7 +31,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 ## 2026-11-13 — Setup Database, Prisma, dan Register
 
 **Pelaksana:** Panji
-**Commit:** belum di-commit (masih di working tree `main`)
+**Commit (lokal, belum di-push — repository belum memiliki remote):**
+- `c199414` `chore(backend): set up Prisma database foundation` — branch `feature/backend-setup`
+- `d63e9eb` `feat(auth): implement user registration` — branch `feature/backend-auth` (dibuat dari `feature/backend-setup`)
 
 ### Dikerjakan
 
