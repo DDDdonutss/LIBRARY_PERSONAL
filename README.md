@@ -37,8 +37,8 @@ personal-library-management/
 Prasyarat: Node.js 22.12+, PostgreSQL 14+.
 
 ```bash
-git clone https://github.com/DDDdonutss/PENYIMPAN_BUKU.git
-cd PENYIMPAN_BUKU/backend
+git clone https://github.com/DDDdonutss/LIBRARY_PERSONAL.git
+cd LIBRARY_PERSONAL/backend
 npm install
 cp .env.example .env          # lalu isi DATABASE_URL dan JWT_SECRET
 npm run db:migrate
@@ -56,7 +56,7 @@ API tersedia di `http://localhost:3001/api/v1`. Panduan lengkap (termasuk pembua
 | [`docs/API-CONTRACT.md`](docs/API-CONTRACT.md) | Kontrak REST API untuk frontend |
 | [`docs/JOBDESK-PANJI.md`](docs/JOBDESK-PANJI.md) | Tanggung jawab backend, database, dan integrasi |
 | [`docs/IMPLEMENTATION-LOG.md`](docs/IMPLEMENTATION-LOG.md) | Riwayat implementasi, verifikasi, dan keputusan teknis |
-| [`docs/MASTER-PROMPT.md`](docs/MASTER-PROMPT.md) | Panduan teknis dan alur kerja pengembangan |
+| `docs/MASTER-PROMPT.md` | Panduan teknis internal — tidak disertakan di repository |
 
 ## Alur Kontribusi
 

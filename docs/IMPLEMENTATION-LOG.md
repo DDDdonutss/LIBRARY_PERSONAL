@@ -3,8 +3,10 @@
 
 Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
-**Repository:** https://github.com/DDDdonutss/PENYIMPAN_BUKU
+**Repository:** https://github.com/DDDdonutss/LIBRARY_PERSONAL
 **Terakhir diperbarui:** 2026-11-13
+
+> Semua hash commit di dokumen ini merujuk ke riwayat repository `LIBRARY_PERSONAL`, yang ditulis ulang tanpa `docs/MASTER-PROMPT.md` (lihat entri "Remote GitHub dan Push", langkah 7).
 
 ## Legenda Status
 
@@ -56,10 +58,10 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 
 | Urutan | Branch | Commit teratas | Status |
 |---|---|---|---|
-| 1 | `feature/backend-setup` | `c199414` | Di-push; PR ke `main` belum di-merge |
-| 2 | `feature/backend-auth` | `2fd9e63` | Di-push; PR menunggu PR 1 |
-| 3 | `feature/backend-categories` | `0a64742` | Di-push; PR menunggu PR 2 |
-| 4 | `feature/backend-books` | `e672bb2` | Di-push; PR menunggu PR 3 |
+| 1 | `feature/backend-setup` | `bcba60c` | Di-push; PR ke `main` belum di-merge |
+| 2 | `feature/backend-auth` | `ee83aa4` | Di-push; PR menunggu PR 1 |
+| 3 | `feature/backend-categories` | `6f4fc22` | Di-push; PR menunggu PR 2 |
+| 4 | `feature/backend-books` | `22bd949` | Di-push; PR menunggu PR 3 |
 | 5 | `docs/sync-project-docs` | — | Di-push; PR setelah PR 4 |
 
 Branch dibuat bertumpuk (setiap branch dari branch sebelumnya). Merge harus berurutan dengan **"Create a merge commit"** — bukan squash/rebase — agar PR berikutnya hanya menampilkan commit miliknya.
@@ -69,7 +71,7 @@ Branch dibuat bertumpuk (setiap branch dari branch sebelumnya). Merge harus beru
 ## 2026-11-13 — Inisialisasi Proyek
 
 **Pelaksana:** Panji
-**Commit:** `8743b1e` (struktur proyek & dokumentasi), `a2b5b37` (inisialisasi NestJS)
+**Commit:** `0f942d6` (struktur proyek & dokumentasi), `ec4c453` (inisialisasi NestJS)
 
 - Struktur monorepo dan dokumen `PRD.md`, `JOBDESK-PANJI.md`, `MASTER-PROMPT.md`.
 - NestJS 12 (ESM, Vitest, oxlint) di `backend/`.
@@ -80,8 +82,8 @@ Branch dibuat bertumpuk (setiap branch dari branch sebelumnya). Merge harus beru
 
 **Pelaksana:** Panji
 **Commit:**
-- `c199414` `chore(backend): set up Prisma database foundation` — branch `feature/backend-setup`
-- `d63e9eb` `feat(auth): implement user registration` — branch `feature/backend-auth` (dibuat dari `feature/backend-setup`)
+- `bcba60c` `chore(backend): set up Prisma database foundation` — branch `feature/backend-setup`
+- `86d13d3` `feat(auth): implement user registration` — branch `feature/backend-auth` (dibuat dari `feature/backend-setup`)
 
 Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada entri "Remote GitHub dan Push".
 
@@ -118,15 +120,15 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 
 | # | Isu | Lokasi | Status |
 |---|---|---|---|
-| 1 | Password > 72 byte melempar 409 (`ConflictException`), seharusnya 400 | `auth.service.ts` | ✅ Closed — `23b46d2` |
-| 2 | Race condition register: duplikat bersamaan menghasilkan error Prisma `P2002` → 500, seharusnya 409 | `auth.service.ts` | ✅ Closed — `23b46d2` (diuji runtime: 8 request bersamaan → 1× 201, 7× 409, 0 error 500) |
-| 3 | `JWT_SECRET` tidak divalidasi saat startup; `expiresIn` hard-coded `'1d'`, belum memakai `JWT_EXPIRES_IN` | `auth.module.ts` | ✅ Closed — `3d86dfa` |
-| 4 | Base path `/api/v1` belum diterapkan (endpoint saat itu `/auth/register`) | `main.ts` | ✅ Closed — `3d86dfa` |
-| 5 | Port default 3000, dokumen menetapkan 3001; `PORT` tidak ada di `.env` | `main.ts`, `.env` | ✅ Closed — `3d86dfa` (default 3001; `PORT` di `.env` opsional) |
-| 6 | `.env.example` belum ada | `backend/` | ✅ Closed — `1331099` |
-| 7 | Tidak ada script `prisma generate` — clone baru gagal build karena client hasil generate di-ignore | `package.json` | ✅ Closed — `1331099` (diuji: simulasi clone baru → `npm ci` → build berhasil) |
-| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`3aba2cf`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi |
-| 9 | BOM (byte order mark) di 6 file dan line ending CRLF | `main.ts`, `src/auth/**` | ✅ Closed — BOM dihapus (`3d86dfa`, `d10892e`); CRLF dinormalisasi Git saat commit |
+| 1 | Password > 72 byte melempar 409 (`ConflictException`), seharusnya 400 | `auth.service.ts` | ✅ Closed — `6cfee46` |
+| 2 | Race condition register: duplikat bersamaan menghasilkan error Prisma `P2002` → 500, seharusnya 409 | `auth.service.ts` | ✅ Closed — `6cfee46` (diuji runtime: 8 request bersamaan → 1× 201, 7× 409, 0 error 500) |
+| 3 | `JWT_SECRET` tidak divalidasi saat startup; `expiresIn` hard-coded `'1d'`, belum memakai `JWT_EXPIRES_IN` | `auth.module.ts` | ✅ Closed — `43dfa87` |
+| 4 | Base path `/api/v1` belum diterapkan (endpoint saat itu `/auth/register`) | `main.ts` | ✅ Closed — `43dfa87` |
+| 5 | Port default 3000, dokumen menetapkan 3001; `PORT` tidak ada di `.env` | `main.ts`, `.env` | ✅ Closed — `43dfa87` (default 3001; `PORT` di `.env` opsional) |
+| 6 | `.env.example` belum ada | `backend/` | ✅ Closed — `6461cbc` |
+| 7 | Tidak ada script `prisma generate` — clone baru gagal build karena client hasil generate di-ignore | `package.json` | ✅ Closed — `6461cbc` (diuji: simulasi clone baru → `npm ci` → build berhasil) |
+| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi |
+| 9 | BOM (byte order mark) di 6 file dan line ending CRLF | `main.ts`, `src/auth/**` | ✅ Closed — BOM dihapus (`43dfa87`, `ed82f30`); CRLF dinormalisasi Git saat commit |
 
 ---
 
@@ -135,9 +137,9 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 **Pelaksana:** Panji
 **Branch:** `feature/backend-auth`
 **Commit:**
-- `23b46d2` `fix(auth): return correct status codes for registration errors`
-- `3d86dfa` `feat(backend): add /api/v1 prefix and validate JWT config at startup`
-- `d10892e` `style(backend): remove BOM and stray blank lines`
+- `6cfee46` `fix(auth): return correct status codes for registration errors`
+- `43dfa87` `feat(backend): add /api/v1 prefix and validate JWT config at startup`
+- `ed82f30` `style(backend): remove BOM and stray blank lines`
 
 ### Perubahan
 
@@ -145,7 +147,7 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 |---|---|
 | `src/auth/auth.service.ts` | Password > 72 byte → 400, dicek sebelum query database; error Prisma `P2002` saat `create` → 409 |
 | `src/auth/auth.module.ts` | `JwtModule.registerAsync`: aplikasi gagal start bila `JWT_SECRET` kosong atau < 32 karakter; `expiresIn` dari `JWT_EXPIRES_IN` (default `1d`) |
-| `src/main.ts` | Global prefix `api/v1`; default port 3001 (prefix kemudian dipindah ke `src/app.setup.ts`, `2fcaa53`) |
+| `src/main.ts` | Global prefix `api/v1`; default port 3001 (prefix kemudian dipindah ke `src/app.setup.ts`, `f1608b1`) |
 | `src/app.module.ts`, `auth.controller.ts`, `dto/*.ts` | Hanya format (BOM, baris kosong, Prettier) — tanpa perubahan logika |
 
 ### Verifikasi
@@ -173,7 +175,7 @@ Register sukses (201), email duplikat (409), dan jalur `P2002` diverifikasi pada
 
 **Pelaksana:** Panji
 **Branch:** `feature/backend-auth`
-**Commit:** `1331099` `chore(backend): add .env.example and prisma generate scripts`
+**Commit:** `6461cbc` `chore(backend): add .env.example and prisma generate scripts`
 
 | Pekerjaan | W | C | T | S |
 |---|---|---|---|---|
@@ -188,7 +190,7 @@ Verifikasi: simulasi clone baru (hanya file ter-track Git, tanpa `.env`/`node_mo
 
 **Pelaksana:** Panji
 **Branch:** `feature/backend-auth`
-**Commit:** `99f3d56` `test(api): add Bruno collection for registration`
+**Commit:** `592385e` `test(api): add Bruno collection for registration`
 
 Koleksi Bruno dibuat di `backend/bruno/` (environment `local`, base URL `http://localhost:3001/api/v1`). Email user uji dibuat unik per run (`usera.<timestamp>@example.com`), sehingga koleksi bisa dijalankan berulang.
 
@@ -212,10 +214,10 @@ Koleksi Bruno dibuat di `backend/bruno/` (environment `local`, base URL `http://
 **Pelaksana:** Panji
 **Branch:** `feature/backend-auth`
 **Commit:**
-- `e5256a1` `feat(auth): add login, JWT guard and current user endpoint`
-- `d3893c8` `feat(backend): enable CORS for the frontend origin`
-- `d827a12` `test(api): add Bruno tests for login and current user`
-- `2fd9e63` `docs: add API contract for auth and record auth progress`
+- `263f008` `feat(auth): add login, JWT guard and current user endpoint`
+- `c20b748` `feat(backend): enable CORS for the frontend origin`
+- `84b50c0` `test(api): add Bruno tests for login and current user`
+- `ee83aa4` `docs: add API contract for auth and record auth progress`
 
 ### Dikerjakan
 
@@ -255,10 +257,10 @@ Koleksi Bruno dibuat di `backend/bruno/` (environment `local`, base URL `http://
 **Pelaksana:** Panji
 **Branch:** `feature/backend-categories` (dibuat dari `feature/backend-auth`)
 **Commit:**
-- `88409d0` `chore(db): add global category seed`
-- `e602b86` `feat(categories): add global category endpoint`
-- `727ff1a` `test(api): add Bruno tests for categories`
-- `0a64742` `docs: document category API and record progress`
+- `1005c7a` `chore(db): add global category seed`
+- `2b629a1` `feat(categories): add global category endpoint`
+- `3099a96` `test(api): add Bruno tests for categories`
+- `6f4fc22` `docs: document category API and record progress`
 
 ### Dikerjakan
 
@@ -293,9 +295,9 @@ Koleksi Bruno dibuat di `backend/bruno/` (environment `local`, base URL `http://
 **Pelaksana:** Panji
 **Branch:** `feature/backend-books` (dibuat dari `feature/backend-categories`)
 **Commit:**
-- `153469f` `feat(books): add book CRUD with search, filters and pagination`
-- `9850c76` `test(api): add Bruno tests for books and data ownership`
-- `3f1c7b9` `docs: document books API and record book management progress`
+- `6f0c7e0` `feat(books): add book CRUD with search, filters and pagination`
+- `016a0c1` `test(api): add Bruno tests for books and data ownership`
+- `2aab5b0` `docs: document books API and record book management progress`
 
 ### Dikerjakan
 
@@ -336,7 +338,7 @@ Setiap run Bruno membuat 2 user baru (`usera.<timestamp>@example.com`, `userb.<t
 ## 2026-11-13 — README Backend
 
 **Branch:** `feature/backend-books`
-**Commit:** `2ee506b` `docs(backend): replace scaffold README with setup and usage guide`, `698b8ae` `docs: record backend README in implementation log`
+**Commit:** `29129ad` `docs(backend): replace scaffold README with setup and usage guide`, `92cbcdd` `docs: record backend README in implementation log`
 
 README bawaan scaffold NestJS diganti dengan panduan: prasyarat, instalasi (env, database, migration, seed), daftar script, endpoint, cara menjalankan Bruno, struktur proyek, aturan keamanan. Langkah yang terdokumentasi diverifikasi: `npm run db:migrate` (tidak ada migration tertunda), `npm run db:seed`, dan aplikasi tetap start tanpa variabel `OBSERVE_*`.
 
@@ -347,10 +349,10 @@ README bawaan scaffold NestJS diganti dengan panduan: prasyarat, instalasi (env,
 **Pelaksana:** Panji
 **Branch:** `feature/backend-books`
 **Commit:**
-- `2fcaa53` `refactor(backend): extract global app configuration into configureApp`
-- `6b60c76` `refactor(backend): remove scaffold Hello World endpoint`
-- `3aba2cf` `test(e2e): replace scaffold test with end-to-end API suite`
-- `e672bb2` `docs: document e2e tests and record hello world removal`
+- `f1608b1` `refactor(backend): extract global app configuration into configureApp`
+- `7aa750c` `refactor(backend): remove scaffold Hello World endpoint`
+- `d3616be` `test(e2e): replace scaffold test with end-to-end API suite`
+- `22bd949` `docs: document e2e tests and record hello world removal`
 
 ### Penyebab e2e lama gagal
 
@@ -385,13 +387,13 @@ README bawaan scaffold NestJS diganti dengan panduan: prasyarat, instalasi (env,
 
 ## 2026-11-13 — Uji Ulang Bruno `01 Auth`
 
-Dijalankan ulang terhadap build `e672bb2` atas permintaan Team Lead: **15 request, 23/23 tes lolos**, 0 error di log server. Tidak ada perubahan status.
+Dijalankan ulang terhadap build `22bd949` atas permintaan Team Lead: **15 request, 23/23 tes lolos**, 0 error di log server. Tidak ada perubahan status.
 
 ---
 
 ## 2026-11-13 — Remote GitHub dan Push
 
-**Repository aktif:** https://github.com/DDDdonutss/PENYIMPAN_BUKU (lihat langkah 6)
+**Repository aktif:** https://github.com/DDDdonutss/LIBRARY_PERSONAL (lihat langkah 7)
 
 ### Kronologi
 
@@ -403,11 +405,17 @@ Dijalankan ulang terhadap build `e672bb2` atas permintaan Team Lead: **15 reques
 4. Audit sebelum push: tidak ada `.env` di commit mana pun; kredensial di riwayat hanya placeholder; 0 attribution AI di pesan commit dan dokumen.
 5. Push (`git push -u`) ke `DDDdonutss/PERSONAL_LIBRARY01`: `main`, `feature/backend-setup`, `feature/backend-auth`, `feature/backend-categories`, `feature/backend-books`. Hash di remote sama dengan lokal.
 6. Atas permintaan Team Lead, proyek dipindahkan ke repository kosong baru `DDDdonutss/PENYIMPAN_BUKU` (opsi C, prosedur sama: repository dicek kosong, tidak ada repo bersarang, encoding dokumen UTF-8). Remote `origin` diarahkan ke repository baru, lalu semua branch di-push, termasuk `docs/sync-project-docs`. URL di dokumen diperbarui ke repository baru.
+7. Atas permintaan Team Lead, proyek dipindahkan lagi ke repository kosong baru `DDDdonutss/LIBRARY_PERSONAL` (opsi C), **tanpa `docs/MASTER-PROMPT.md`**:
+   - Karena file tersebut sudah ada sejak commit pertama, file dihapus dari **seluruh riwayat** (bukan hanya di commit baru) dengan `git filter-branch --index-filter` pada keenam branch. Akibatnya semua hash commit berubah; author, committer, tanggal, dan pesan commit tetap sama (diverifikasi untuk 30 commit). Hash di dokumen ini sudah diperbarui ke riwayat baru.
+   - Verifikasi: di setiap branch, satu-satunya perbedaan isi dengan riwayat lama adalah hilangnya `docs/MASTER-PROMPT.md`; riwayat baru tidak memuat file itu di commit mana pun.
+   - File tetap ada di komputer lokal sebagai dokumen internal dan ditambahkan ke `.gitignore`.
+   - Cadangan lengkap riwayat lama dibuat (git bundle) sebelum penulisan ulang.
+   - Setelah repository baru terverifikasi, repository `PENYIMPAN_BUKU` dan `PERSONAL_LIBRARY01` dihapus atas permintaan Team Lead.
 
 ### Catatan
 
 - `gh` CLI tidak terpasang; Pull Request dibuat Team Lead melalui web GitHub.
-- Repository `DDDdonutss/Personal_Library` dan `DDDdonutss/PERSONAL_LIBRARY01` tidak dipakai lagi dan dapat dihapus.
+- Repository `DDDdonutss/Personal_Library` tidak dipakai dan dapat dihapus.
 
 ---
 

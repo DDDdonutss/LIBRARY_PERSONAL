@@ -103,7 +103,7 @@ Tanggung jawab:
 | class-validator | DTO validation |
 | Bruno | API testing manual/CLI (`backend/bruno/`) |
 | Vitest + supertest | E2E test otomatis (`backend/test/`) |
-| Git & GitHub | Version control (https://github.com/DDDdonutss/PENYIMPAN_BUKU) |
+| Git & GitHub | Version control (https://github.com/DDDdonutss/LIBRARY_PERSONAL) |
 
 ## 4. Database Design
 
@@ -301,7 +301,7 @@ Ketentuan:
 
 ### Status dan Pemetaan
 
-Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9). Pemetaan dan status per 2026-11-13:
+Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; dokumen internal, tidak disertakan di repository). Pemetaan dan status per 2026-11-13:
 
 | Phase (Jobdesk) | Phase (MASTER-PROMPT) | Status |
 |---|---|---|
