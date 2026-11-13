@@ -11,6 +11,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
 @Module({
   imports: [
     ObserveModule.forRoot({
+      // Jangan kirim telemetri dari test (Vitest mengeset NODE_ENV=test).
+      enabled: process.env.NODE_ENV !== 'test',
       appKey: process.env.OBSERVE_APP_KEY ?? 'YOUR_APP_KEY',
       appSecret: process.env.OBSERVE_APP_SECRET ?? 'YOUR_APP_SECRET',
       serviceId: 'backend',

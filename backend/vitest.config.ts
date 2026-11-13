@@ -8,5 +8,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // Belum ada unit test; pengujian saat ini lewat e2e (npm run test:e2e) dan Bruno.
+    passWithNoTests: true,
   },
 });
