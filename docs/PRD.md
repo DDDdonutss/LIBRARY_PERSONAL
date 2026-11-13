@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # Personal Library Management
 
-**Version:** 1.0  
-**Status:** Final — Baseline Pengembangan  
+**Version:** 1.1  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; scope tidak berubah)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -45,8 +45,10 @@ Pengelolaan koleksi buku secara manual dapat menyulitkan pengguna dalam:
 | Authentication | JWT |
 | API | REST API |
 | Validation | DTO + class-validator |
-| API Testing | Bruno / Postman |
+| API Testing | Bruno (`backend/bruno/`) + e2e test Vitest/supertest |
 | Version Control | Git & GitHub |
+
+Versi yang dipakai backend: NestJS 12, Prisma 7, PostgreSQL 14+ (diuji dengan 18), Node.js 22.12+ (diuji dengan 26).
 
 ## 3. Target Users
 
@@ -89,9 +91,9 @@ Ketentuan:
 - Pengguna dapat memilih kategori ketika menambahkan atau mengubah buku.
 - Pengguna tidak dapat membuat atau menghapus kategori.
 
-Daftar kategori awal masih perlu disepakati tim.
+Daftar kategori awal masih perlu disepakati tim. Sementara itu, daftar usulan di bawah sudah dipakai sebagai seed awal (`backend/prisma/seed.ts`) dan dapat diganti tanpa mengubah kode lain.
 
-Usulan kategori:
+Usulan kategori (dipakai di seed):
 - Fiction
 - Science
 - Technology
@@ -106,6 +108,8 @@ Usulan kategori:
 | WANT_TO_READ | Ingin dibaca |
 | READING | Sedang dibaca |
 | COMPLETED | Selesai dibaca |
+
+Buku baru yang dibuat tanpa status otomatis berstatus `WANT_TO_READ`.
 
 ## 6. Data Requirements
 
@@ -141,6 +145,12 @@ Usulan kategori:
 | name | String | Nama kategori unik |
 | createdAt | DateTime | Waktu pembuatan |
 | updatedAt | DateTime | Waktu perubahan |
+
+### 6.4 Perilaku Relasi (keputusan implementasi)
+
+- Bila user dihapus, seluruh bukunya ikut terhapus (`onDelete: Cascade`).
+- Bila kategori dihapus, buku yang memakainya tetap ada dengan `categoryId = null` (`onDelete: SetNull`).
+- Aplikasi saat ini tidak menyediakan fitur hapus user maupun hapus kategori; aturan ini menjaga integritas data di level database.
 
 ## 7. Business Rules
 
@@ -180,12 +190,27 @@ Logout menggunakan pendekatan stateless:
 - Status harus termasuk enum yang tersedia.
 - Pagination harus memiliki batas yang valid.
 
+Rincian yang ditetapkan saat implementasi:
+
+| Aturan | Nilai |
+|---|---|
+| Password maksimal | 72 karakter **dan** 72 byte UTF-8 (batas bcrypt) |
+| Email maksimal | 255 karakter; disimpan dan dicocokkan dalam huruf kecil |
+| Judul, penulis | Tidak boleh kosong setelah spasi di awal/akhir dihapus |
+| Nama | Tidak boleh kosong (⚠️ nama berisi spasi saja saat ini masih lolos — lihat Implementation Log, Pekerjaan Tersisa) |
+| Pagination | `page` ≥ 1 (default 1); `limit` 1–100 (default 10) |
+| Search | Pada judul, tidak peka huruf besar/kecil, cocok sebagian |
+| `categoryId` | Harus UUID kategori yang ada, atau kosong/`null` |
+| Field tidak dikenal | Ditolak (400), termasuk `userId` dari frontend |
+
 ### 8.3 Data Persistence
 Data harus tersimpan secara persisten pada PostgreSQL.
 
 ## 9. API Scope
 
-Base path: `/api/v1`
+Base path: `/api/v1` (lokal: `http://localhost:3001/api/v1`)
+
+Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md`. Endpoint kategori juga membutuhkan login (keputusan implementasi, karena kategori hanya dipakai di form buku).
 
 ### Authentication
 - `POST /auth/register`
@@ -241,20 +266,22 @@ Base path: `/api/v1`
 
 ## 12. Definition of Done
 
-- [ ] Register berhasil.
-- [ ] Login menghasilkan JWT.
-- [ ] Current user dapat diakses.
-- [ ] Endpoint privat dilindungi.
-- [ ] CRUD buku berjalan.
-- [ ] Kepemilikan data diterapkan.
-- [ ] Kategori global tersedia.
-- [ ] Search berjalan.
-- [ ] Filter berjalan.
-- [ ] Pagination berjalan.
-- [ ] Logout menghapus token.
-- [ ] Data tersimpan di PostgreSQL.
-- [ ] Frontend terintegrasi dengan backend.
-- [ ] README menjelaskan instalasi dan penggunaan.
+Status per 2026-11-13 (bukti: `docs/IMPLEMENTATION-LOG.md`):
+
+- [x] Register berhasil.
+- [x] Login menghasilkan JWT.
+- [x] Current user dapat diakses.
+- [x] Endpoint privat dilindungi.
+- [x] CRUD buku berjalan.
+- [x] Kepemilikan data diterapkan.
+- [x] Kategori global tersedia.
+- [x] Search berjalan.
+- [x] Filter berjalan.
+- [x] Pagination berjalan.
+- [ ] Logout menghapus token. *(frontend)*
+- [x] Data tersimpan di PostgreSQL.
+- [ ] Frontend terintegrasi dengan backend. *(backend siap; menunggu frontend)*
+- [ ] README menjelaskan instalasi dan penggunaan. *(backend selesai; bagian frontend menyusul)*
 - [ ] Demo utama dapat dilakukan.
 
 ## 13. Team Responsibility
@@ -269,3 +296,19 @@ Base path: `/api/v1`
 - Frontend Developer
 
 Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk frontend yang akan dibuat kemudian.
+
+## 14. Dokumen Terkait
+
+| Dokumen | Isi |
+|---|---|
+| `docs/API-CONTRACT.md` | Kontrak REST API (request, response, error) |
+| `docs/IMPLEMENTATION-LOG.md` | Riwayat implementasi, verifikasi, dan keputusan teknis |
+| `docs/JOBDESK-PANJI.md` | Tanggung jawab backend, database, dan integrasi |
+| `backend/README.md` | Instalasi dan penggunaan backend |
+
+## 15. Riwayat Revisi
+
+| Versi | Tanggal | Perubahan |
+|---|---|---|
+| 1.0 | 2026-11-13 | Baseline awal |
+| 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |

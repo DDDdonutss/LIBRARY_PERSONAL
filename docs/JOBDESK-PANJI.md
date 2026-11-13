@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.0  
-**Status:** Final — Baseline Tanggung Jawab  
+**Version:** 1.1  
+**Status:** Final — Baseline Tanggung Jawab (v1.1 menyinkronkan dengan hasil implementasi backend)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -101,8 +101,9 @@ Tanggung jawab:
 | Prisma | ORM |
 | JWT | Authentication |
 | class-validator | DTO validation |
-| Bruno / Postman | API testing |
-| Git & GitHub | Version control |
+| Bruno | API testing manual/CLI (`backend/bruno/`) |
+| Vitest + supertest | E2E test otomatis (`backend/test/`) |
+| Git & GitHub | Version control (https://github.com/DDDdonutss/PERSONAL_LIBRARY01) |
 
 ## 4. Database Design
 
@@ -144,21 +145,31 @@ Tanggung jawab:
 - Status menggunakan enum.
 - Foreign key harus valid.
 
+### Implementasi (Prisma schema)
+- Semua ID bertipe UUID (`@db.Uuid`).
+- Status default `WANT_TO_READ`.
+- Hapus user → buku ikut terhapus (`onDelete: Cascade`).
+- Hapus kategori → `categoryId` buku menjadi `null` (`onDelete: SetNull`).
+- Index: `Book.userId`, `Book.categoryId`, dan `(userId, status)` untuk filter.
+- Migration awal: `prisma/migrations/20261113060551_init`.
+
 ## 5. Backend Functional Requirements
 
-| ID | Requirement | Endpoint |
-|---|---|---|
-| BE-01 | Register | POST /auth/register |
-| BE-02 | Login | POST /auth/login |
-| BE-03 | Current User | GET /auth/me |
-| BE-04 | Create Book | POST /books |
-| BE-05 | Get Books | GET /books |
-| BE-06 | Get Book Detail | GET /books/:id |
-| BE-07 | Update Book | PATCH /books/:id |
-| BE-08 | Delete Book | DELETE /books/:id |
-| BE-09 | Get Categories | GET /categories |
+Base path: `/api/v1` (lokal: `http://localhost:3001/api/v1`).
 
-Semua endpoint buku memerlukan autentikasi.
+| ID | Requirement | Endpoint | Status |
+|---|---|---|---|
+| BE-01 | Register | POST /api/v1/auth/register | ✅ |
+| BE-02 | Login | POST /api/v1/auth/login | ✅ |
+| BE-03 | Current User | GET /api/v1/auth/me | ✅ |
+| BE-04 | Create Book | POST /api/v1/books | ✅ |
+| BE-05 | Get Books | GET /api/v1/books | ✅ |
+| BE-06 | Get Book Detail | GET /api/v1/books/:id | ✅ |
+| BE-07 | Update Book | PATCH /api/v1/books/:id | ✅ |
+| BE-08 | Delete Book | DELETE /api/v1/books/:id | ✅ |
+| BE-09 | Get Categories | GET /api/v1/categories | ✅ |
+
+Semua endpoint buku memerlukan autentikasi. `GET /categories` juga memerlukan autentikasi (keputusan implementasi; dapat dibuka bila frontend membutuhkannya sebelum login).
 
 ## 6. Security Requirements
 
@@ -187,7 +198,7 @@ Gunakan pendekatan stateless. Frontend menghapus token. Backend tidak membuat bl
 
 ## 7. API Contract Responsibility
 
-Panji harus menyediakan dokumentasi:
+Panji harus menyediakan dokumentasi berikut. **Status: tersedia lengkap di `docs/API-CONTRACT.md`.**
 
 ### Authentication
 - Register request dan response.
@@ -213,74 +224,97 @@ Panji harus menyediakan dokumentasi:
 
 ### Error Handling
 Gunakan HTTP status yang sesuai:
-- 200 OK
-- 201 Created
-- 400 Bad Request
-- 401 Unauthorized
-- 404 Not Found
-- 409 Conflict
-- 500 Internal Server Error
+- 200 OK — GET, login, PATCH, DELETE
+- 201 Created — register, create book
+- 400 Bad Request — validasi gagal, field tidak dikenal, ID bukan UUID, kategori tidak ada
+- 401 Unauthorized — token tidak ada/tidak valid, kredensial salah
+- 404 Not Found — buku tidak ada **atau milik user lain**
+- 409 Conflict — email sudah terdaftar
+- 500 Internal Server Error — kesalahan tak terduga
 
-## 8. Suggested Backend Structure
+## 8. Backend Structure (aktual)
+
+Rancangan awal di versi 1.0 diikuti; struktur di bawah adalah hasil implementasi.
 
 ```text
 backend/
+├── bruno/                       # Koleksi Bruno: 01 Auth, 02 Categories, 03 Books, 04 Ownership
 ├── prisma/
 │   ├── schema.prisma
-│   ├── migrations/
-│   └── seed.ts
-│
+│   ├── migrations/              # 20261113060551_init
+│   └── seed.ts                  # Seed kategori global (npm run db:seed)
+├── prisma7.config.ts            # Konfigurasi Prisma 7 (schema, migration, seed, DATABASE_URL)
+├── test/
+│   └── app.e2e-spec.ts          # E2E test (npm run test:e2e)
 ├── src/
 │   ├── auth/
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
 │   │   ├── auth.module.ts
-│   │   ├── dto/
-│   │   └── strategies/
-│   │
+│   │   ├── jwt.config.ts        # Validasi JWT_SECRET, JWT_EXPIRES_IN
+│   │   ├── dto/                 # register.dto.ts, login.dto.ts
+│   │   ├── strategies/          # jwt.strategy.ts
+│   │   ├── guards/              # jwt-auth.guard.ts
+│   │   ├── decorators/          # current-user.decorator.ts
+│   │   └── interfaces/          # authenticated-user.interface.ts
 │   ├── books/
 │   │   ├── books.controller.ts
 │   │   ├── books.service.ts
 │   │   ├── books.module.ts
-│   │   └── dto/
-│   │
+│   │   └── dto/                 # create-book, update-book, query-books
 │   ├── categories/
 │   │   ├── categories.controller.ts
 │   │   ├── categories.service.ts
 │   │   └── categories.module.ts
-│   │
 │   ├── prisma/
 │   │   ├── prisma.service.ts
 │   │   └── prisma.module.ts
-│   │
+│   ├── generated/prisma/        # Prisma Client hasil generate (tidak di-commit)
 │   ├── app.module.ts
+│   ├── app.setup.ts             # Prefix /api/v1, CORS, ValidationPipe
 │   └── main.ts
-│
-├── .env
+├── .env                         # Tidak di-commit
 ├── .env.example
 └── package.json
 ```
 
-Struktur ini merupakan rancangan awal dan dapat disesuaikan dengan kebutuhan implementasi NestJS.
-
 ## 9. Environment Variables
 
-Contoh variabel:
+Variabel yang dipakai (lihat `backend/.env.example`):
 
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
-JWT_SECRET="CHANGE_THIS_SECRET"
-JWT_EXPIRES_IN="1d"
-PORT=3001
-```
+| Variabel | Wajib | Default | Keterangan |
+|---|---|---|---|
+| `DATABASE_URL` | Ya | — | Koneksi PostgreSQL |
+| `JWT_SECRET` | Ya | — | Minimal 32 karakter; aplikasi menolak start bila kosong/terlalu pendek |
+| `JWT_EXPIRES_IN` | Tidak | `1d` | Masa berlaku token |
+| `PORT` | Tidak | `3001` | Port backend |
+| `CORS_ORIGIN` | Tidak | `http://localhost:3000` | Origin frontend, pisahkan dengan koma bila lebih dari satu |
+| `OBSERVE_APP_KEY`, `OBSERVE_APP_SECRET` | Tidak | — | NestJS Observe (opsional) |
 
 Ketentuan:
-- `.env` tidak boleh di-commit.
-- `.env.example` harus disediakan.
-- Jangan menaruh credential asli di GitHub.
+- `.env` tidak boleh di-commit. ✅ Ter-ignore Git dan tidak pernah ada di riwayat commit.
+- `.env.example` harus disediakan. ✅ `backend/.env.example` (satu file per aplikasi; frontend akan memiliki miliknya sendiri).
+- Jangan menaruh credential asli di GitHub. ✅ Riwayat sudah diaudit sebelum push.
 - Gunakan secret yang aman di lingkungan deployment.
 
 ## 10. Implementation Phases
+
+### Status dan Pemetaan
+
+Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9). Pemetaan dan status per 2026-11-13:
+
+| Phase (Jobdesk) | Phase (MASTER-PROMPT) | Status |
+|---|---|---|
+| 1 — Project Preparation | 0, 1 | ✅ Selesai |
+| 2 — Backend Setup | 2 | ✅ Selesai |
+| 3 — Database | 3 | ✅ Selesai |
+| 4 — Authentication | 4 | ✅ Selesai |
+| 5 — Book Management | 5 | ✅ Selesai |
+| 6 — Category | 6 | ✅ Selesai (daftar kategori menunggu konfirmasi tim) |
+| 7 — Integration | 8 | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
+| 8 — Testing & Documentation | 7, 9 | ✅ Testing dan dokumentasi backend selesai; finalisasi menunggu integrasi |
+
+Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, karena validasi `categoryId` pada buku membutuhkan kategori. Rincian bukti setiap phase ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Phase 1 — Project Preparation
 - Memahami PRD.
@@ -339,52 +373,54 @@ Ketentuan:
 
 ## 11. Testing Checklist
 
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 60 request / 91 tes) dan e2e test (`npm run test:e2e`, 26 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+
 ### Authentication
-- [ ] Register berhasil.
-- [ ] Email duplikat ditolak.
-- [ ] Password di-hash.
-- [ ] Login berhasil.
-- [ ] Password salah ditolak.
-- [ ] Token invalid ditolak.
-- [ ] Current user berjalan.
+- [x] Register berhasil.
+- [x] Email duplikat ditolak. *(termasuk beda huruf besar/kecil dan request bersamaan)*
+- [x] Password di-hash. *(bcrypt cost 12, dicek di database)*
+- [x] Login berhasil.
+- [x] Password salah ditolak.
+- [x] Token invalid ditolak. *(tanpa token, rusak, tanda tangan palsu, kedaluwarsa)*
+- [x] Current user berjalan.
 
 ### Books
-- [ ] Create berhasil.
-- [ ] Get list berhasil.
-- [ ] Get detail berhasil.
-- [ ] Update berhasil.
-- [ ] Delete berhasil.
-- [ ] Search berhasil.
-- [ ] Filter berhasil.
-- [ ] Pagination berhasil.
+- [x] Create berhasil.
+- [x] Get list berhasil.
+- [x] Get detail berhasil.
+- [x] Update berhasil.
+- [x] Delete berhasil.
+- [x] Search berhasil.
+- [x] Filter berhasil.
+- [x] Pagination berhasil.
 
 ### Data Ownership
-- [ ] Pengguna A hanya melihat buku miliknya.
-- [ ] Pengguna A tidak dapat membaca buku pengguna B.
-- [ ] Pengguna A tidak dapat mengubah buku pengguna B.
-- [ ] Pengguna A tidak dapat menghapus buku pengguna B.
+- [x] Pengguna A hanya melihat buku miliknya.
+- [x] Pengguna A tidak dapat membaca buku pengguna B.
+- [x] Pengguna A tidak dapat mengubah buku pengguna B.
+- [x] Pengguna A tidak dapat menghapus buku pengguna B.
 
 ### Category
-- [ ] Kategori tersedia.
-- [ ] Semua pengguna mendapatkan kategori yang sama.
-- [ ] CategoryId tidak valid ditolak.
+- [x] Kategori tersedia.
+- [x] Semua pengguna mendapatkan kategori yang sama.
+- [x] CategoryId tidak valid ditolak.
 
 ## 12. Definition of Done
 
-- [ ] Backend NestJS berjalan.
-- [ ] PostgreSQL terhubung.
-- [ ] Prisma berjalan.
-- [ ] Schema dan migration tersedia.
-- [ ] Kategori global tersedia.
-- [ ] Authentication berjalan.
-- [ ] JWT Guard berjalan.
-- [ ] CRUD buku berjalan.
-- [ ] Ownership berjalan.
-- [ ] Search dan filter berjalan.
-- [ ] Pagination berjalan.
-- [ ] API Contract sesuai implementasi.
-- [ ] Frontend dapat menggunakan API.
-- [ ] Dokumentasi backend tersedia.
+- [x] Backend NestJS berjalan.
+- [x] PostgreSQL terhubung.
+- [x] Prisma berjalan.
+- [x] Schema dan migration tersedia.
+- [x] Kategori global tersedia.
+- [x] Authentication berjalan.
+- [x] JWT Guard berjalan.
+- [x] CRUD buku berjalan.
+- [x] Ownership berjalan.
+- [x] Search dan filter berjalan.
+- [x] Pagination berjalan.
+- [x] API Contract sesuai implementasi.
+- [ ] Frontend dapat menggunakan API. *(menunggu frontend)*
+- [x] Dokumentasi backend tersedia.
 
 ## 13. Working Principles
 
@@ -397,4 +433,23 @@ Ketentuan:
 7. Gunakan Pull Request untuk menggabungkan pekerjaan.
 8. Pastikan kode dapat dipahami dan dijelaskan kembali oleh Panji.
 
+### Penerapan Alur Git
+
+Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request berurutan (merge commit, bukan squash/rebase):
+
+| Urutan | Branch | Isi |
+|---|---|---|
+| 1 | `feature/backend-setup` | Prisma, schema, migration |
+| 2 | `feature/backend-auth` | Register, login, JWT, `/auth/me`, CORS |
+| 3 | `feature/backend-categories` | Seed dan endpoint kategori |
+| 4 | `feature/backend-books` | CRUD buku, ownership, e2e test, README backend |
+| 5 | `docs/sync-project-docs` | Sinkronisasi dokumen |
+
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
+
+## Riwayat Revisi
+
+| Versi | Tanggal | Perubahan |
+|---|---|---|
+| 1.0 | 2026-11-13 | Baseline awal |
+| 1.1 | 2026-11-13 | Sinkronisasi dengan implementasi: endpoint dengan base path dan status, detail schema, struktur backend aktual, environment variable aktual, pemetaan phase, checklist dan DoD, alur Git |

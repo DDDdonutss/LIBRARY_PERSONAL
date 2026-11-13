@@ -18,7 +18,14 @@ Kontrak API lengkap (endpoint, request, response, error): [`docs/API-CONTRACT.md
 
 ## 2. Instalasi
 
-Semua perintah dijalankan di folder `backend/`.
+**0. Clone repository**
+
+```bash
+git clone https://github.com/DDDdonutss/PERSONAL_LIBRARY01.git
+cd PERSONAL_LIBRARY01/backend
+```
+
+Semua perintah berikutnya dijalankan di folder `backend/`.
 
 **1. Install dependensi**
 
@@ -31,10 +38,11 @@ Prisma Client otomatis di-generate setelah install (script `postinstall`).
 **2. Siapkan environment**
 
 ```bash
-cp .env.example .env
+cp .env.example .env            # Git Bash / macOS / Linux
+copy .env.example .env          # Command Prompt / PowerShell
 ```
 
-Lalu isi `.env`:
+Lalu isi `.env` dengan editor teks (simpan sebagai UTF-8):
 
 | Variabel | Keterangan |
 |---|---|
