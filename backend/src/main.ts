@@ -10,6 +10,14 @@ async function bootstrap() {
   // Semua endpoint berada di bawah /api/v1 (PRD §9), mis. /api/v1/auth/register
   app.setGlobalPrefix('api/v1');
 
+  // Izinkan frontend (origin lain) memanggil API dari browser.
+  // CORS_ORIGIN bisa berisi beberapa origin dipisah koma.
+  app.enableCors({
+    origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
+      .split(',')
+      .map((origin) => origin.trim()),
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
