@@ -1,0 +1,39 @@
+meta {
+  name: Categories - list
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/categories
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+script:post-response {
+  // Disimpan untuk uji Books.
+  bru.setVar("categoriesA", JSON.stringify(res.body));
+  const fiction = res.body.find((c) => c.name === "Fiction");
+  const science = res.body.find((c) => c.name === "Science");
+  bru.setVar("categoryFictionId", fiction && fiction.id);
+  bru.setVar("categoryScienceId", science && science.id);
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("berisi kategori hasil seed", function () {
+    const names = res.body.map((c) => c.name);
+    expect(names).to.include.members(["Fiction", "Science", "Technology", "History", "Education", "Other"]);
+  });
+
+  test("setiap item hanya berisi id dan name", function () {
+    res.body.forEach((c) => expect(c).to.have.keys(["id", "name"]));
+  });
+}
