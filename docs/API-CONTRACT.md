@@ -1,7 +1,7 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Draft — diperbarui setiap kali endpoint selesai diimplementasikan dan diuji.
+**Status:** Lengkap untuk scope PRD v1.0 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
 Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno di `backend/bruno/`, kecuali ditandai lain.
@@ -216,7 +216,136 @@ ID di atas hanya contoh; ID sebenarnya dibuat saat seed dan berbeda di setiap da
 
 ## 4. Books
 
-*Belum diimplementasikan.*
+Semua endpoint buku 🔒 membutuhkan login. Setiap user **hanya** dapat melihat dan mengelola bukunya sendiri; pemilik buku ditentukan dari token, bukan dari body request.
+
+Buku milik user lain diperlakukan **sama dengan buku yang tidak ada** (`404`), sehingga frontend tidak bisa mengetahui keberadaan buku user lain.
+
+### 4.1 Objek Book
+
+```json
+{
+  "id": "a3f1c2d4-5b6e-4f70-8a91-b2c3d4e5f607",
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "status": "READING",
+  "categoryId": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+  "category": { "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "Science" },
+  "createdAt": "2026-11-13T08:20:00.000Z",
+  "updatedAt": "2026-11-13T08:25:00.000Z"
+}
+```
+
+| Field | Tipe | Keterangan |
+|---|---|---|
+| `status` | enum | `WANT_TO_READ` (ingin dibaca), `READING` (sedang dibaca), `COMPLETED` (selesai) |
+| `categoryId` | UUID \| `null` | `null` bila buku tanpa kategori |
+| `category` | object \| `null` | `{ id, name }` kategori, atau `null` |
+
+`userId` tidak disertakan di response.
+
+### 4.2 Aturan Validasi Body
+
+| Field | Create | Update | Aturan |
+|---|---|---|---|
+| `title` | Wajib | Opsional | String, tidak kosong setelah spasi awal/akhir dihapus, maks. 200 karakter. Spasi awal/akhir otomatis dihapus |
+| `author` | Wajib | Opsional | String, tidak kosong, maks. 150 karakter. Spasi awal/akhir otomatis dihapus |
+| `status` | Opsional (default `WANT_TO_READ`) | Opsional | Salah satu nilai enum |
+| `categoryId` | Opsional | Opsional | UUID kategori yang ada (dari `GET /categories`), atau `null` untuk tanpa kategori |
+
+- Pada **update**, field yang tidak dikirim tidak berubah. `title`, `author`, dan `status` **tidak boleh `null`**. Kirim `"categoryId": null` untuk menghapus kategori dari buku.
+- Field lain (termasuk `userId`) ditolak dengan 400.
+
+### 4.3 `POST /books` 🔒
+
+```json
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "status": "READING",
+  "categoryId": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e"
+}
+```
+
+**Response `201 Created`**: objek Book (§4.1).
+
+### 4.4 `GET /books` 🔒
+
+**Query parameter** (semua opsional, dapat digabung; filter digabung dengan logika AND)
+
+| Parameter | Tipe | Default | Aturan |
+|---|---|---|---|
+| `page` | integer | `1` | ≥ 1 |
+| `limit` | integer | `10` | 1–100 |
+| `search` | string | — | Cari di **judul**, tidak peka huruf besar/kecil, cocok sebagian (`clean` cocok dengan "Clean Code"). Maks. 200 karakter |
+| `status` | enum | — | `WANT_TO_READ`, `READING`, atau `COMPLETED` |
+| `categoryId` | UUID | — | ID kategori |
+
+Contoh: `GET /books?page=1&limit=10&search=clean&status=READING`
+
+**Response `200 OK`** — diurutkan dari yang **terbaru** dibuat:
+
+```json
+{
+  "data": [
+    {
+      "id": "a3f1c2d4-5b6e-4f70-8a91-b2c3d4e5f607",
+      "title": "Clean Code",
+      "author": "Robert C. Martin",
+      "status": "READING",
+      "categoryId": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+      "category": { "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "Science" },
+      "createdAt": "2026-11-13T08:20:00.000Z",
+      "updatedAt": "2026-11-13T08:25:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+- `total`: jumlah seluruh buku yang cocok dengan filter (bukan hanya halaman ini).
+- `page` melebihi `totalPages` → `200` dengan `data: []`.
+- Bila tidak ada buku, `totalPages` bernilai `0`.
+
+### 4.5 `GET /books/:id` 🔒
+
+**Response `200 OK`**: objek Book (§4.1).
+
+### 4.6 `PATCH /books/:id` 🔒
+
+Kirim hanya field yang ingin diubah. Contoh mengubah status membaca:
+
+```json
+{ "status": "COMPLETED" }
+```
+
+**Response `200 OK`**: objek Book setelah diubah.
+
+### 4.7 `DELETE /books/:id` 🔒
+
+**Response `200 OK`**
+
+```json
+{
+  "message": "Buku berhasil dihapus",
+  "id": "a3f1c2d4-5b6e-4f70-8a91-b2c3d4e5f607"
+}
+```
+
+### 4.8 Error Endpoint Books
+
+| Status | Kondisi | `message` |
+|---|---|---|
+| 400 | Validasi body/query gagal, field tidak dikenal | array pesan validasi |
+| 400 | `:id` bukan UUID | `"Validation failed (uuid is expected)"` |
+| 400 | `categoryId` berformat UUID tetapi kategorinya tidak ada | `"Kategori tidak ditemukan"` |
+| 400 | `PATCH` dengan body kosong `{}` | `"Tidak ada data yang diubah"` |
+| 401 | Token tidak ada atau tidak valid | `"Unauthorized"` |
+| 404 | Buku tidak ada **atau milik user lain** | `"Buku tidak ditemukan"` |
 
 ---
 
@@ -226,3 +355,4 @@ ID di atas hanya contoh; ID sebenarnya dibuat saat seed dan berbeda di setiap da
 |---|---|
 | 2026-11-13 | Draft awal: konvensi umum, `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
 | 2026-11-13 | Tambah `GET /categories` |
+| 2026-11-13 | Tambah endpoint Books: CRUD, search, filter, pagination |

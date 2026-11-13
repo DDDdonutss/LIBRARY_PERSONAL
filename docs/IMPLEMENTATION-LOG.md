@@ -242,6 +242,50 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 
 ---
 
+## 2026-11-13 — Book Management
+
+**Pelaksana:** Panji
+**Branch:** `feature/backend-books` (dibuat dari `feature/backend-categories`)
+**Commit:**
+- `153469f` `feat(books): add book CRUD with search, filters and pagination`
+- `9850c76` `test(api): add Bruno tests for books and data ownership`
+
+### Dikerjakan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| `POST /api/v1/books` 🔒 | `src/books/` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/v1/books` 🔒 + search judul, filter status/kategori, pagination | `books.service.ts`, `dto/query-books.dto.ts` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/v1/books/:id` 🔒 | `books.controller.ts` | ✅ | ✅ | ✅ | ✅ |
+| `PATCH /api/v1/books/:id` 🔒 | `books.service.ts`, `dto/update-book.dto.ts` | ✅ | ✅ | ✅ | ✅ |
+| `DELETE /api/v1/books/:id` 🔒 | `books.service.ts` | ✅ | ✅ | ✅ | ✅ |
+| Validasi `categoryId` (format UUID + harus ada) | `dto/*.ts`, `CategoriesService.ensureExists()` | ✅ | ✅ | ✅ | ✅ |
+| Ownership di setiap query (`where: { id, userId }`) | `books.service.ts` | ✅ | ✅ | ✅ | ✅ |
+
+### Verifikasi
+
+- `tsc`, oxlint, Prettier: lolos.
+- Bruno seluruh koleksi: **60 request, 91/91 tes lolos**, dijalankan **dua kali berturut-turut** (koleksi dapat diulang). Log server: 0 error.
+  - `03 Books` (33 request): create minimal/lengkap, trim judul, validasi (judul kosong/spasi/>200, penulis >150, status salah, `categoryId` bukan UUID / tidak ada, `userId` di body), list default, pagination, halaman melebihi batas, search tidak peka huruf besar/kecil, filter status, filter kategori, filter gabungan, `limit` > 100, query invalid, detail, ID bukan UUID, 404, update sebagian, pasang/hapus kategori, `title: null` ditolak, body kosong ditolak, delete, detail setelah delete, delete ulang.
+  - `04 Ownership` (8 request): user B tidak melihat buku user A di list maupun search; user B mendapat 404 saat membaca, mengubah, dan menghapus buku user A; buku user A tetap utuh; user A tidak melihat buku user B.
+
+### Keputusan Desain
+
+- **Ownership di query database:** `findFirst`/`update`/`delete` memakai `where: { id, userId }` (fitur `extendedWhereUnique` Prisma), sesuai MASTER-PROMPT §8. Buku user lain → **404**, bukan 403, agar keberadaannya tidak bocor.
+- **`userId` tidak ada di response** dan ditolak bila dikirim di body (400).
+- **Pagination:** default `page=1`, `limit=10`, maksimum `limit=100`. Response `{ data, meta: { page, limit, total, totalPages } }`. Data dan total diambil dalam satu `$transaction`.
+- **Urutan:** terbaru dibuat lebih dulu (`createdAt desc`), dengan `id` sebagai pengurut kedua agar stabil antarhalaman.
+- **Search:** judul, `contains` + `mode: 'insensitive'` (PostgreSQL `ILIKE`).
+- **Update:** `title`/`author`/`status` boleh tidak dikirim tetapi tidak boleh `null` (memakai `@ValidateIf`, bukan `@IsOptional`, karena `@IsOptional` meloloskan `null` dan akan menyebabkan error 500 dari database). `categoryId: null` menghapus kategori. Body kosong → 400.
+- **ID di path** divalidasi `ParseUUIDPipe` sehingga ID bukan UUID ditolak 400 sebelum mencapai database.
+- **DELETE** mengembalikan `200 { message, id }` (bukan 204) agar konsisten dengan endpoint lain yang selalu mengembalikan JSON.
+
+### Catatan Data Uji
+
+Setiap run Bruno membuat 2 user baru (`usera.<timestamp>@example.com`, `userb.<timestamp>@example.com`) dan beberapa buku di database lokal. Data ini sengaja dibiarkan (tidak ada penghapusan otomatis).
+
+---
+
 ## Ringkasan Progres Phase (per 2026-11-13)
 
 | Phase (MASTER-PROMPT) | Status |
@@ -251,10 +295,10 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 | 2 — Backend Setup | Completed |
 | 3 — Database Design | Completed (schema, migration, seed kategori) |
 | 4 — Authentication | Completed (register, login, JWT strategy/guard, `/auth/me`; diuji Bruno) |
-| 5 — Book Management | Not Started |
+| 5 — Book Management | Completed (CRUD, search, filter, pagination, ownership) |
 | 6 — Category API | Completed (daftar kategori menunggu konfirmasi tim) |
-| 7 — API Testing | In Progress (koleksi Bruno: Auth dan Categories selesai) |
-| 8 — Frontend Integration | Partially Completed (CORS aktif, API Contract draft) |
+| 7 — API Testing | Completed (Bruno: 60 request, 91 tes — auth, kategori, buku, ownership) |
+| 8 — Frontend Integration | Ready (CORS aktif, API Contract lengkap); menunggu frontend |
 | 9 — Finalization | Not Started |
 
 ## Urutan Pekerjaan Berikutnya (disetujui Team Lead)
@@ -264,4 +308,11 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 3. ~~Register Testing via Bruno~~ — selesai (`99f3d56`)
 4. ~~Login, JwtStrategy, JwtAuthGuard, `/auth/me`~~ — selesai (`e5256a1`, `d3893c8`, `d827a12`)
 5. ~~Category API (sebelum Book Management)~~ — selesai (`88409d0`, `e602b86`, `727ff1a`)
-6. Book Management ← **berikutnya**
+6. ~~Book Management~~ — selesai (`153469f`, `9850c76`)
+
+## Pekerjaan Tersisa (belum disetujui sebagai urutan resmi)
+
+- README backend (instalasi dan penggunaan).
+- Keputusan tim: daftar kategori final; apakah `GET /categories` perlu publik.
+- Remote GitHub, push, dan Pull Request bertahap: `feature/backend-setup` → `feature/backend-auth` → `feature/backend-categories` → `feature/backend-books` → `main`.
+- Finalisasi: evaluasi ObserveModule (isu #8), rate limiting login, `AppController` "Hello World" bawaan, e2e test bawaan (`test/app.e2e-spec.ts`) yang belum menyesuaikan prefix/env.
