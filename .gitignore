@@ -29,3 +29,9 @@ coverage/
 
 # Prisma generated files
 backend/src/generated/prisma/
+
+# Local AI tooling
+backend/.agents/
+backend/.claude/
+backend/.windsurf/
+backend/skills-lock.json
