@@ -1,0 +1,25 @@
+meta {
+  name: Categories - same for another user
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/categories
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("user B mendapat daftar kategori yang sama dengan user A", function () {
+    expect(res.body).to.deep.equal(JSON.parse(bru.getVar("categoriesA")));
+  });
+}

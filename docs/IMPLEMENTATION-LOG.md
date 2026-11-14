@@ -207,6 +207,41 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 
 ---
 
+## 2026-11-13 — Category API
+
+**Pelaksana:** Panji
+**Branch:** `feature/backend-categories` (dibuat dari `feature/backend-auth`)
+**Commit:**
+- `88409d0` `chore(db): add global category seed`
+- `e602b86` `feat(categories): add global category endpoint`
+- `727ff1a` `test(api): add Bruno tests for categories`
+
+### Dikerjakan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| Seed kategori global (idempotent, `upsert` by name) | `prisma/seed.ts`, `prisma7.config.ts` | ✅ | ✅ | ✅ | ✅ |
+| Script `db:seed` dan `db:migrate` | `package.json` | ✅ | — | ✅ (`db:seed`) | — |
+| Dependensi dev `tsx` (menjalankan `seed.ts`) | `package.json` | ✅ | — | ✅ | — |
+| `GET /api/v1/categories` 🔒 | `src/categories/` | ✅ | ✅ | ✅ | ✅ |
+| `CategoriesService.ensureExists()` (validasi `categoryId` untuk Books) | `categories.service.ts` | ✅ | ✅ | ❌ (diuji lewat Books) | ✅ |
+
+### Verifikasi
+
+- `tsc` (termasuk `prisma/seed.ts`), oxlint, Prettier: lolos.
+- `npm run db:seed` dijalankan **dua kali**: total tetap 6 kategori (tidak duplikat). Isi: Education, Fiction, History, Other, Science, Technology.
+- Bruno seluruh koleksi (`01 Auth` + `02 Categories`): **19 request, 30/30 tes lolos** — list kategori, tanpa token → 401, user B mendapat daftar yang identik dengan user A.
+
+### Keputusan Desain
+
+- **Daftar kategori** memakai usulan PRD §4.3 karena belum ada kesepakatan lain. Mudah diganti di `prisma/seed.ts`. ⚠️ Perlu konfirmasi tim.
+- **`GET /categories` dilindungi JWT.** Kategori hanya dibutuhkan pada form buku (setelah login). Bila frontend membutuhkannya sebelum login, guard cukup dihapus dari controller.
+- `categoryId` yang tidak ada → **400** (`Kategori tidak ditemukan`), bukan 404, karena kesalahannya ada pada input buku.
+- `tsx` dipilih sesuai dokumentasi Prisma 7. Node 26 tidak bisa menjalankan `seed.ts` langsung karena client hasil generate meng-import `./x.js` yang sebenarnya file `.ts`.
+- Script `postinstall` milik `esbuild` (dependensi `tsx`) diblokir kebijakan `allowScripts` npm. Tidak ditambahkan ke allowlist karena `tsx` terbukti berfungsi tanpanya.
+
+---
+
 ## Ringkasan Progres Phase (per 2026-11-13)
 
 | Phase (MASTER-PROMPT) | Status |
@@ -214,11 +249,11 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 | 0 — Project Inspection | Completed |
 | 1 — Repository Preparation | Completed (`API-CONTRACT.md` draft dan `.env.example` tersedia; `frontend/` tanggung jawab Frontend Developer) |
 | 2 — Backend Setup | Completed |
-| 3 — Database Design | Partially Completed (seed kategori belum) |
+| 3 — Database Design | Completed (schema, migration, seed kategori) |
 | 4 — Authentication | Completed (register, login, JWT strategy/guard, `/auth/me`; diuji Bruno) |
 | 5 — Book Management | Not Started |
-| 6 — Category API | Not Started |
-| 7 — API Testing | In Progress (koleksi Bruno: Auth selesai) |
+| 6 — Category API | Completed (daftar kategori menunggu konfirmasi tim) |
+| 7 — API Testing | In Progress (koleksi Bruno: Auth dan Categories selesai) |
 | 8 — Frontend Integration | Partially Completed (CORS aktif, API Contract draft) |
 | 9 — Finalization | Not Started |
 
@@ -228,5 +263,5 @@ Cara menjalankan: start backend, lalu di `backend/bruno/` jalankan `npx @usebrun
 2. ~~Stabilize & Verify Register~~ — selesai (`23b46d2`, `3d86dfa`, `d10892e`, `1331099`)
 3. ~~Register Testing via Bruno~~ — selesai (`99f3d56`)
 4. ~~Login, JwtStrategy, JwtAuthGuard, `/auth/me`~~ — selesai (`e5256a1`, `d3893c8`, `d827a12`)
-5. Category API (sebelum Book Management) ← **berikutnya**
-6. Book Management
+5. ~~Category API (sebelum Book Management)~~ — selesai (`88409d0`, `e602b86`, `727ff1a`)
+6. Book Management ← **berikutnya**

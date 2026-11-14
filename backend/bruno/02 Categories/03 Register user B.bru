@@ -1,0 +1,33 @@
+meta {
+  name: Register user B
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "User B",
+    "email": "{{userBEmail}}",
+    "password": "password123"
+  }
+}
+
+script:pre-request {
+  bru.setVar("userBEmail", `userb.${Date.now()}@example.com`);
+}
+
+script:post-response {
+  bru.setVar("userBToken", res.body.accessToken);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
