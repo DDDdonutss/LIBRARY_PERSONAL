@@ -67,7 +67,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 | `fix/register-name-trim` | `a6e9aed` | #6 | `9df7c4e` | ✅ Merged 2026-11-14 |
 | 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
 | 8 | `fix/book-stats-review` | `ef3a244` | #8 | `cd252f3` | ✅ Merged 2026-11-15 |
-| 9 | `docs/record-pr-8` | — | — | — | Pencatatan PR #8 (dokumen ini) |
+| 9 | `docs/record-pr-8` | — | #17 | — | Pencatatan PR #8 dan issue #9–#16 (dokumen ini) |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7.
 
@@ -132,7 +132,7 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 | 5 | Port default 3000, dokumen menetapkan 3001; `PORT` tidak ada di `.env` | `main.ts`, `.env` | ✅ Closed — `43dfa87` (default 3001; `PORT` di `.env` opsional) |
 | 6 | `.env.example` belum ada | `backend/` | ✅ Closed — `6461cbc` |
 | 7 | Tidak ada script `prisma generate` — clone baru gagal build karena client hasil generate di-ignore | `package.json` | ✅ Closed — `6461cbc` (diuji: simulasi clone baru → `npm ci` → build berhasil) |
-| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi |
+| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi — dilacak di GitHub issue #10 |
 | 9 | BOM (byte order mark) di 6 file dan line ending CRLF | `main.ts`, `src/auth/**` | ✅ Closed — BOM dihapus (`43dfa87`, `ed82f30`); CRLF dinormalisasi Git saat commit |
 
 ---
@@ -673,35 +673,42 @@ PR #8 (`fix/book-stats-review`) di-merge oleh Team Lead melalui web GitHub denga
 
 ### GitHub Issues
 
-Pembuatan issue lewat integrasi GitHub ditolak (`403 Resource not accessible by integration`), sama seperti pembuatan PR dan penghapusan repository. Delapan draf issue untuk pekerjaan yang masih terbuka disiapkan sebagai link form yang sudah terisi (judul, isi, label); issue dibuat manual oleh Team Lead:
+Pembuatan issue lewat integrasi GitHub ditolak (`403 Resource not accessible by integration`), sama seperti pembuatan PR dan penghapusan repository. Atas persetujuan Team Lead, **GitHub CLI (`gh` 2.104.0)** dipasang lewat winget dan login sebagai `DDDdonutss`; issue dan PR kini dapat dibuat dari terminal.
 
-1. Hapus repository lama yang tidak dipakai
-2. Putuskan nasib ObserveModule
-3. Konfirmasi daftar kategori final dan akses `GET /categories`
-4. Frontend: integrasi Next.js dengan backend API
-5. Persiapan demo aplikasi
-6. Opsional: rate limiting login/register
-7. Opsional: tolak token milik user yang sudah dihapus
-8. Rapikan format Prettier di `backend/src/prisma`
+Delapan issue untuk pekerjaan yang masih terbuka dibuat 2026-11-15:
 
-Pekerjaan yang sudah selesai tidak dibuatkan issue mundur; jejaknya ada di PR #1–#8 dan dokumen ini. Mulai sekarang, PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
+| Issue | Judul | Label | Assignee |
+|---|---|---|---|
+| #9 | Hapus repository lama yang tidak dipakai | documentation | DDDdonutss |
+| #10 | Putuskan nasib ObserveModule (telemetri NestJS Observe) | question | DDDdonutss |
+| #11 | Konfirmasi daftar kategori final dan akses `GET /categories` | question | DDDdonutss |
+| #12 | Frontend: integrasi Next.js dengan backend API | enhancement | — (menunggu akun GitHub X) |
+| #13 | Persiapan demo aplikasi | documentation | — |
+| #14 | Opsional: rate limiting untuk login dan register | enhancement | — |
+| #15 | Opsional: tolak token milik user yang sudah dihapus di semua endpoint | enhancement | — |
+| #16 | Rapikan format Prettier di `backend/src/prisma` | — | — |
+
+Nomor issue dan PR berbagi urutan di GitHub (PR #1–#8, issue #9–#16). Pekerjaan yang sudah selesai tidak dibuatkan issue mundur; jejaknya ada di PR #1–#8 dan dokumen ini. Mulai sekarang, PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
+
+> Catatan penomoran: "isu #1–#9" pada tabel *Hasil Security Review* (entri 2026-11-13) adalah nomor temuan internal dokumen ini, **bukan** nomor GitHub. Contoh: temuan ObserveModule = isu keamanan #8 = GitHub issue #10.
 
 ---
 
 ## Pekerjaan Tersisa
 
-Setelah issue dibuat di GitHub, issue menjadi sumber utama pelacakan; tabel ini merangkumnya.
+Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
 
-| Pekerjaan | Pemilik | Status |
-|---|---|---|
-| Buat 8 issue di GitHub dari draf yang disiapkan | Panji (Team Lead) | ⏳ |
-| Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
-| Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | Tim | ⏳ |
-| Keputusan ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal) | Panji | ⏳ |
-| ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk pekerjaan frontend |
-| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | X (Frontend) + Panji | ⏳ |
-| Persiapan demo | Tim | ⏳ |
-| ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, branch `fix/register-name-trim`) |
-| Opsional: rate limiting login; unit test untuk modul lain (statistik sudah punya unit test) | Panji | — |
-| Opsional: rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal) | Panji | — |
-| Opsional: periksa apakah telemetri ObserveModule merekam isi request (dari security review; terkait keputusan isu #8) | Panji | — |
+| Pekerjaan | Issue | Pemilik | Status |
+|---|---|---|---|
+| Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | #9 | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
+| Keputusan ObserveModule (isu keamanan #8 — saat ini aktif mengirim telemetri dari server lokal), termasuk memeriksa apakah telemetri merekam isi request | #10 | Panji | ⏳ |
+| Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | #11 | Tim | ⏳ |
+| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
+| Persiapan demo | #13 | Tim | ⏳ |
+| Opsional: rate limiting login/register | #14 | Panji | — |
+| Opsional: tolak token milik user yang sudah dihapus | #15 | Panji | — |
+| Opsional: rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal) | #16 | Panji | — |
+| Opsional: unit test untuk modul lain (statistik sudah punya unit test) | — | Panji | — |
+| ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16 | Panji | ✅ 2026-11-15 |
+| ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | — | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk #12 |
+| ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | — | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, PR #6) |

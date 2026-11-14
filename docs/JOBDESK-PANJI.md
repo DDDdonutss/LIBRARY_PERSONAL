@@ -457,7 +457,7 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 
 PR 1–7 di-merge ke `main` pada 2026-11-14, PR 8 pada 2026-11-15. Branch 8 dibuat dari `main` setelah merge PR 7.
 
-Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue; PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
+Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
