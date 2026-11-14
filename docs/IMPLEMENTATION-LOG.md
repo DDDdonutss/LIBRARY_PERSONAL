@@ -4,7 +4,7 @@
 Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
 **Repository:** https://github.com/DDDdonutss/LIBRARY_PERSONAL
-**Terakhir diperbarui:** 2026-11-14
+**Terakhir diperbarui:** 2026-11-15
 
 > Semua hash commit di dokumen ini merujuk ke riwayat repository `LIBRARY_PERSONAL`, yang ditulis ulang tanpa `docs/MASTER-PROMPT.md` (lihat entri "Remote GitHub dan Push", langkah 7).
 
@@ -38,7 +38,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
 | 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 31 tes; unit 5 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#7 di-merge ke `main`; security review dan code review dijalankan; keputusan Observe dan demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#8 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; keputusan Observe dan demo belum) |
 
 ### Endpoint
 
@@ -66,7 +66,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 5 | `docs/sync-project-docs` | `a4d798f` | #5 | `5737185` | ✅ Merged 2026-11-14 |
 | 6 | `fix/register-name-trim` | `a6e9aed` | #6 | `9df7c4e` | ✅ Merged 2026-11-14 |
 | 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
-| 8 | `fix/book-stats-review` | `8de7ff3` + commit docs | — | — | Lokal; menunggu persetujuan push, lalu PR ke `main` |
+| 8 | `fix/book-stats-review` | `ef3a244` | #8 | `cd252f3` | ✅ Merged 2026-11-15 |
+| 9 | `docs/record-pr-8` | — | — | — | Pencatatan PR #8 (dokumen ini) |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7.
 
@@ -653,11 +654,48 @@ Bentuk response `GET /books/stats` **tidak berubah**; frontend tidak terdampak.
 
 ---
 
+## 2026-11-15 — Merge PR #8 dan Verifikasi `main`
+
+**Pelaksana:** Panji
+
+PR #8 (`fix/book-stats-review`) di-merge oleh Team Lead melalui web GitHub dengan "Create a merge commit" → `main` = `cd252f3`. Isi tree `main` identik dengan `fix/book-stats-review`.
+
+| Uji di `main` (`cd252f3`) | Hasil |
+|---|---|
+| `tsc --noEmit -p tsconfig.build.json` | ✅ Lolos ¹ |
+| oxlint | ✅ Lolos |
+| Unit test (`npm test`) | ✅ 5/5 |
+| `npm run test:e2e` | ✅ 31/31 |
+| Bruno seluruh koleksi | ✅ 73 request, 115/115 tes |
+| `server.log` setelah perubahan | ✅ Tidak ada error runtime |
+
+¹ Dipakai sebagai pengganti `npm run build` karena dev server (watch mode) sedang berjalan; `nest build` mengosongkan `dist/` dan sempat menghentikan dev server pada verifikasi sebelumnya.
+
+### GitHub Issues
+
+Pembuatan issue lewat integrasi GitHub ditolak (`403 Resource not accessible by integration`), sama seperti pembuatan PR dan penghapusan repository. Delapan draf issue untuk pekerjaan yang masih terbuka disiapkan sebagai link form yang sudah terisi (judul, isi, label); issue dibuat manual oleh Team Lead:
+
+1. Hapus repository lama yang tidak dipakai
+2. Putuskan nasib ObserveModule
+3. Konfirmasi daftar kategori final dan akses `GET /categories`
+4. Frontend: integrasi Next.js dengan backend API
+5. Persiapan demo aplikasi
+6. Opsional: rate limiting login/register
+7. Opsional: tolak token milik user yang sudah dihapus
+8. Rapikan format Prettier di `backend/src/prisma`
+
+Pekerjaan yang sudah selesai tidak dibuatkan issue mundur; jejaknya ada di PR #1–#8 dan dokumen ini. Mulai sekarang, PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
+
+---
+
 ## Pekerjaan Tersisa
+
+Setelah issue dibuat di GitHub, issue menjadi sumber utama pelacakan; tabel ini merangkumnya.
 
 | Pekerjaan | Pemilik | Status |
 |---|---|---|
-| Push `fix/book-stats-review`, lalu PR ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
+| Buat 8 issue di GitHub dari draf yang disiapkan | Panji (Team Lead) | ⏳ |
+| Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
 | Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | Tim | ⏳ |
 | Keputusan ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal) | Panji | ⏳ |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk pekerjaan frontend |
@@ -665,4 +703,5 @@ Bentuk response `GET /books/stats` **tidak berubah**; frontend tidak terdampak.
 | Persiapan demo | Tim | ⏳ |
 | ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, branch `fix/register-name-trim`) |
 | Opsional: rate limiting login; unit test untuk modul lain (statistik sudah punya unit test) | Panji | — |
+| Opsional: rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal) | Panji | — |
 | Opsional: periksa apakah telemetri ObserveModule merekam isi request (dari security review; terkait keputusan isu #8) | Panji | — |

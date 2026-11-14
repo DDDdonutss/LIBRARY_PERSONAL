@@ -455,7 +455,9 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 | 7 | `feature/backend-book-stats` | Endpoint statistik `GET /books/stats` untuk dashboard (permintaan mentor) |
 | 8 | `fix/book-stats-review` | Perbaikan temuan code review pada endpoint statistik |
 
-PR 1–7 sudah di-merge ke `main` pada 2026-11-14. Branch 8 dibuat dari `main` setelah merge PR 7.
+PR 1–7 di-merge ke `main` pada 2026-11-14, PR 8 pada 2026-11-15. Branch 8 dibuat dari `main` setelah merge PR 7.
+
+Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue; PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
