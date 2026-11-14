@@ -103,7 +103,7 @@ Tanggung jawab:
 | JWT | Authentication |
 | class-validator | DTO validation |
 | Bruno | API testing manual/CLI (`backend/bruno/`) |
-| Vitest + supertest | E2E test otomatis (`backend/test/`) |
+| Vitest + supertest | E2E test otomatis (`backend/test/`) dan unit test (`backend/src/**/*.spec.ts`) |
 | Git & GitHub | Version control (https://github.com/DDDdonutss/LIBRARY_PERSONAL) |
 
 ## 4. Database Design
@@ -263,6 +263,7 @@ backend/
 │   ├── books/
 │   │   ├── books.controller.ts
 │   │   ├── books.service.ts
+│   │   ├── books.service.spec.ts  # Unit test statistik (npm test)
 │   │   ├── books.module.ts
 │   │   └── dto/                 # create-book, update-book, query-books
 │   ├── categories/
@@ -378,7 +379,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 70 request / 110 tes) dan e2e test (`npm run test:e2e`, 31 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115 tes), e2e test (`npm run test:e2e`, 31 tes), dan unit test statistik (`npm test`, 5 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -452,8 +453,9 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 | 5 | `docs/sync-project-docs` | Sinkronisasi dokumen |
 | 6 | `fix/register-name-trim` | Nama register di-trim sebelum validasi (bug spasi saja) |
 | 7 | `feature/backend-book-stats` | Endpoint statistik `GET /books/stats` untuk dashboard (permintaan mentor) |
+| 8 | `fix/book-stats-review` | Perbaikan temuan code review pada endpoint statistik |
 
-PR 1–5 sudah di-merge ke `main` pada 2026-11-14. Branch 7 dibuat dari branch 6, sehingga PR-nya di-merge setelah PR branch 6.
+PR 1–7 sudah di-merge ke `main` pada 2026-11-14. Branch 8 dibuat dari `main` setelah merge PR 7.
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -464,3 +466,4 @@ PR 1–5 sudah di-merge ke `main` pada 2026-11-14. Branch 7 dibuat dari branch 6
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Sinkronisasi dengan implementasi: endpoint dengan base path dan status, detail schema, struktur backend aktual, environment variable aktual, pemetaan phase, checklist dan DoD, alur Git |
 | 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes; BE-10 statistik koleksi (`GET /books/stats`) untuk dashboard atas permintaan mentor |
+| 1.3 | 2026-11-14 | PR 6–7 di-merge; branch perbaikan hasil review; unit test pertama (`books.service.spec.ts`); jumlah tes |

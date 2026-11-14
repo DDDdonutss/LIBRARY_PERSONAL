@@ -1,7 +1,7 @@
 meta {
-  name: Create - no category reading
+  name: Create - History reading
   type: http
-  seq: 4
+  seq: 6
 }
 
 post {
@@ -16,18 +16,15 @@ auth:bearer {
 
 body:json {
   {
-    "title": "Stats Book 3",
-    "author": "Penulis C",
-    "status": "READING"
+    "title": "Stats Book 4",
+    "author": "Penulis D",
+    "status": "READING",
+    "categoryId": "{{statsHistoryId}}"
   }
 }
 
 tests {
   test("status 201", function () {
     expect(res.status).to.equal(201);
-  });
-
-  test("tanpa kategori", function () {
-    expect(res.body.categoryId).to.equal(null);
   });
 }

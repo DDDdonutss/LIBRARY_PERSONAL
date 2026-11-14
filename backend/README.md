@@ -87,7 +87,7 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest) — saat ini belum ada unit test |
+| `npm test` | Unit test (Vitest, tanpa database): logika statistik buku (`src/books/books.service.spec.ts`) |
 | `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
@@ -127,7 +127,7 @@ Menjalankan 31 test (auth, kategori, buku, statistik, kepemilikan data) terhadap
 
 ### Bruno (manual atau CLI)
 
-Koleksi Bruno ada di [`bruno/`](./bruno): 70 request dan 110 tes untuk auth, kategori, buku, kepemilikan data, dan statistik.
+Koleksi Bruno ada di [`bruno/`](./bruno): 73 request dan 115 tes untuk auth, kategori, buku, kepemilikan data, dan statistik. Folder `05 Stats` mandiri dan bisa dijalankan sendiri (`npx @usebruno/cli run "05 Stats" --env local`).
 
 Dengan backend berjalan dan kategori sudah di-seed:
 

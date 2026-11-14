@@ -30,12 +30,16 @@ const BOOK_NOT_FOUND_MESSAGE = 'Buku tidak ditemukan';
 // agar frontend tidak perlu menangani key yang hilang.
 const BOOK_STATUSES = Object.values(BookStatus);
 
-export interface CategoryStat {
-  /** `null` = buku tanpa kategori. */
-  categoryId: string | null;
-  name: string | null;
-  count: number;
-}
+/**
+ * Satu entri per kategori. `categoryId` dan `name` selalu sama-sama terisi,
+ * atau sama-sama `null` (= buku tanpa kategori).
+ */
+export type CategoryStat =
+  | { categoryId: string; name: string; count: number }
+  | { categoryId: null; name: null; count: number };
+
+// Locale eksplisit agar urutan nama tidak bergantung pada locale server.
+const categoryNameCollator = new Intl.Collator('en');
 
 export interface BookStats {
   total: number;
@@ -113,48 +117,58 @@ export class BooksService {
    * mengambil semua buku, dan selalu dibatasi `userId` dari JWT.
    */
   async getStats(userId: string): Promise<BookStats> {
-    const [statusRows, categoryRows] = await this.prisma.$transaction([
-      this.prisma.book.groupBy({
-        by: ['status'],
-        where: { userId },
-        _count: { _all: true },
-      }),
-      this.prisma.book.groupBy({
-        by: ['categoryId'],
-        where: { userId },
-        _count: { _all: true },
-      }),
-    ]);
+    // SATU query GROUP BY (status, categoryId): total, byStatus, dan
+    // byCategory dihitung dari baris yang sama (satu snapshot database),
+    // sehingga ketiganya selalu konsisten meski ada perubahan bersamaan.
+    const rows = await this.prisma.book.groupBy({
+      by: ['status', 'categoryId'],
+      where: { userId },
+      _count: { _all: true },
+    });
 
+    let total = 0;
     const byStatus = Object.fromEntries(
       BOOK_STATUSES.map((status) => [status, 0]),
     ) as Record<BookStatus, number>;
-    for (const row of statusRows) {
-      byStatus[row.status] = row._count._all;
+    const countByCategoryId = new Map<string | null, number>();
+
+    for (const row of rows) {
+      const count = row._count._all;
+      total += count;
+      byStatus[row.status] += count;
+      countByCategoryId.set(
+        row.categoryId,
+        (countByCategoryId.get(row.categoryId) ?? 0) + count,
+      );
     }
 
     // Nama kategori diambil sekali untuk semua id yang muncul.
-    const categoryIds = categoryRows
-      .map((row) => row.categoryId)
-      .filter((id): id is string => id !== null);
+    const categoryIds = [...countByCategoryId.keys()].filter(
+      (id): id is string => id !== null,
+    );
     const categories =
       categoryIds.length === 0
         ? []
-        : await this.prisma.category.findMany({
-            where: { id: { in: categoryIds } },
-            select: { id: true, name: true },
-          });
+        : await this.categoriesService.findByIds(categoryIds);
     const nameById = new Map(categories.map((c) => [c.id, c.name]));
 
-    const byCategory = categoryRows
-      .map<CategoryStat>((row) => ({
-        categoryId: row.categoryId,
-        name: row.categoryId ? (nameById.get(row.categoryId) ?? null) : null,
-        count: row._count._all,
-      }))
-      .sort(compareCategoryStats);
-
-    const total = statusRows.reduce((sum, row) => sum + row._count._all, 0);
+    // Kategori yang tidak ditemukan berarti terhapus setelah GROUP BY; buku
+    // di dalamnya kini memang tanpa kategori (onDelete: SetNull), jadi
+    // jumlahnya digabung ke entri `null`.
+    const byCategory: CategoryStat[] = [];
+    let uncategorized = 0;
+    for (const [categoryId, count] of countByCategoryId) {
+      const name = categoryId === null ? undefined : nameById.get(categoryId);
+      if (categoryId !== null && name !== undefined) {
+        byCategory.push({ categoryId, name, count });
+      } else {
+        uncategorized += count;
+      }
+    }
+    if (uncategorized > 0) {
+      byCategory.push({ categoryId: null, name: null, count: uncategorized });
+    }
+    byCategory.sort(compareCategoryStats);
 
     return { total, byStatus, byCategory };
   }
@@ -212,12 +226,16 @@ export class BooksService {
   }
 }
 
-/** Terbanyak lebih dulu; bila sama, nama A–Z; buku tanpa kategori paling akhir. */
+/**
+ * Terbanyak lebih dulu. Bila jumlahnya sama: tanpa kategori paling akhir,
+ * sisanya nama A–Z. Antisimetris (compare(a, b) = -compare(b, a)).
+ */
 function compareCategoryStats(a: CategoryStat, b: CategoryStat): number {
   if (a.count !== b.count) return b.count - a.count;
-  if (a.name === null) return 1;
-  if (b.name === null) return -1;
-  return a.name.localeCompare(b.name);
+  if (a.categoryId === null || b.categoryId === null) {
+    return Number(a.categoryId === null) - Number(b.categoryId === null);
+  }
+  return categoryNameCollator.compare(a.name, b.name);
 }
 
 /** P2025 = record yang di-update/delete tidak ditemukan (atau bukan milik user). */

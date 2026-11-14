@@ -4,7 +4,7 @@
 **Status:** Lengkap untuk scope PRD v1.2 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 70 request / 110 tes) dan e2e test (`npm run test:e2e`, 31 tes), kecuali ditandai lain.
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 73 request / 115 tes) dan e2e test (`npm run test:e2e`, 31 tes), kecuali ditandai lain. Logika `GET /books/stats` juga dicakup unit test (`npm test`, 5 tes).
 
 ---
 
@@ -357,9 +357,10 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 |---|---|---|
 | `total` | integer | Jumlah seluruh buku milik user |
 | `byStatus` | object | **Selalu** memuat ketiga status (`WANT_TO_READ`, `READING`, `COMPLETED`); bernilai `0` bila tidak ada buku dengan status itu |
-| `byCategory` | array | Hanya kategori yang mempunyai buku; kategori tanpa buku tidak muncul. Entri dengan `categoryId: null` dan `name: null` = buku tanpa kategori (hanya muncul bila ada). Urutan: `count` terbesar dulu, lalu `name` A–Z, tanpa kategori paling akhir |
+| `byCategory` | array | Hanya kategori yang mempunyai buku; kategori tanpa buku tidak muncul. `categoryId` dan `name` **selalu sama-sama terisi atau sama-sama `null`**; entri `null` = buku tanpa kategori (paling banyak satu entri, hanya muncul bila ada). Urutan: `count` terbesar dulu; bila `count` sama, kategori bernama diurutkan `name` A–Z dan entri tanpa kategori paling akhir |
 
-- Jumlah seluruh `count` di `byCategory` dan jumlah seluruh nilai `byStatus` keduanya sama dengan `total`.
+- Jumlah seluruh `count` di `byCategory` dan jumlah seluruh nilai `byStatus` keduanya **selalu** sama dengan `total`: semua angka dihitung dari satu query, sehingga tetap konsisten meski buku ditambah/dihapus bersamaan.
+- Bila sebuah kategori terhapus tepat saat statistik dihitung, buku di dalamnya dihitung sebagai tanpa kategori (sesuai perilaku database: `categoryId` menjadi `null`).
 - User tanpa buku → `{ "total": 0, "byStatus": { "WANT_TO_READ": 0, "READING": 0, "COMPLETED": 0 }, "byCategory": [] }`.
 - Hanya buku milik user dari token yang dihitung (aturan kepemilikan yang sama dengan endpoint buku lain).
 - Route ini didahulukan dari `GET /books/:id`, sehingga `stats` tidak pernah diperlakukan sebagai ID.
@@ -393,3 +394,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-13 | Endpoint bawaan `GET /api/v1` ("Hello World") dihapus; catatan pengujian e2e; catatan validasi `name` |
 | 2026-11-14 | `POST /auth/register`: `name` di-trim sebelum validasi — nama berisi spasi saja kini ditolak 400 (sebelumnya diterima dan tersimpan kosong). Jumlah tes diperbarui |
 | 2026-11-14 | Tambah `GET /books/stats` (§4.8) — ringkasan total, per status, per kategori untuk dashboard (permintaan mentor). Bagian error Books menjadi §4.9 |
+| 2026-11-14 | §4.8 diperjelas setelah code review: jaminan konsistensi `total`, pasangan `categoryId`/`name` selalu sama-sama terisi atau `null`, aturan urutan saat `count` sama, perlakuan kategori terhapus. Bentuk response tidak berubah |

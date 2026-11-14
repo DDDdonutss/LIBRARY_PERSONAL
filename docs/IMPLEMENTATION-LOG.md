@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
-| 7 — API Testing | ✅ Completed (Bruno 70 request / 110 tes; e2e 31 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 31 tes; unit 5 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#5 di-merge ke `main`; keputusan Observe dan demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#7 di-merge ke `main`; security review dan code review dijalankan; keputusan Observe dan demo belum) |
 
 ### Endpoint
 
@@ -64,10 +64,11 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 3 | `feature/backend-categories` | `6f4fc22` | #3 | `8b8d2d5` | ✅ Merged 2026-11-14 |
 | 4 | `feature/backend-books` | `22bd949` | #4 | `bcc5de5` | ✅ Merged 2026-11-14 |
 | 5 | `docs/sync-project-docs` | `a4d798f` | #5 | `5737185` | ✅ Merged 2026-11-14 |
-| 6 | `fix/register-name-trim` | `a6e9aed` | — | — | Lokal; menunggu persetujuan push, lalu PR ke `main` |
-| 7 | `feature/backend-book-stats` | `ed34f55` + commit docs | — | — | Lokal (dari branch 6); PR di-merge setelah PR branch 6 |
+| 6 | `fix/register-name-trim` | `a6e9aed` | #6 | `9df7c4e` | ✅ Merged 2026-11-14 |
+| 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
+| 8 | `fix/book-stats-review` | `8de7ff3` + commit docs | — | — | Lokal; menunggu persetujuan push, lalu PR ke `main` |
 
-Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge; branch 7 dibuat dari branch 6 (bertumpuk), sehingga PR-nya di-merge setelah PR branch 6.
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7.
 
 ---
 
@@ -563,15 +564,105 @@ Setiap run Bruno kini membuat 2 user tambahan (`stats.*`, `statsempty.*@example.
 
 ---
 
+## 2026-11-14 — Merge PR #6–#7, Security Review, dan Code Review di `main`
+
+**Pelaksana:** Panji
+
+### Merge
+
+PR #6 (`fix/register-name-trim`) dan PR #7 (`feature/backend-book-stats`) di-merge berurutan oleh Team Lead melalui web GitHub dengan "Create a merge commit" → `main` = `ae82f1d`. Isi tree `main` identik dengan `feature/backend-book-stats`.
+
+### Verifikasi di `main` (`ae82f1d`)
+
+| Uji | Hasil |
+|---|---|
+| `npm run build` | ✅ Berhasil |
+| `npm run test:e2e` | ✅ 31/31 |
+| Bruno seluruh koleksi | ✅ 70 request, 110/110 tes |
+
+### Security review (`/security-review`)
+
+Cakupan: seluruh kode backend sejak scaffold (`ec4c453..main`), dengan perhatian khusus pada PR #6 dan #7. **Hasil: tidak ada temuan HIGH/MEDIUM** dengan keyakinan > 80%.
+
+| Area | Kesimpulan |
+|---|---|
+| `GET /books/stats` | Dilindungi JWT; `groupBy` dibatasi `userId` dari token; tanpa input dari client; nama kategori adalah data global |
+| `trimString` / `RegisterDto` | Fungsi murni, berjalan sebelum validator; penghapusan `.trim()` di service aman (`transform: true`) |
+| Ownership buku (IDOR) | Semua query memakai `{ id, userId }`; buku user lain → 404 |
+| Mass assignment | `whitelist` + `forbidNonWhitelisted`; `userId` hanya dari JWT |
+| Injection | Hanya query builder Prisma (tanpa raw SQL); input divalidasi (enum, UUID, panjang) |
+| JWT | Secret ≥ 32 karakter divalidasi saat start, HS256, ada expiry, hanya header Bearer |
+| Password / data exposure | bcrypt cost 12 + batas 72 byte; pesan login generik; `passwordHash` tidak pernah dikirim |
+| CORS | Origin eksplisit, tanpa wildcard dan tanpa credentials |
+
+Catatan di bawah ambang (tidak dilaporkan sebagai kerentanan): token tetap berlaku sampai kedaluwarsa walau user dihapus (belum ada fitur hapus user; `/auth/me` sudah menolak user yang tidak ada); telemetri ObserveModule belum diverifikasi apakah merekam isi request (terkait keputusan isu #8).
+
+### Code review (`/review`)
+
+Cakupan: merge terakhir (PR #7, `GET /books/stats`). 8 temuan, semuanya ditindaklanjuti di entri berikutnya:
+
+| # | Temuan | Tindak lanjut |
+|---|---|---|
+| 1 | Dua `groupBy` terpisah di READ COMMITTED bisa berbeda snapshot → `total` ≠ jumlah `byCategory` (melanggar API Contract §4.8) | Diperbaiki |
+| 2 | Kategori terhapus di antara query → entri `categoryId` terisi dengan `name: null` | Diperbaiki |
+| 3 | Comparator memakai `name === null` dan tidak antisimetris bila keduanya `null` | Diperbaiki |
+| 4 | Folder Bruno `05 Stats` diklaim mandiri tetapi memakai `categoryScienceId` dari folder `02` | Diperbaiki |
+| 5 | `localeCompare` tanpa locale; tie-break nama tidak teruji | Diperbaiki |
+| 6 | Tiga round trip database, bisa dua | Diperbaiki (ikut #1) |
+| 7 | `BooksService` mengakses `prisma.category` langsung, bukan lewat `CategoriesService` | Diperbaiki |
+| 8 | Test e2e statistik bergantung pada buku dari test lain | Diperbaiki |
+
+---
+
+## 2026-11-14 — Perbaikan Hasil Code Review Endpoint Statistik
+
+**Pelaksana:** Panji
+**Branch:** `fix/book-stats-review` (dibuat dari `main` `ae82f1d`)
+**Commit:** `8de7ff3` `fix(books): make collection statistics consistent and self-contained`
+
+Bentuk response `GET /books/stats` **tidak berubah**; frontend tidak terdampak.
+
+### Test-driven development
+
+1. **Merah:** unit test pertama proyek, `src/books/books.service.spec.ts` (5 tes, Prisma dan `CategoriesService` tiruan): satu `groupBy` per `(status, categoryId)` yang dibatasi `userId`; total/byStatus/byCategory dari baris yang sama dan jumlahnya sama dengan `total`; kategori terhapus digabung ke "tanpa kategori"; urutan saat `count` sama (Fiction sebelum History walau History lebih dulu, tanpa kategori terakhir); user tanpa buku tidak memicu pencarian nama kategori. Run: **5/5 gagal** (`this.prisma.$transaction is not a function` — implementasi lama memakai dua `groupBy` dalam `$transaction`).
+2. **Hijau:** implementasi baru, unit **5/5**.
+
+### Perubahan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| Satu `groupBy({ by: ['status', 'categoryId'] })` — semua angka dari satu snapshot; `$transaction` tidak diperlukan; 2 query (bukan 3) | `books.service.ts` | ✅ | ✅ | ✅ | ✅ |
+| Kategori yang tidak ditemukan (terhapus setelah `GROUP BY`) digabung ke entri `null`; tipe `CategoryStat` dijadikan union sehingga `categoryId`/`name` selalu sama-sama terisi atau `null` | `books.service.ts` | ✅ | ✅ | ✅ | — |
+| Comparator berbasis `categoryId === null`, antisimetris; nama dibandingkan `Intl.Collator('en')` | `books.service.ts` | ✅ | ✅ | ✅ | — |
+| `CategoriesService.findByIds()`; `BooksService` tidak lagi mengakses `prisma.category` langsung | `categories.service.ts`, `books.service.ts` | ✅ | ✅ | ✅ | — |
+| Test e2e Stats mandiri: user dan 5 buku sendiri, termasuk tie-break nama | `test/app.e2e-spec.ts` | ✅ | ✅ | ✅ | — |
+| Bruno `05 Stats` mandiri: request baru `02 Categories - lookup ids` (variabel `stats*Id` sendiri), buku History dan Fiction untuk tie-break, tes jumlah = `total`. 11 request / 20 tes | `bruno/05 Stats/` | ✅ | — | ✅ | — |
+| Komentar `vitest.config.ts` dan baris `npm test` di README (kini ada unit test) | `vitest.config.ts`, `backend/README.md` | ✅ | — | — | — |
+
+### Verifikasi
+
+- `tsc`, oxlint, Prettier (file yang diubah): lolos.
+- Unit test (`npm test`): **5/5**.
+- e2e: **31/31**; tes Stats saja (`vitest -t Stats`): **2 lolos, 29 dilewati** — tidak lagi bergantung pada test lain (temuan #8).
+- Bruno folder `05 Stats` **saja**: **11 request, 20/20** (temuan #4). Seluruh koleksi: **73 request, 115/115**.
+- `server.log`: satu `ERR_MODULE_NOT_FOUND` pukul 23:26 — terjadi karena `npm run build` (yang mengosongkan `dist/`) dijalankan untuk verifikasi `main` saat dev server watch mode masih hidup; server pulih sendiri 23:26:06 dan sehat sejak itu. Bukan bug kode.
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` §4.8 (konsistensi, pasangan `categoryId`/`name`, aturan urutan, kategori terhapus) dan riwayat; `JOBDESK-PANJI.md` v1.3; `backend/README.md`.
+
+---
+
 ## Pekerjaan Tersisa
 
 | Pekerjaan | Pemilik | Status |
 |---|---|---|
-| Push `fix/register-name-trim` dan `feature/backend-book-stats`, lalu PR berurutan ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
+| Push `fix/book-stats-review`, lalu PR ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
 | Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | Tim | ⏳ |
 | Keputusan ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal) | Panji | ⏳ |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk pekerjaan frontend |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | Tim | ⏳ |
 | ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, branch `fix/register-name-trim`) |
-| Opsional: rate limiting login, unit test | Panji | — |
+| Opsional: rate limiting login; unit test untuk modul lain (statistik sudah punya unit test) | Panji | — |
+| Opsional: periksa apakah telemetri ObserveModule merekam isi request (dari security review; terkait keputusan isu #8) | Panji | — |
