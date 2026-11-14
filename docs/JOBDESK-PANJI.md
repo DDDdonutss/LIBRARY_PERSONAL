@@ -266,6 +266,8 @@ backend/
 │   │   ├── categories.controller.ts
 │   │   ├── categories.service.ts
 │   │   └── categories.module.ts
+│   ├── common/
+│   │   └── transforms/          # trim-string.ts (dipakai DTO auth dan books)
 │   ├── prisma/
 │   │   ├── prisma.service.ts
 │   │   └── prisma.module.ts
@@ -373,7 +375,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 60 request / 91 tes) dan e2e test (`npm run test:e2e`, 26 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 62 request / 95 tes) dan e2e test (`npm run test:e2e`, 28 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -444,6 +446,9 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 | 3 | `feature/backend-categories` | Seed dan endpoint kategori |
 | 4 | `feature/backend-books` | CRUD buku, ownership, e2e test, README backend |
 | 5 | `docs/sync-project-docs` | Sinkronisasi dokumen |
+| 6 | `fix/register-name-trim` | Nama register di-trim sebelum validasi (bug spasi saja) |
+
+PR 1–5 sudah di-merge ke `main` pada 2026-11-14.
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -453,3 +458,4 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 |---|---|---|
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Sinkronisasi dengan implementasi: endpoint dengan base path dan status, detail schema, struktur backend aktual, environment variable aktual, pemetaan phase, checklist dan DoD, alur Git |
+| 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes |

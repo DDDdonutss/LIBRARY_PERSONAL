@@ -118,7 +118,7 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 26 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 28 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
@@ -126,7 +126,7 @@ Menjalankan 26 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi l
 
 ### Bruno (manual atau CLI)
 
-Koleksi Bruno ada di [`bruno/`](./bruno): 60 request dan 91 tes untuk auth, kategori, buku, dan kepemilikan data.
+Koleksi Bruno ada di [`bruno/`](./bruno): 62 request dan 95 tes untuk auth, kategori, buku, dan kepemilikan data.
 
 Dengan backend berjalan dan kategori sudah di-seed:
 
@@ -155,6 +155,7 @@ backend/
     ├── auth/              # Register, login, JWT strategy/guard, /auth/me
     ├── books/             # CRUD buku, search, filter, pagination, ownership
     ├── categories/        # GET /categories
+    ├── common/transforms/ # trimString: trim sebelum validasi (DTO auth & books)
     ├── prisma/            # PrismaService (koneksi database)
     ├── generated/prisma/  # Prisma Client hasil generate (tidak di-commit)
     ├── app.module.ts

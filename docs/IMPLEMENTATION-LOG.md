@@ -4,7 +4,7 @@
 Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
 **Repository:** https://github.com/DDDdonutss/LIBRARY_PERSONAL
-**Terakhir diperbarui:** 2026-11-13
+**Terakhir diperbarui:** 2026-11-14
 
 > Semua hash commit di dokumen ini merujuk ke riwayat repository `LIBRARY_PERSONAL`, yang ditulis ulang tanpa `docs/MASTER-PROMPT.md` (lihat entri "Remote GitHub dan Push", langkah 7).
 
@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership) |
 | 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
-| 7 — API Testing | ✅ Completed (Bruno 60 request / 91 tes; e2e 26 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 62 request / 95 tes; e2e 28 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (README dan dokumen disinkronkan; keputusan Observe, PR merge, demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#5 di-merge ke `main`; keputusan Observe dan demo belum) |
 
 ### Endpoint
 
@@ -56,15 +56,16 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 
 ### Branch dan Pull Request
 
-| Urutan | Branch | Commit teratas | Status |
-|---|---|---|---|
-| 1 | `feature/backend-setup` | `bcba60c` | Di-push; PR ke `main` belum di-merge |
-| 2 | `feature/backend-auth` | `ee83aa4` | Di-push; PR menunggu PR 1 |
-| 3 | `feature/backend-categories` | `6f4fc22` | Di-push; PR menunggu PR 2 |
-| 4 | `feature/backend-books` | `22bd949` | Di-push; PR menunggu PR 3 |
-| 5 | `docs/sync-project-docs` | — | Di-push; PR setelah PR 4 |
+| Urutan | Branch | Commit teratas | PR | Merge commit di `main` | Status |
+|---|---|---|---|---|---|
+| 1 | `feature/backend-setup` | `bcba60c` | #1 | `51d8fb7` | ✅ Merged 2026-11-14 |
+| 2 | `feature/backend-auth` | `ee83aa4` | #2 | `40c9d2d` | ✅ Merged 2026-11-14 |
+| 3 | `feature/backend-categories` | `6f4fc22` | #3 | `8b8d2d5` | ✅ Merged 2026-11-14 |
+| 4 | `feature/backend-books` | `22bd949` | #4 | `bcc5de5` | ✅ Merged 2026-11-14 |
+| 5 | `docs/sync-project-docs` | `a4d798f` | #5 | `5737185` | ✅ Merged 2026-11-14 |
+| 6 | `fix/register-name-trim` | `2d8c0a8` + commit docs | — | — | Lokal; PR menyusul |
 
-Branch dibuat bertumpuk (setiap branch dari branch sebelumnya). Merge harus berurutan dengan **"Create a merge commit"** — bukan squash/rebase — agar PR berikutnya hanya menampilkan commit miliknya.
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge.
 
 ---
 
@@ -454,15 +455,71 @@ Seluruh dokumen kecuali `MASTER-PROMPT.md` disesuaikan dengan hasil implementasi
 
 ---
 
+## 2026-11-14 — Merge PR #1–#5 dan Verifikasi `main`
+
+**Pelaksana:** Panji
+
+Kelima PR dibuat dan di-merge berurutan oleh Team Lead melalui web GitHub dengan **"Create a merge commit"** (integrasi GitHub di sesi kerja mendapat `403` saat mencoba membuat PR, sehingga dilakukan manual). Nomor PR dan merge commit tercatat di tabel "Branch dan Pull Request".
+
+### Verifikasi di `main` (`5737185`)
+
+| Uji | Hasil |
+|---|---|
+| Isi tree `main` vs `docs/sync-project-docs` | ✅ Identik (`git diff` kosong) |
+| `npm run build` | ✅ Berhasil |
+| `npm run test:e2e` | ✅ 26/26 |
+| Bruno seluruh koleksi (server dari `main`) | ✅ 60 request, 91/91 tes |
+
+---
+
+## 2026-11-14 — Perbaikan Validasi Nama Register
+
+**Pelaksana:** Panji
+**Branch:** `fix/register-name-trim` (dibuat dari `main`)
+**Commit:** `2d8c0a8` `fix(auth): reject whitespace-only names at registration`
+
+Menutup bug yang tercatat di "Pekerjaan Tersisa": register dengan `name` berisi spasi saja lolos validasi dan tersimpan sebagai string kosong.
+
+### Systematic debugging
+
+| Langkah | Hasil |
+|---|---|
+| Reproduksi di server lokal | `name: "   "` → **201**, tersimpan `""` (bug). `name: "  Panji  "` → 201, tersimpan `"Panji"` (service sudah trim). Kontrol: `title: "   "` pada `POST /books` → **400** (benar) |
+| Akar masalah | `RegisterDto.name` hanya memakai `@IsNotEmpty()`; class-validator menilai `"   "` sebagai tidak kosong. `.trim()` di `AuthService` berjalan **setelah** validasi, sehingga yang tersimpan string kosong. DTO buku tidak terkena karena memakai `@Transform(trimString)` yang berjalan sebelum validasi |
+| Perbaikan | `trimString` dipindah ke `src/common/transforms/trim-string.ts` (modul bersama, agar `auth` tidak mengimpor dari `books`), lalu dipasang pada `RegisterDto.name`. Import di `create-book.dto.ts`, `update-book.dto.ts`, `query-books.dto.ts` diarahkan ke modul baru. `.trim()` di service dihapus karena DTO sudah menjamin nilai bersih |
+
+### Test-driven development
+
+1. **Merah:** dua test e2e ditulis dulu — `name` spasi saja → 400, dan `name` berspasi di awal/akhir → 201 dengan `name` ter-trim. Run: **1 gagal** (`expected 400, got 201`), 27 lolos.
+2. **Hijau:** setelah perbaikan DTO, `tsc` menemukan import `trimString` yang terlewat di `query-books.dto.ts` (Vitest tidak melakukan typecheck, sehingga `search` sempat menghasilkan 500). Setelah import diperbaiki: e2e **28/28**.
+3. Test spasi dibuat tetap membersihkan user bila suatu saat request itu lolos lagi (regresi tidak meninggalkan data uji).
+
+### Verifikasi
+
+- `tsc`, oxlint, Prettier (file yang diubah): lolos.
+- e2e: **28/28**.
+- Bruno `01 Auth` + 2 request baru (`16 Register - whitespace name`, `17 Register - name trimmed`): **17 request, 27/27 tes**.
+- Server live: `name: "   "` → `400 {"message":["name should not be empty"]}`.
+
+### Catatan data
+
+Reproduksi membuat 4 user `repro.*@example.com` dan run merah e2e meninggalkan 1 user `e2e.ws.*@example.com` (nama kosong) di database lokal. Data dibiarkan sesuai kebijakan data uji sebelumnya; dapat dihapus manual bila diinginkan.
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` §2.1 dan riwayat; `PRD.md` v1.2 §8.2; `JOBDESK-PANJI.md` v1.2 (struktur `common/`, alur Git, jumlah tes); `backend/README.md` (jumlah tes, struktur).
+
+---
+
 ## Pekerjaan Tersisa
 
 | Pekerjaan | Pemilik | Status |
 |---|---|---|
-| Merge PR berurutan: setup → auth → categories → books → docs (merge commit) | Panji (Team Lead) | ⏳ |
+| Push `fix/register-name-trim` dan PR ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
 | Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | Tim | ⏳ |
 | Keputusan ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal) | Panji | ⏳ |
 | Konfirmasi mentor terkait pengecualian dashboard (PRD §10) | Panji | ⏳ |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token) | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | Tim | ⏳ |
-| **Bug kecil:** register dengan `name` berisi spasi saja lolos validasi (`@IsNotEmpty` tanpa trim) lalu tersimpan sebagai string kosong. Perbaikan: tambahkan `@Transform(trimString)` pada `RegisterDto.name` seperti di DTO buku. Ditemukan saat sinkronisasi dokumen (diverifikasi dengan class-validator) | Panji | ⏳ Belum diperbaiki |
+| ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, branch `fix/register-name-trim`) |
 | Opsional: rate limiting login, unit test | Panji | — |

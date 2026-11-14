@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # Personal Library Management
 
-**Version:** 1.1  
-**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; scope tidak berubah)  
+**Version:** 1.2  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -196,8 +196,7 @@ Rincian yang ditetapkan saat implementasi:
 |---|---|
 | Password maksimal | 72 karakter **dan** 72 byte UTF-8 (batas bcrypt) |
 | Email maksimal | 255 karakter; disimpan dan dicocokkan dalam huruf kecil |
-| Judul, penulis | Tidak boleh kosong setelah spasi di awal/akhir dihapus |
-| Nama | Tidak boleh kosong (⚠️ nama berisi spasi saja saat ini masih lolos — lihat Implementation Log, Pekerjaan Tersisa) |
+| Nama, judul, penulis | Spasi di awal/akhir dihapus sebelum validasi; tidak boleh kosong setelahnya (nama berisi spasi saja ditolak 400) |
 | Pagination | `page` ≥ 1 (default 1); `limit` 1–100 (default 10) |
 | Search | Pada judul, tidak peka huruf besar/kecil, cocok sebagian |
 | `categoryId` | Harus UUID kategori yang ada, atau kosong/`null` |
@@ -312,3 +311,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 |---|---|---|
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |
+| 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup) |
