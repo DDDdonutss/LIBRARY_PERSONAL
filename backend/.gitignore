@@ -1,5 +1,5 @@
 
-# NestJS Observe key pair
+# Environment variables (berisi secret)
 .env
 
 # TypeScript build info

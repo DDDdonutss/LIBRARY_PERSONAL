@@ -38,7 +38,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
 | 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 31 tes; unit 5 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#8 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; keputusan Observe dan demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#8 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule diputuskan dihapus — PR menunggu review; demo belum) |
 
 ### Endpoint
 
@@ -67,9 +67,10 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 | `fix/register-name-trim` | `a6e9aed` | #6 | `9df7c4e` | ✅ Merged 2026-11-14 |
 | 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
 | 8 | `fix/book-stats-review` | `ef3a244` | #8 | `cd252f3` | ✅ Merged 2026-11-15 |
-| 9 | `docs/record-pr-8` | — | #17 | — | Pencatatan PR #8 dan issue #9–#16 (dokumen ini) |
+| 9 | `docs/record-pr-8` | `0ba57b0` | #17 | `224b784` | ✅ Merged 2026-11-15 |
+| 10 | `chore/observe-module-decision` | lihat entri "Penghapusan Integrasi NestJS Observe" | menuju `main` | — | ⏳ PR dibuka, menunggu review Team Lead (issue #10) |
 
-Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7.
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
 ---
 
@@ -132,7 +133,7 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 | 5 | Port default 3000, dokumen menetapkan 3001; `PORT` tidak ada di `.env` | `main.ts`, `.env` | ✅ Closed — `43dfa87` (default 3001; `PORT` di `.env` opsional) |
 | 6 | `.env.example` belum ada | `backend/` | ✅ Closed — `6461cbc` |
 | 7 | Tidak ada script `prisma generate` — clone baru gagal build karena client hasil generate di-ignore | `package.json` | ✅ Closed — `6461cbc` (diuji: simulasi clone baru → `npm ci` → build berhasil) |
-| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi — dilacak di GitHub issue #10 |
+| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi — dilacak di GitHub issue #10. **2026-11-15: tim memutuskan menghapus integrasi** (branch `chore/observe-module-decision`, PR menunggu review; lihat entri "Penghapusan Integrasi NestJS Observe") |
 | 9 | BOM (byte order mark) di 6 file dan line ending CRLF | `main.ts`, `src/auth/**` | ✅ Closed — BOM dihapus (`43dfa87`, `ed82f30`); CRLF dinormalisasi Git saat commit |
 
 ---
@@ -694,6 +695,64 @@ Nomor issue dan PR berbagi urutan di GitHub (PR #1–#8, issue #9–#16). Pekerj
 
 > Catatan penomoran: "isu #1–#9" pada tabel *Hasil Security Review* (entri 2026-11-13) adalah nomor temuan internal dokumen ini, **bukan** nomor GitHub. Contoh: temuan ObserveModule = isu keamanan #8 = GitHub issue #10.
 
+PR #17 (`docs/record-pr-8`) di-merge 2026-11-15 → `main` = `224b784`.
+
+---
+
+## 2026-11-15 — Penghapusan Integrasi NestJS Observe (Issue #10)
+
+**Pelaksana:** Panji
+**Branch:** `chore/observe-module-decision` (terhubung ke issue #10; disinkronkan fast-forward dengan `origin/main` `224b784` sebelum diubah)
+**Commit:** `chore(backend): remove nestjs observe integration`
+**Status issue #10:** PR dibuka dengan `Closes #10`; issue tertutup otomatis **setelah** PR di-review dan di-merge Team Lead.
+
+### Keputusan tim
+
+Integrasi NestJS Observe **dihapus**. Alasan:
+- Monitoring eksternal bukan kebutuhan inti proyek saat ini.
+- Mengurangi dependensi dan konfigurasi eksternal.
+- Menghindari pengiriman telemetri ke layanan eksternal yang tidak diperlukan (sebelumnya server lokal aktif mengirim data ke `observe.nestjs.com`, dan belum diverifikasi apakah isi request ikut terekam — catatan security review).
+
+Yang **tidak** dihapus: Logger bawaan NestJS, exception handling bawaan, `configureApp()` (prefix, CORS, ValidationPipe), port, dan modul aplikasi lain.
+
+### File yang diubah
+
+| File | Perubahan |
+|---|---|
+| `backend/src/app.module.ts` | Hapus import `createObserveModule`, deklarasi `ObserveModule`/`ObserveInstrument`, dan `ObserveModule.forRoot(...)` (termasuk fallback `'YOUR_APP_KEY'`/`'YOUR_APP_SECRET'`). Tetap: `PrismaModule`, `AuthModule`, `CategoriesModule`, `BooksModule` |
+| `backend/src/main.ts` | Hapus import `ObserveInstrument` dan opsi `instrument`. Bootstrap, `configureApp(app)`, dan port tetap |
+| `backend/package.json`, `backend/package-lock.json` | `npm uninstall @nestjs/observe`. Lockfile: hanya blok `@nestjs/observe` yang hilang; tidak ada versi paket lain yang berubah. Tiga paket `@jridgewell/*` yang sebelumnya ikut terpasang di produksi lewat Observe kini ditandai `"dev": true` (reklasifikasi otomatis npm) |
+| `backend/.env.example` | Hapus dokumentasi `OBSERVE_APP_KEY` dan `OBSERVE_APP_SECRET` |
+| `backend/.gitignore` | Komentar "NestJS Observe key pair" di atas aturan `.env` diganti "Environment variables (berisi secret)". **Aturan `.env` tetap** |
+| `backend/AGENTS.md` | Hapus bagian "Production data: NestJS Observe" (menginstruksikan agen AI memakai data Observe yang kini tidak ada). Bagian lain tidak diubah |
+| `backend/README.md` | Hapus catatan telemetri saat test dan bagian §8 "Observability (Opsional)"; aturan keamanan §7 kini menyatakan tidak ada telemetri eksternal |
+| `docs/JOBDESK-PANJI.md` | v1.4: baris `OBSERVE_*` di §9 diganti catatan penghapusan |
+
+Dependensi yang dihapus: **`@nestjs/observe`** (terpasang 0.3.26, deklarasi `^0.3.0`).
+
+Pemeriksaan seluruh repository (`ObserveModule`, `ObserveInstrument`, `createObserveModule`, `@nestjs/observe`, `OBSERVE_APP_KEY`, `OBSERVE_APP_SECRET`): tidak ada referensi tersisa pada kode, konfigurasi, test, lockfile, `node_modules`, maupun hasil build `dist/`. Yang tersisa hanya catatan historis di dokumen ini (sengaja tidak diubah) dan catatan penghapusan di JOBDESK §9.
+
+### Pengujian
+
+| Uji | Perintah | Hasil |
+|---|---|---|
+| Build | `npm run build` ¹ | ✅ exit 0; `dist/` tidak memuat kata "observe" |
+| Lint | `npm run lint` (oxlint) | ✅ exit 0 |
+| Prettier | file `.ts` yang diubah | ✅ |
+| Unit test | `npm test` | ✅ 5/5 |
+| E2E | `npm run test:e2e` | ✅ 31/31 |
+| Startup tanpa `OBSERVE_*` | `node --env-file=.env` + launcher yang membuang semua `OBSERVE_*` dari environment sebelum memuat `dist/main.js` ² | ✅ 2 variabel dibuang, 0 tersisa; `Nest application successfully started`; 10 route; `ObserveModule` tidak ada di daftar modul; log NestJS Logger tetap muncul |
+| Bruno seluruh koleksi | terhadap server di atas | ✅ 73 request, 115/115 tes; `server.log` tanpa error runtime |
+| Koneksi keluar proses backend | `Get-NetTCPConnection` | ✅ Hanya PostgreSQL lokal (`::1:5432`); tidak ada koneksi ke layanan telemetri |
+
+¹ Proyek memakai npm (`package-lock.json`), bukan pnpm; perintah `pnpm …` pada spesifikasi tugas dijalankan dengan padanan `npm run …`.
+² `.env` asli tidak dibuka, dicetak, maupun diubah; launcher hanya mencetak **jumlah** variabel `OBSERVE_*`. Dev server (watch mode) dihentikan sebelum `npm uninstall` agar tidak crash saat paket dicabut.
+
+### Risiko / tindak lanjut
+
+- `.env` lokal Team Lead masih berisi `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`. Nilainya kini tidak dipakai aplikasi; baris tersebut dapat dihapus manual, dan key pair dapat dicabut di dashboard NestJS Observe.
+- Data telemetri yang sudah terkirim sebelumnya tetap tersimpan di layanan Observe sesuai kebijakan retensinya.
+
 ---
 
 ## Pekerjaan Tersisa
@@ -703,7 +762,7 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Pekerjaan | Issue | Pemilik | Status |
 |---|---|---|---|
 | Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | #9 | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
-| Keputusan ObserveModule (isu keamanan #8 — saat ini aktif mengirim telemetri dari server lokal), termasuk memeriksa apakah telemetri merekam isi request | #10 | Panji | ⏳ |
+| Keputusan ObserveModule (isu keamanan #8) | #10 | Panji | 🔄 Diputuskan: **dihapus**. PR dari `chore/observe-module-decision` menunggu review/merge |
 | Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | #11 | Tim | ⏳ |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |

@@ -295,7 +295,8 @@ Variabel yang dipakai (lihat `backend/.env.example`):
 | `JWT_EXPIRES_IN` | Tidak | `1d` | Masa berlaku token |
 | `PORT` | Tidak | `3001` | Port backend |
 | `CORS_ORIGIN` | Tidak | `http://localhost:3000` | Origin frontend, pisahkan dengan koma bila lebih dari satu |
-| `OBSERVE_APP_KEY`, `OBSERVE_APP_SECRET` | Tidak | — | NestJS Observe (opsional) |
+
+Integrasi NestJS Observe (beserta `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`) dihapus pada 2026-11-15 (GitHub issue #10).
 
 Ketentuan:
 - `.env` tidak boleh di-commit. ✅ Ter-ignore Git dan tidak pernah ada di riwayat commit.
@@ -469,3 +470,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.1 | 2026-11-13 | Sinkronisasi dengan implementasi: endpoint dengan base path dan status, detail schema, struktur backend aktual, environment variable aktual, pemetaan phase, checklist dan DoD, alur Git |
 | 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes; BE-10 statistik koleksi (`GET /books/stats`) untuk dashboard atas permintaan mentor |
 | 1.3 | 2026-11-14 | PR 6–7 di-merge; branch perbaikan hasil review; unit test pertama (`books.service.spec.ts`); jumlah tes |
+| 1.4 | 2026-11-15 | §9: variabel `OBSERVE_*` dihapus bersama integrasi NestJS Observe (issue #10) |

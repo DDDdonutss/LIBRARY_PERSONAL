@@ -123,7 +123,6 @@ Menjalankan 31 test (auth, kategori, buku, statistik, kepemilikan data) terhadap
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
-- Telemetri NestJS Observe dimatikan selama test (`NODE_ENV=test`).
 
 ### Bruno (manual atau CLI)
 
@@ -171,7 +170,4 @@ backend/
 - Setiap query buku memfilter `userId` dari token. Buku milik user lain menghasilkan 404.
 - `userId` dari body request ditolak (400); field yang tidak dikenal juga ditolak.
 - Secret disimpan di `.env` (di-ignore Git); `.env.example` hanya berisi placeholder.
-
-## 8. Observability (Opsional)
-
-Proyek ini menyertakan `ObserveModule` dari scaffold NestJS. Untuk menghubungkannya ke NestJS Observe, isi `OBSERVE_APP_KEY` dan `OBSERVE_APP_SECRET` di `.env` (lihat `.env.example`). Tanpa variabel ini aplikasi tetap berjalan normal. Observe tidak aktif saat test (`NODE_ENV=test`). Keberadaan modul ini akan dievaluasi saat finalisasi.
+- Tidak ada telemetri ke layanan eksternal. Log hanya ditulis ke console oleh Logger bawaan NestJS.
