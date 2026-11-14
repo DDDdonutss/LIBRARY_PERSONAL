@@ -1,0 +1,28 @@
+meta {
+  name: Login - unknown email
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "tidak.terdaftar@example.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("status 401", function () {
+    expect(res.status).to.equal(401);
+  });
+
+  test("pesan sama dengan password salah (tidak membocorkan email terdaftar)", function () {
+    expect(res.body.message).to.equal("Email atau password salah");
+  });
+}

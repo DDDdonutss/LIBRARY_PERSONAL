@@ -1,0 +1,44 @@
+meta {
+  name: Register - success
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "User A",
+    "email": "{{userAEmail}}",
+    "password": "password123"
+  }
+}
+
+script:pre-request {
+  // Email unik per run, supaya koleksi bisa dijalankan berulang kali.
+  bru.setVar("userAEmail", `usera.${Date.now()}@example.com`);
+}
+
+script:post-response {
+  bru.setVar("userAToken", res.body.accessToken);
+  bru.setVar("userAId", res.body.user && res.body.user.id);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("mengembalikan user tanpa passwordHash", function () {
+    expect(res.body.user.email).to.equal(bru.getVar("userAEmail"));
+    expect(res.body.user).to.have.keys(["id", "name", "email", "createdAt"]);
+  });
+
+  test("mengembalikan accessToken", function () {
+    expect(res.body.accessToken).to.be.a("string").and.not.empty;
+  });
+}
