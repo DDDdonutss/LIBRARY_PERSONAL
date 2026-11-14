@@ -1,0 +1,30 @@
+meta {
+  name: Create - Science completed
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsToken}}
+}
+
+body:json {
+  {
+    "title": "Stats Book 2",
+    "author": "Penulis B",
+    "status": "COMPLETED",
+    "categoryId": "{{categoryScienceId}}"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

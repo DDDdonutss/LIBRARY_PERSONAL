@@ -1,0 +1,33 @@
+meta {
+  name: Create - no category reading
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsToken}}
+}
+
+body:json {
+  {
+    "title": "Stats Book 3",
+    "author": "Penulis C",
+    "status": "READING"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("tanpa kategori", function () {
+    expect(res.body.categoryId).to.equal(null);
+  });
+}

@@ -2,7 +2,7 @@
 # Personal Library Management
 
 **Version:** 1.2  
-**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama)  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -90,6 +90,17 @@ Ketentuan:
 - Kategori disediakan melalui database seed.
 - Pengguna dapat memilih kategori ketika menambahkan atau mengubah buku.
 - Pengguna tidak dapat membuat atau menghapus kategori.
+
+### 4.4 Dashboard Statistics (ditambahkan v1.2)
+
+| ID | Requirement | Description |
+|---|---|---|
+| FR-14 | Book Statistics | Pengguna dapat melihat ringkasan koleksinya: total buku, jumlah per status membaca, dan jumlah per kategori |
+
+Ketentuan:
+- Ringkasan hanya menghitung buku milik pengguna yang login.
+- Backend menyediakan `GET /books/stats` (dihitung di database, bukan dari daftar berhalaman).
+- Tampilan dashboard (kartu angka/grafik sederhana) menjadi tanggung jawab frontend.
 
 Daftar kategori awal masih perlu disepakati tim. Sementara itu, daftar usulan di bawah sudah dipakai sebagai seed awal (`backend/prisma/seed.ts`) dan dapat diganti tanpa mengubah kode lain.
 
@@ -219,6 +230,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 ### Books
 - `POST /books`
 - `GET /books`
+- `GET /books/stats`
 - `GET /books/:id`
 - `PATCH /books/:id`
 - `DELETE /books/:id`
@@ -235,7 +247,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 
 ## 10. Out of Scope
 
-- Dashboard dan statistik.
+- Dashboard lanjutan (grafik tren waktu, riwayat membaca, target baca). Ringkasan statistik sederhana **masuk scope** sejak v1.2 — lihat §4.4.
 - Peminjaman dan pengembalian.
 - Denda.
 - Admin dan librarian roles.
@@ -248,7 +260,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 - CRUD kategori oleh pengguna.
 - Multi-domain management.
 
-**Workshop note:** Dokumen workshop mencantumkan dashboard sederhana sebagai tambahan pada halaman 7. Keputusan tim saat ini adalah tidak membuat dashboard. Konsekuensi terhadap penilaian perlu dikonfirmasi kepada mentor.
+**Workshop note:** Dokumen workshop mencantumkan dashboard sederhana sebagai tambahan pada halaman 7. Semula tim mengecualikannya; pada 2026-11-14 mentor mengonfirmasi bahwa dashboard sederhana diminta, sehingga statistik dimasukkan ke scope (§4.4): backend menyediakan `GET /books/stats`, tampilan dashboard dikerjakan frontend.
 
 ## 11. User Flow
 
@@ -256,7 +268,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 2. Pengguna melakukan register jika belum mempunyai akun.
 3. Pengguna login.
 4. Frontend mengakses endpoint privat menggunakan JWT.
-5. Pengguna melihat daftar buku.
+5. Pengguna melihat daftar buku dan ringkasan koleksi (dashboard).
 6. Pengguna dapat menambahkan buku.
 7. Pengguna dapat mengubah atau menghapus buku.
 8. Pengguna dapat mencari dan memfilter koleksi.
@@ -277,6 +289,7 @@ Status per 2026-11-13 (bukti: `docs/IMPLEMENTATION-LOG.md`):
 - [x] Search berjalan.
 - [x] Filter berjalan.
 - [x] Pagination berjalan.
+- [x] Statistik koleksi tersedia (`GET /books/stats`). *(tampilan dashboard: frontend)*
 - [ ] Logout menghapus token. *(frontend)*
 - [x] Data tersimpan di PostgreSQL.
 - [ ] Frontend terintegrasi dengan backend. *(backend siap; menunggu frontend)*
@@ -311,4 +324,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 |---|---|---|
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |
-| 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup) |
+| 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup). Statistik dashboard sederhana masuk scope atas konfirmasi mentor: §4.4 FR-14, `GET /books/stats` di §9, §10 dan workshop note diperbarui, §11 dan §12 disesuaikan |

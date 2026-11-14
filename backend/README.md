@@ -104,6 +104,7 @@ Base URL: `http://localhost:3001/api/v1`. 🔒 = membutuhkan header `Authorizati
 | GET | `/categories` 🔒 | Daftar kategori global |
 | POST | `/books` 🔒 | Tambah buku |
 | GET | `/books` 🔒 | Daftar buku milik user (`page`, `limit`, `search`, `status`, `categoryId`) |
+| GET | `/books/stats` 🔒 | Ringkasan untuk dashboard: total, jumlah per status, jumlah per kategori |
 | GET | `/books/:id` 🔒 | Detail buku |
 | PATCH | `/books/:id` 🔒 | Ubah buku (sebagian) |
 | DELETE | `/books/:id` 🔒 | Hapus buku |
@@ -118,7 +119,7 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 28 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 31 test (auth, kategori, buku, statistik, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
@@ -126,7 +127,7 @@ Menjalankan 28 test (auth, kategori, buku, kepemilikan data) terhadap aplikasi l
 
 ### Bruno (manual atau CLI)
 
-Koleksi Bruno ada di [`bruno/`](./bruno): 62 request dan 95 tes untuk auth, kategori, buku, dan kepemilikan data.
+Koleksi Bruno ada di [`bruno/`](./bruno): 70 request dan 110 tes untuk auth, kategori, buku, kepemilikan data, dan statistik.
 
 Dengan backend berjalan dan kategori sudah di-seed:
 
@@ -153,7 +154,7 @@ backend/
 │   └── app.e2e-spec.ts    # E2E test API
 └── src/
     ├── auth/              # Register, login, JWT strategy/guard, /auth/me
-    ├── books/             # CRUD buku, search, filter, pagination, ownership
+    ├── books/             # CRUD buku, search, filter, pagination, statistik, ownership
     ├── categories/        # GET /categories
     ├── common/transforms/ # trimString: trim sebelum validasi (DTO auth & books)
     ├── prisma/            # PrismaService (koneksi database)

@@ -1,0 +1,17 @@
+meta {
+  name: Stats - without token
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/books/stats
+  body: none
+  auth: none
+}
+
+tests {
+  test("status 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}

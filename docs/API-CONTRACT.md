@@ -1,10 +1,10 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Lengkap untuk scope PRD v1.0 — diperbarui setiap kali endpoint berubah.
+**Status:** Lengkap untuk scope PRD v1.2 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 62 request / 95 tes) dan e2e test (`npm run test:e2e`, 28 tes), kecuali ditandai lain.
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 70 request / 110 tes) dan e2e test (`npm run test:e2e`, 31 tes), kecuali ditandai lain.
 
 ---
 
@@ -336,7 +336,41 @@ Kirim hanya field yang ingin diubah. Contoh mengubah status membaca:
 }
 ```
 
-### 4.8 Error Endpoint Books
+### 4.8 `GET /books/stats` 🔒
+
+Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung langsung di database (`GROUP BY`), sehingga frontend **tidak perlu** mengambil seluruh halaman `GET /books` untuk menghitung sendiri.
+
+**Response `200 OK`**
+
+```json
+{
+  "total": 3,
+  "byStatus": { "WANT_TO_READ": 1, "READING": 1, "COMPLETED": 1 },
+  "byCategory": [
+    { "categoryId": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "Science", "count": 2 },
+    { "categoryId": null, "name": null, "count": 1 }
+  ]
+}
+```
+
+| Field | Tipe | Keterangan |
+|---|---|---|
+| `total` | integer | Jumlah seluruh buku milik user |
+| `byStatus` | object | **Selalu** memuat ketiga status (`WANT_TO_READ`, `READING`, `COMPLETED`); bernilai `0` bila tidak ada buku dengan status itu |
+| `byCategory` | array | Hanya kategori yang mempunyai buku; kategori tanpa buku tidak muncul. Entri dengan `categoryId: null` dan `name: null` = buku tanpa kategori (hanya muncul bila ada). Urutan: `count` terbesar dulu, lalu `name` A–Z, tanpa kategori paling akhir |
+
+- Jumlah seluruh `count` di `byCategory` dan jumlah seluruh nilai `byStatus` keduanya sama dengan `total`.
+- User tanpa buku → `{ "total": 0, "byStatus": { "WANT_TO_READ": 0, "READING": 0, "COMPLETED": 0 }, "byCategory": [] }`.
+- Hanya buku milik user dari token yang dihitung (aturan kepemilikan yang sama dengan endpoint buku lain).
+- Route ini didahulukan dari `GET /books/:id`, sehingga `stats` tidak pernah diperlakukan sebagai ID.
+
+**Error**
+
+| Status | Kondisi |
+|---|---|
+| 401 | Token tidak ada atau tidak valid |
+
+### 4.9 Error Endpoint Books
 
 | Status | Kondisi | `message` |
 |---|---|---|
@@ -358,3 +392,4 @@ Kirim hanya field yang ingin diubah. Contoh mengubah status membaca:
 | 2026-11-13 | Tambah endpoint Books: CRUD, search, filter, pagination |
 | 2026-11-13 | Endpoint bawaan `GET /api/v1` ("Hello World") dihapus; catatan pengujian e2e; catatan validasi `name` |
 | 2026-11-14 | `POST /auth/register`: `name` di-trim sebelum validasi — nama berisi spasi saja kini ditolak 400 (sebelumnya diterima dan tersimpan kosong). Jumlah tes diperbarui |
+| 2026-11-14 | Tambah `GET /books/stats` (§4.8) — ringkasan total, per status, per kategori untuk dashboard (permintaan mentor). Bagian error Books menjadi §4.9 |
