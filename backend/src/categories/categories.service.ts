@@ -13,6 +13,14 @@ export class CategoriesService {
     });
   }
 
+  /** Nama kategori untuk sekumpulan id (dipakai statistik buku). */
+  findByIds(ids: string[]) {
+    return this.prisma.category.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true },
+    });
+  }
+
   /**
    * Dipakai Book Management untuk memvalidasi categoryId dari request.
    * Kategori yang tidak ada adalah kesalahan input (400), bukan 404,

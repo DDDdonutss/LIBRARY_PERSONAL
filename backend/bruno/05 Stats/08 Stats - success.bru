@@ -1,0 +1,49 @@
+meta {
+  name: Stats - success
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/books/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("hanya berisi total, byStatus, byCategory", function () {
+    expect(res.body).to.have.keys(["total", "byStatus", "byCategory"]);
+  });
+
+  test("total 5 — hanya buku user ini (user lain punya buku juga)", function () {
+    expect(res.body.total).to.equal(5);
+  });
+
+  test("byStatus memuat ketiga status dengan jumlah tepat", function () {
+    expect(res.body.byStatus).to.deep.equal({ WANT_TO_READ: 2, READING: 2, COMPLETED: 1 });
+  });
+
+  test("byCategory: jumlah terbesar dulu; jika sama, nama A–Z dan tanpa kategori terakhir", function () {
+    // History dibuat sebelum Fiction, tetapi Fiction harus muncul lebih dulu.
+    expect(res.body.byCategory).to.deep.equal([
+      { categoryId: bru.getVar("statsScienceId"), name: "Science", count: 2 },
+      { categoryId: bru.getVar("statsFictionId"), name: "Fiction", count: 1 },
+      { categoryId: bru.getVar("statsHistoryId"), name: "History", count: 1 },
+      { categoryId: null, name: null, count: 1 }
+    ]);
+  });
+
+  test("jumlah byStatus dan byCategory sama dengan total", function () {
+    const sum = (values) => values.reduce((a, b) => a + b, 0);
+    expect(sum(Object.values(res.body.byStatus))).to.equal(res.body.total);
+    expect(sum(res.body.byCategory.map((c) => c.count))).to.equal(res.body.total);
+  });
+}

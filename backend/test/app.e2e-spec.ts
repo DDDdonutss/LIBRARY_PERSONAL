@@ -267,23 +267,6 @@ describe('Personal Library API (e2e)', () => {
       expect(filtered.body.data[0].title).toBe('Dune');
     });
 
-    it('GET /books/stats → 200 ringkasan per status dan kategori milik user', async () => {
-      // Kondisi saat ini: Clean Code (WANT_TO_READ, Science) dan Dune (COMPLETED, tanpa kategori).
-      const res = await api()
-        .get(`${API}/books/stats`)
-        .set('Authorization', bearer(userA))
-        .expect(200);
-
-      expect(res.body).toEqual({
-        total: 2,
-        byStatus: { WANT_TO_READ: 1, READING: 0, COMPLETED: 1 },
-        byCategory: [
-          { categoryId: scienceCategoryId, name: 'Science', count: 1 },
-          { categoryId: null, name: null, count: 1 },
-        ],
-      });
-    });
-
     it('GET /books dengan limit > 100 → 400', () =>
       api()
         .get(`${API}/books?limit=101`)
@@ -386,6 +369,56 @@ describe('Personal Library API (e2e)', () => {
 
     it('endpoint buku tanpa token → 401', () =>
       api().get(`${API}/books`).expect(401));
+  });
+
+  describe('Stats', () => {
+    it('GET /books/stats → 200 ringkasan konsisten per status dan kategori', async () => {
+      // User dan buku sendiri, agar angka tidak bergantung pada test lain.
+      const user = await registerUser('stats');
+
+      const categories = await api()
+        .get(`${API}/categories`)
+        .set('Authorization', bearer(user))
+        .expect(200);
+      const idOf = (name: string): string =>
+        categories.body.find((c: { name: string }) => c.name === name).id;
+      const science = idOf('Science');
+      const history = idOf('History');
+      const fiction = idOf('Fiction');
+
+      // History dibuat sebelum Fiction: urutan hasil harus mengikuti nama,
+      // bukan urutan pembuatan.
+      const books = [
+        { title: 'S1', author: 'A', categoryId: science },
+        { title: 'S2', author: 'A', categoryId: science, status: 'COMPLETED' },
+        { title: 'H1', author: 'A', categoryId: history, status: 'READING' },
+        { title: 'F1', author: 'A', categoryId: fiction, status: 'READING' },
+        { title: 'N1', author: 'A' },
+      ];
+      for (const book of books) {
+        await api()
+          .post(`${API}/books`)
+          .set('Authorization', bearer(user))
+          .send(book)
+          .expect(201);
+      }
+
+      const res = await api()
+        .get(`${API}/books/stats`)
+        .set('Authorization', bearer(user))
+        .expect(200);
+
+      expect(res.body).toEqual({
+        total: 5,
+        byStatus: { WANT_TO_READ: 2, READING: 2, COMPLETED: 1 },
+        byCategory: [
+          { categoryId: science, name: 'Science', count: 2 },
+          { categoryId: fiction, name: 'Fiction', count: 1 },
+          { categoryId: history, name: 'History', count: 1 },
+          { categoryId: null, name: null, count: 1 },
+        ],
+      });
+    });
 
     it('GET /books/stats tanpa token → 401', () =>
       api().get(`${API}/books/stats`).expect(401));

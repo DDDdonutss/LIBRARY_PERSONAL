@@ -8,7 +8,8 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
-    // Belum ada unit test; pengujian saat ini lewat e2e (npm run test:e2e) dan Bruno.
+    // Unit test (src/**/*.spec.ts) memakai mock, tanpa database. Pengujian
+    // API lengkap lewat e2e (npm run test:e2e) dan Bruno.
     passWithNoTests: true,
   },
 });

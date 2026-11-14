@@ -1,0 +1,38 @@
+meta {
+  name: Categories - lookup ids
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/categories
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsToken}}
+}
+
+script:post-response {
+  // ID kategori diambil di folder ini sendiri, agar folder dapat dijalankan
+  // terpisah (tidak bergantung pada variabel dari "02 Categories").
+  const idOf = (name) => {
+    const category = res.body.find((c) => c.name === name);
+    return category && category.id;
+  };
+  bru.setVar("statsScienceId", idOf("Science"));
+  bru.setVar("statsHistoryId", idOf("History"));
+  bru.setVar("statsFictionId", idOf("Fiction"));
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("kategori Science, History, Fiction tersedia (hasil seed)", function () {
+    const names = res.body.map((c) => c.name);
+    expect(names).to.include.members(["Science", "History", "Fiction"]);
+  });
+}
