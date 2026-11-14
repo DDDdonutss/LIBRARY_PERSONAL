@@ -4,7 +4,9 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 
-// Daftar usulan PRD §4.3. Ubah di sini bila tim menyepakati daftar lain.
+// Daftar kategori FINAL (disepakati tim 2026-11-15, GitHub issue #11; PRD §4.3).
+// Perubahan daftar adalah perubahan kontrak: perbarui juga docs/API-CONTRACT.md §3
+// dan test yang memeriksa daftar ini (e2e "Categories", Bruno "02 Categories").
 const CATEGORY_NAMES = [
   'Fiction',
   'Science',

@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # Personal Library Management
 
-**Version:** 1.2  
-**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor)  
+**Version:** 1.3  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor; v1.3 memfinalkan daftar kategori dan akses `GET /categories`)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -90,6 +90,17 @@ Ketentuan:
 - Kategori disediakan melalui database seed.
 - Pengguna dapat memilih kategori ketika menambahkan atau mengubah buku.
 - Pengguna tidak dapat membuat atau menghapus kategori.
+- Daftar kategori hanya dapat diambil oleh pengguna yang sudah login (JWT), karena kategori hanya dibutuhkan saat mengelola buku.
+
+Daftar kategori **final** (disepakati tim 2026-11-15, GitHub issue #11), disediakan oleh seed (`backend/prisma/seed.ts`):
+- Fiction
+- Science
+- Technology
+- History
+- Education
+- Other
+
+Tidak ada kategori kustom maupun fitur pengelolaan kategori pada scope saat ini.
 
 ### 4.4 Dashboard Statistics (ditambahkan v1.2)
 
@@ -101,16 +112,6 @@ Ketentuan:
 - Ringkasan hanya menghitung buku milik pengguna yang login.
 - Backend menyediakan `GET /books/stats` (dihitung di database, bukan dari daftar berhalaman).
 - Tampilan dashboard (kartu angka/grafik sederhana) menjadi tanggung jawab frontend.
-
-Daftar kategori awal masih perlu disepakati tim. Sementara itu, daftar usulan di bawah sudah dipakai sebagai seed awal (`backend/prisma/seed.ts`) dan dapat diganti tanpa mengubah kode lain.
-
-Usulan kategori (dipakai di seed):
-- Fiction
-- Science
-- Technology
-- History
-- Education
-- Other
 
 ## 5. Book Status
 
@@ -220,7 +221,7 @@ Data harus tersimpan secara persisten pada PostgreSQL.
 
 Base path: `/api/v1` (lokal: `http://localhost:3001/api/v1`)
 
-Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md`. Endpoint kategori juga membutuhkan login (keputusan implementasi, karena kategori hanya dipakai di form buku).
+Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md`. Endpoint kategori juga membutuhkan login (dikonfirmasi tim 2026-11-15, GitHub issue #11: kategori hanya dipakai di form buku dan tidak dibutuhkan sebelum login).
 
 ### Authentication
 - `POST /auth/register`
@@ -325,3 +326,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |
 | 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup). Statistik dashboard sederhana masuk scope atas konfirmasi mentor: §4.4 FR-14, `GET /books/stats` di §9, §10 dan workshop note diperbarui, §11 dan §12 disesuaikan |
+| 1.3 | 2026-11-15 | §4.3: daftar kategori final (6 kategori, issue #11) dan akses kategori wajib login; paragraf daftar kategori yang tersisip keliru di bawah §4.4 pada v1.2 dikembalikan ke §4.3. §9: proteksi JWT `GET /categories` dikonfirmasi tim |

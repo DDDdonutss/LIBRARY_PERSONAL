@@ -171,7 +171,7 @@ Base path: `/api/v1` (lokal: `http://localhost:3001/api/v1`).
 | BE-09 | Get Categories | GET /api/v1/categories | ✅ |
 | BE-10 | Book Statistics (dashboard) | GET /api/v1/books/stats | ✅ |
 
-Semua endpoint buku memerlukan autentikasi. `GET /categories` juga memerlukan autentikasi (keputusan implementasi; dapat dibuka bila frontend membutuhkannya sebelum login).
+Semua endpoint buku memerlukan autentikasi. `GET /categories` juga memerlukan autentikasi (dikonfirmasi tim 2026-11-15, issue #11: kategori tidak dibutuhkan sebelum login). Daftar 6 kategori seed (Fiction, Science, Technology, History, Education, Other) bersifat final.
 
 ## 6. Security Requirements
 
@@ -317,7 +317,7 @@ Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; d
 | 3 — Database | 3 | ✅ Selesai |
 | 4 — Authentication | 4 | ✅ Selesai |
 | 5 — Book Management | 5 | ✅ Selesai |
-| 6 — Category | 6 | ✅ Selesai (daftar kategori menunggu konfirmasi tim) |
+| 6 — Category | 6 | ✅ Selesai (daftar kategori final, issue #11) |
 | 7 — Integration | 8 | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
 | 8 — Testing & Documentation | 7, 9 | ✅ Testing dan dokumentasi backend selesai; finalisasi menunggu integrasi |
 
@@ -380,7 +380,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115 tes), e2e test (`npm run test:e2e`, 31 tes), dan unit test statistik (`npm test`, 5 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115 tes), e2e test (`npm run test:e2e`, 33 tes), dan unit test statistik (`npm test`, 5 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -471,3 +471,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes; BE-10 statistik koleksi (`GET /books/stats`) untuk dashboard atas permintaan mentor |
 | 1.3 | 2026-11-14 | PR 6–7 di-merge; branch perbaikan hasil review; unit test pertama (`books.service.spec.ts`); jumlah tes |
 | 1.4 | 2026-11-15 | §9: variabel `OBSERVE_*` dihapus bersama integrasi NestJS Observe (issue #10) |
+| 1.5 | 2026-11-15 | §5 dan §10: daftar kategori final dan proteksi JWT `GET /categories` dikonfirmasi (issue #11); jumlah tes e2e |

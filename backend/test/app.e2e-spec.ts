@@ -191,8 +191,33 @@ describe('Personal Library API (e2e)', () => {
       scienceCategoryId = science.id;
     });
 
-    it('GET /categories tanpa token → 401', () =>
+    it('GET /categories → tepat 6 kategori final (issue #11), urut A–Z, hanya id dan name', async () => {
+      const res = await api()
+        .get(`${API}/categories`)
+        .set('Authorization', bearer(userA))
+        .expect(200);
+
+      expect(res.body.map((c: { name: string }) => c.name)).toEqual([
+        'Education',
+        'Fiction',
+        'History',
+        'Other',
+        'Science',
+        'Technology',
+      ]);
+      for (const category of res.body) {
+        expect(Object.keys(category).sort()).toEqual(['id', 'name']);
+      }
+    });
+
+    it('GET /categories tanpa token → 401 (tetap dilindungi JWT, issue #11)', () =>
       api().get(`${API}/categories`).expect(401));
+
+    it('GET /categories dengan token rusak → 401', () =>
+      api()
+        .get(`${API}/categories`)
+        .set('Authorization', 'Bearer bukan.token.valid')
+        .expect(401));
   });
 
   describe('Books', () => {

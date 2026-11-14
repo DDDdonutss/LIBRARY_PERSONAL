@@ -28,9 +28,9 @@ tests {
     expect(res.status).to.equal(200);
   });
 
-  test("berisi kategori hasil seed", function () {
+  test("tepat 6 kategori final (issue #11), urut A–Z", function () {
     const names = res.body.map((c) => c.name);
-    expect(names).to.include.members(["Fiction", "Science", "Technology", "History", "Education", "Other"]);
+    expect(names).to.deep.equal(["Education", "Fiction", "History", "Other", "Science", "Technology"]);
   });
 
   test("setiap item hanya berisi id dan name", function () {

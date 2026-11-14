@@ -4,7 +4,7 @@
 **Status:** Lengkap untuk scope PRD v1.2 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 73 request / 115 tes) dan e2e test (`npm run test:e2e`, 31 tes), kecuali ditandai lain. Logika `GET /books/stats` juga dicakup unit test (`npm test`, 5 tes).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 73 request / 115 tes) dan e2e test (`npm run test:e2e`, 33 tes), kecuali ditandai lain. Logika `GET /books/stats` juga dicakup unit test (`npm test`, 5 tes).
 
 ---
 
@@ -189,9 +189,11 @@ Mengembalikan data user yang sedang login. Cocok dipanggil saat aplikasi dibuka 
 
 Kategori bersifat **global**: daftar yang sama untuk semua user, disediakan lewat seed database (`npm run db:seed`). User tidak dapat membuat, mengubah, atau menghapus kategori.
 
-Daftar awal (usulan PRD §4.3, dapat diubah di `backend/prisma/seed.ts`): `Fiction`, `Science`, `Technology`, `History`, `Education`, `Other`.
+Daftar **final** (disepakati tim 2026-11-15, GitHub issue #11; PRD §4.3): `Fiction`, `Science`, `Technology`, `History`, `Education`, `Other`. Perubahan daftar ini adalah perubahan kontrak dan wajib diinformasikan ke Frontend Developer.
 
 ### 3.1 `GET /categories` 🔒
+
+**Wajib login** (keputusan tim, issue #11). Kategori hanya dibutuhkan di form buku, sehingga frontend memanggil endpoint ini **setelah** user login. Tidak ada akses kategori sebelum login.
 
 **Response `200 OK`** — array, diurutkan berdasarkan `name` (A–Z):
 
@@ -395,3 +397,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-14 | `POST /auth/register`: `name` di-trim sebelum validasi — nama berisi spasi saja kini ditolak 400 (sebelumnya diterima dan tersimpan kosong). Jumlah tes diperbarui |
 | 2026-11-14 | Tambah `GET /books/stats` (§4.8) — ringkasan total, per status, per kategori untuk dashboard (permintaan mentor). Bagian error Books menjadi §4.9 |
 | 2026-11-14 | §4.8 diperjelas setelah code review: jaminan konsistensi `total`, pasangan `categoryId`/`name` selalu sama-sama terisi atau `null`, aturan urutan saat `count` sama, perlakuan kategori terhapus. Bentuk response tidak berubah |
+| 2026-11-15 | §3: daftar 6 kategori dinyatakan **final** dan `GET /categories` tetap wajib login (keputusan tim, issue #11). Endpoint dan bentuk response tidak berubah |
