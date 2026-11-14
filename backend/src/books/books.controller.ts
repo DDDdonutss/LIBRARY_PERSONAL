@@ -37,6 +37,13 @@ export class BooksController {
     return this.booksService.findAll(user.id, query);
   }
 
+  // Dideklarasikan SEBELUM ':id' agar path "stats" tidak dianggap ID buku
+  // (Express mencocokkan route sesuai urutan pendaftaran).
+  @Get('stats')
+  getStats(@CurrentUser() user: AuthenticatedUser) {
+    return this.booksService.getStats(user.id);
+  }
+
   // ParseUUIDPipe: ID yang bukan UUID langsung ditolak 400,
   // sebelum sampai ke database (kolom id bertipe UUID).
   @Get(':id')

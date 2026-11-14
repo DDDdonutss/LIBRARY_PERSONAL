@@ -267,6 +267,23 @@ describe('Personal Library API (e2e)', () => {
       expect(filtered.body.data[0].title).toBe('Dune');
     });
 
+    it('GET /books/stats → 200 ringkasan per status dan kategori milik user', async () => {
+      // Kondisi saat ini: Clean Code (WANT_TO_READ, Science) dan Dune (COMPLETED, tanpa kategori).
+      const res = await api()
+        .get(`${API}/books/stats`)
+        .set('Authorization', bearer(userA))
+        .expect(200);
+
+      expect(res.body).toEqual({
+        total: 2,
+        byStatus: { WANT_TO_READ: 1, READING: 0, COMPLETED: 1 },
+        byCategory: [
+          { categoryId: scienceCategoryId, name: 'Science', count: 1 },
+          { categoryId: null, name: null, count: 1 },
+        ],
+      });
+    });
+
     it('GET /books dengan limit > 100 → 400', () =>
       api()
         .get(`${API}/books?limit=101`)
@@ -308,6 +325,19 @@ describe('Personal Library API (e2e)', () => {
           .set('Authorization', bearer(userB))
           .expect(200);
         expect(res.body.meta.total).toBe(0);
+      });
+
+      it('statistik user B tidak memuat buku user A', async () => {
+        const res = await api()
+          .get(`${API}/books/stats`)
+          .set('Authorization', bearer(userB))
+          .expect(200);
+
+        expect(res.body).toEqual({
+          total: 0,
+          byStatus: { WANT_TO_READ: 0, READING: 0, COMPLETED: 0 },
+          byCategory: [],
+        });
       });
 
       it('GET → 404', () =>
@@ -356,5 +386,8 @@ describe('Personal Library API (e2e)', () => {
 
     it('endpoint buku tanpa token → 401', () =>
       api().get(`${API}/books`).expect(401));
+
+    it('GET /books/stats tanpa token → 401', () =>
+      api().get(`${API}/books/stats`).expect(401));
   });
 });

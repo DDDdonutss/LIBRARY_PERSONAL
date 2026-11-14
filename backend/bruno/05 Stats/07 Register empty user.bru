@@ -1,0 +1,33 @@
+meta {
+  name: Register empty user
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Stats Empty",
+    "email": "{{statsEmptyEmail}}",
+    "password": "password123"
+  }
+}
+
+script:pre-request {
+  bru.setVar("statsEmptyEmail", `statsempty.${Date.now()}@example.com`);
+}
+
+script:post-response {
+  bru.setVar("statsEmptyToken", res.body.accessToken);
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

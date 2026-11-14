@@ -1,0 +1,29 @@
+meta {
+  name: Stats - empty user
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/books/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsEmptyToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("user tanpa buku: total 0, semua status 0, byCategory kosong", function () {
+    expect(res.body).to.deep.equal({
+      total: 0,
+      byStatus: { WANT_TO_READ: 0, READING: 0, COMPLETED: 0 },
+      byCategory: []
+    });
+  });
+}

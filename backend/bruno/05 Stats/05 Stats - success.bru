@@ -1,0 +1,40 @@
+meta {
+  name: Stats - success
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/books/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statsToken}}
+}
+
+tests {
+  test("status 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("hanya berisi total, byStatus, byCategory", function () {
+    expect(res.body).to.have.keys(["total", "byStatus", "byCategory"]);
+  });
+
+  test("total 3 — hanya buku user ini (user lain punya buku juga)", function () {
+    expect(res.body.total).to.equal(3);
+  });
+
+  test("byStatus memuat ketiga status dengan jumlah tepat", function () {
+    expect(res.body.byStatus).to.deep.equal({ WANT_TO_READ: 1, READING: 1, COMPLETED: 1 });
+  });
+
+  test("byCategory: Science 2 lalu tanpa kategori 1", function () {
+    expect(res.body.byCategory).to.deep.equal([
+      { categoryId: bru.getVar("categoryScienceId"), name: "Science", count: 2 },
+      { categoryId: null, name: null, count: 1 }
+    ]);
+  });
+}
