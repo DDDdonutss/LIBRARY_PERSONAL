@@ -9,8 +9,8 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { trimString } from '../../common/transforms/trim-string.js';
 import { BookStatus } from '../../generated/prisma/enums.js';
-import { trimString } from './create-book.dto.js';
 
 export const DEFAULT_PAGE_LIMIT = 10;
 export const MAX_PAGE_LIMIT = 100;

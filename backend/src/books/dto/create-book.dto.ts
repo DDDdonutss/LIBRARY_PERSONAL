@@ -7,11 +7,8 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
+import { trimString } from '../../common/transforms/trim-string.js';
 import { BookStatus } from '../../generated/prisma/enums.js';
-
-/** Menghapus spasi di awal/akhir string; nilai selain string dibiarkan. */
-export const trimString = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
 
 export class CreateBookDto {
   @Transform(trimString)
