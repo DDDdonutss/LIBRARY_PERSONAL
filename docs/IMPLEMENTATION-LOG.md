@@ -35,10 +35,10 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 3 — Database Design | ✅ Completed (schema, migration, seed kategori) |
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
-| 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR menunggu review) |
+| 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
 | 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 33 tes; unit 5 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#8 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule diputuskan dihapus — PR menunggu review; demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#19 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18); kategori final (#19); demo belum) |
 
 ### Endpoint
 
@@ -68,8 +68,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
 | 8 | `fix/book-stats-review` | `ef3a244` | #8 | `cd252f3` | ✅ Merged 2026-11-15 |
 | 9 | `docs/record-pr-8` | `0ba57b0` | #17 | `224b784` | ✅ Merged 2026-11-15 |
-| 10 | `chore/observe-module-decision` | `bfa7542` | #18 | — | ⏳ Menunggu review Team Lead (`Closes #10`) |
-| 11 | `chore/category-list` | lihat entri "Finalisasi Kategori" | menuju `main` | — | ⏳ Menunggu review; **bertumpuk di atas branch 10 — merge PR #18 lebih dulu** (`Closes #11`) |
+| 10 | `chore/observe-module-decision` | `bfa7542` | #18 | `eabb131` | ✅ Merged 2026-11-15; menutup issue #10 |
+| 11 | `chore/category-list` | `7b3b229` | #19 | `f57d87e` | ✅ Merged 2026-11-15 (setelah #18, bertumpuk di atas branch 10); menutup issue #11 |
+| 12 | `docs/record-pr-18-19` | — | — | — | Pencatatan merge PR #18–#19 (dokumen ini) |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -134,7 +135,7 @@ Saat entri ini dibuat, kedua commit masih lokal; keduanya di-push ke GitHub pada
 | 5 | Port default 3000, dokumen menetapkan 3001; `PORT` tidak ada di `.env` | `main.ts`, `.env` | ✅ Closed — `43dfa87` (default 3001; `PORT` di `.env` opsional) |
 | 6 | `.env.example` belum ada | `backend/` | ✅ Closed — `6461cbc` |
 | 7 | Tidak ada script `prisma generate` — clone baru gagal build karena client hasil generate di-ignore | `package.json` | ✅ Closed — `6461cbc` (diuji: simulasi clone baru → `npm ci` → build berhasil) |
-| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi — dilacak di GitHub issue #10. **2026-11-15: tim memutuskan menghapus integrasi** (branch `chore/observe-module-decision`, PR menunggu review; lihat entri "Penghapusan Integrasi NestJS Observe") |
+| 8 | ObserveModule (telemetri eksternal, fallback secret placeholder) | `app.module.ts` | ⏸️ Dipertahankan sementara (keputusan Team Lead). Dinonaktifkan saat test (`d3616be`). Server lokal aktif mengirim telemetri. Evaluasi saat finalisasi — dilacak di GitHub issue #10. **2026-11-15: tim memutuskan menghapus integrasi** — ✅ Closed, dihapus di PR #18 (`eabb131`); lihat entri "Penghapusan Integrasi NestJS Observe" |
 | 9 | BOM (byte order mark) di 6 file dan line ending CRLF | `main.ts`, `src/auth/**` | ✅ Closed — BOM dihapus (`43dfa87`, `ed82f30`); CRLF dinormalisasi Git saat commit |
 
 ---
@@ -804,6 +805,46 @@ Endpoint, bentuk response, dan schema database **tidak berubah**; frontend tidak
 | Bruno `01 Auth` + `02 Categories` | ✅ 21 request, 34/34 tes |
 | `server.log` | ✅ Tidak ada error runtime |
 
+PR: **#19** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/pull/19), commit `7b3b229`.
+
+---
+
+## 2026-11-15 — Merge PR #18–#19 dan Verifikasi `main`
+
+**Pelaksana:** Panji
+
+PR #18 lalu PR #19 di-merge berurutan oleh Team Lead dengan "Create a merge commit" → `main` = `f57d87e` (merge #18 = `eabb131`). Isi tree `main` identik dengan `chore/category-list`. Issue #10 dan #11 tertutup otomatis (`COMPLETED`, masing-masing oleh PR #18 dan #19).
+
+### Verifikasi di `main` (`f57d87e`)
+
+Dev server dihentikan dulu agar `npm run build` tidak menghentikannya, lalu dijalankan ulang dengan `npm run start:dev` (memakai `.env` apa adanya).
+
+| Uji | Hasil |
+|---|---|
+| `npm ci` (instal bersih dari lockfile) | ✅ 466 paket, tanpa `@nestjs/observe` |
+| `npm run build` | ✅ exit 0 |
+| `npm run lint` | ✅ exit 0 |
+| `npm test` (unit) | ✅ 5/5 |
+| `npm run test:e2e` | ✅ 33/33 |
+| Startup | ✅ 7 modul (`AppModule`, `PrismaModule`, `PassportModule`, `JwtModule`, `CategoriesModule`, `AuthModule`, `BooksModule`), 10 route, tidak ada log Observe/collector/telemetri |
+| Koneksi jaringan proses backend | ✅ Hanya `::1` (localhost): PostgreSQL `5432` dan klien Bruno; tidak ada koneksi ke luar komputer |
+| Bruno seluruh koleksi | ✅ 73 request, 115/115 tes |
+
+### Perbandingan sebelum (`224b784`) dan sesudah (`f57d87e`)
+
+| Aspek | Sebelum | Sesudah |
+|---|---|---|
+| Telemetri eksternal | Server lokal mengirim trace/log/metrik ke `observe.nestjs.com` (tercatat 2026-11-13: "collector accepted this app's first batch") | Tidak ada; hanya koneksi localhost |
+| Dependensi `package.json` | 17 | 16 (`@nestjs/observe` dihapus) |
+| Paket produksi di lockfile | 291 | 287 (`@nestjs/observe` + 3 paket `@jridgewell/*` kini hanya dev) |
+| Variabel di `.env.example` | 7 (termasuk `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`) | 5 |
+| `app.module.ts` | 26 baris, `ObserveModule.forRoot(...)` dengan fallback secret placeholder dan pengecualian `NODE_ENV=test` | 11 baris, hanya 4 modul aplikasi |
+| Daftar kategori | 6 kategori berstatus "usulan, perlu konfirmasi tim" | 6 kategori yang sama, berstatus **final** (issue #11) |
+| `GET /categories` | Wajib login (keputusan implementasi, "dapat dibuka bila perlu") | Wajib login (keputusan tim, final) — perilaku sama |
+| Test e2e | 31 | 33 (daftar kategori persis; token rusak → 401) |
+| Bruno | 73 request / 115 tes | 73 request / 115 tes (tes kategori kini memeriksa daftar persis) |
+| Endpoint dan bentuk response API | — | **Tidak berubah**; frontend tidak terdampak |
+
 ---
 
 ## Pekerjaan Tersisa
@@ -813,8 +854,9 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Pekerjaan | Issue | Pemilik | Status |
 |---|---|---|---|
 | Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | #9 | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
-| Keputusan ObserveModule (isu keamanan #8) | #10 | Panji | 🔄 Diputuskan: **dihapus**. PR #18 menunggu review/merge |
-| Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | #11 | Tim | 🔄 Diputuskan: 6 kategori final, tetap wajib login. PR menunggu review/merge (setelah PR #18) |
+| ~~Keputusan ObserveModule (isu keamanan #8)~~ | #10 | Panji | ✅ Dihapus — PR #18, issue ditutup 2026-11-15 |
+| ~~Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik~~ | #11 | Tim | ✅ 6 kategori final, tetap wajib login — PR #19, issue ditutup 2026-11-15 |
+| Hapus baris `OBSERVE_*` dari `backend/.env` lokal dan cabut key pair di dashboard NestJS Observe (tidak lagi dipakai aplikasi) | — | Panji (Team Lead) | ⏳ Manual |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |
 | Opsional: rate limiting login/register | #14 | Panji | — |
