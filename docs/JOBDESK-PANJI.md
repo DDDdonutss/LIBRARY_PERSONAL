@@ -65,6 +65,7 @@ Mengimplementasikan:
 - Filter status.
 - Filter kategori.
 - Pagination.
+- Statistik koleksi (total, per status, per kategori) untuk dashboard.
 
 ### E. Category API
 Mengimplementasikan:
@@ -168,6 +169,7 @@ Base path: `/api/v1` (lokal: `http://localhost:3001/api/v1`).
 | BE-07 | Update Book | PATCH /api/v1/books/:id | ✅ |
 | BE-08 | Delete Book | DELETE /api/v1/books/:id | ✅ |
 | BE-09 | Get Categories | GET /api/v1/categories | ✅ |
+| BE-10 | Book Statistics (dashboard) | GET /api/v1/books/stats | ✅ |
 
 Semua endpoint buku memerlukan autentikasi. `GET /categories` juga memerlukan autentikasi (keputusan implementasi; dapat dibuka bila frontend membutuhkannya sebelum login).
 
@@ -211,6 +213,7 @@ Panji harus menyediakan dokumentasi berikut. **Status: tersedia lengkap di `docs
 - Detail response.
 - Update request dan response.
 - Delete response.
+- Stats response (dashboard).
 
 ### Categories
 - Category list response.
@@ -238,7 +241,7 @@ Rancangan awal di versi 1.0 diikuti; struktur di bawah adalah hasil implementasi
 
 ```text
 backend/
-├── bruno/                       # Koleksi Bruno: 01 Auth, 02 Categories, 03 Books, 04 Ownership
+├── bruno/                       # Koleksi Bruno: 01 Auth, 02 Categories, 03 Books, 04 Ownership, 05 Stats
 ├── prisma/
 │   ├── schema.prisma
 │   ├── migrations/              # 20261113060551_init
@@ -375,7 +378,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 62 request / 95 tes) dan e2e test (`npm run test:e2e`, 28 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 70 request / 110 tes) dan e2e test (`npm run test:e2e`, 31 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -395,6 +398,7 @@ Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 62 request / 95 
 - [x] Search berhasil.
 - [x] Filter berhasil.
 - [x] Pagination berhasil.
+- [x] Statistik koleksi benar (per status, per kategori) dan hanya menghitung buku user sendiri.
 
 ### Data Ownership
 - [x] Pengguna A hanya melihat buku miliknya.
@@ -447,8 +451,9 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 | 4 | `feature/backend-books` | CRUD buku, ownership, e2e test, README backend |
 | 5 | `docs/sync-project-docs` | Sinkronisasi dokumen |
 | 6 | `fix/register-name-trim` | Nama register di-trim sebelum validasi (bug spasi saja) |
+| 7 | `feature/backend-book-stats` | Endpoint statistik `GET /books/stats` untuk dashboard (permintaan mentor) |
 
-PR 1–5 sudah di-merge ke `main` pada 2026-11-14.
+PR 1–5 sudah di-merge ke `main` pada 2026-11-14. Branch 7 dibuat dari branch 6, sehingga PR-nya di-merge setelah PR branch 6.
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -458,4 +463,4 @@ PR 1–5 sudah di-merge ke `main` pada 2026-11-14.
 |---|---|---|
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Sinkronisasi dengan implementasi: endpoint dengan base path dan status, detail schema, struktur backend aktual, environment variable aktual, pemetaan phase, checklist dan DoD, alur Git |
-| 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes |
+| 1.2 | 2026-11-14 | Status merge PR 1–5, branch perbaikan nama, folder `common/`, jumlah tes; BE-10 statistik koleksi (`GET /books/stats`) untuk dashboard atas permintaan mentor |

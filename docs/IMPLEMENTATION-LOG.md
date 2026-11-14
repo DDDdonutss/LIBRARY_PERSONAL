@@ -34,9 +34,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 2 — Backend Setup | ✅ Completed |
 | 3 — Database Design | ✅ Completed (schema, migration, seed kategori) |
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
-| 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership) |
+| 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
-| 7 — API Testing | ✅ Completed (Bruno 62 request / 95 tes; e2e 28 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 70 request / 110 tes; e2e 31 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
 | 9 — Finalization | ⏳ In Progress (PR #1–#5 di-merge ke `main`; keputusan Observe dan demo belum) |
 
@@ -50,6 +50,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | `GET /api/v1/categories` 🔒 | ✅ | ✅ | ✅ | ✅ |
 | `POST /api/v1/books` 🔒 | ✅ | ✅ | ✅ | ✅ |
 | `GET /api/v1/books` 🔒 (search, filter, pagination) | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/v1/books/stats` 🔒 (statistik dashboard) | ✅ | ✅ | ✅ | ✅ |
 | `GET /api/v1/books/:id` 🔒 | ✅ | ✅ | ✅ | ✅ |
 | `PATCH /api/v1/books/:id` 🔒 | ✅ | ✅ | ✅ | ✅ |
 | `DELETE /api/v1/books/:id` 🔒 | ✅ | ✅ | ✅ | ✅ |
@@ -63,9 +64,10 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 3 | `feature/backend-categories` | `6f4fc22` | #3 | `8b8d2d5` | ✅ Merged 2026-11-14 |
 | 4 | `feature/backend-books` | `22bd949` | #4 | `bcc5de5` | ✅ Merged 2026-11-14 |
 | 5 | `docs/sync-project-docs` | `a4d798f` | #5 | `5737185` | ✅ Merged 2026-11-14 |
-| 6 | `fix/register-name-trim` | `2d8c0a8` + commit docs | — | — | Lokal; PR menyusul |
+| 6 | `fix/register-name-trim` | `a6e9aed` | — | — | Lokal; menunggu persetujuan push, lalu PR ke `main` |
+| 7 | `feature/backend-book-stats` | `ed34f55` + commit docs | — | — | Lokal (dari branch 6); PR di-merge setelah PR branch 6 |
 
-Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge.
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge; branch 7 dibuat dari branch 6 (bertumpuk), sehingga PR-nya di-merge setelah PR branch 6.
 
 ---
 
@@ -511,15 +513,65 @@ Reproduksi membuat 4 user `repro.*@example.com` dan run merah e2e meninggalkan 1
 
 ---
 
+## 2026-11-14 — Endpoint Statistik Dashboard (`GET /books/stats`)
+
+**Pelaksana:** Panji
+**Branch:** `feature/backend-book-stats` (dibuat dari `fix/register-name-trim`)
+**Commit:** `ed34f55` `feat(books): add collection statistics endpoint for the dashboard`
+
+### Konteks
+
+Mentor mengonfirmasi bahwa dashboard sederhana (dokumen workshop hal. 7) diminta, sehingga pengecualian di PRD §10 dicabut. Pembagian kerja: backend menyediakan data ringkasan lewat satu endpoint; tampilan dashboard dikerjakan frontend. Endpoint khusus dibutuhkan karena `GET /books` dibatasi 100 buku per halaman — menghitung di frontend berarti mengambil semua halaman.
+
+### Test-driven development
+
+1. **Merah:** tiga test e2e ditulis lebih dulu — ringkasan user A (2 buku: satu `WANT_TO_READ` berkategori Science, satu `COMPLETED` tanpa kategori), ringkasan user B (0 buku), dan tanpa token → 401. Run: **2 gagal** (`expected 200, got 400` — path `stats` tertangkap `GET /books/:id` dan ditolak `ParseUUIDPipe`), 29 lolos.
+2. **Hijau:** `BooksService.getStats()` dan `@Get('stats')` yang dideklarasikan **sebelum** `@Get(':id')`. e2e **31/31**.
+
+### Dikerjakan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| `GET /api/v1/books/stats` 🔒 | `books.controller.ts` | ✅ | ✅ | ✅ | ✅ |
+| `BooksService.getStats()` — dua `groupBy` (per `status`, per `categoryId`) dalam satu `$transaction`; nama kategori diambil sekali dengan `findMany` | `books.service.ts` | ✅ | ✅ | ✅ | ✅ |
+| Folder Bruno `05 Stats` (8 request, 15 tes) — mandiri: register user sendiri, buat 3 buku, cek angka pasti; plus user tanpa buku dan tanpa token | `bruno/05 Stats/` | ✅ | — | ✅ | — |
+| 3 test e2e (ringkasan, isolasi antar user, 401) | `test/app.e2e-spec.ts` | ✅ | ✅ | ✅ | — |
+
+### Verifikasi
+
+- `tsc`, oxlint, Prettier: lolos.
+- e2e: **31/31**.
+- Bruno seluruh koleksi terhadap server lokal: **70 request, 110/110 tes**, dijalankan **dua kali** (koleksi tetap dapat diulang).
+- Server live: route `Mapped {/api/v1/books/stats, GET}` terdaftar; user baru → `{"total":0,"byStatus":{"WANT_TO_READ":0,"READING":0,"COMPLETED":0},"byCategory":[]}`; `GET /books/bukan-uuid` tetap 400 (urutan route tidak mengganggu validasi ID).
+- `server.log`: tidak ada error runtime. Satu compile error sesaat dari watch mode (`TS2459`, 22:20) saat file DTO diedit bertahap pada perbaikan nama; hilang setelah import diperbaiki (22:21).
+
+### Keputusan Desain
+
+- **Bentuk response** `{ total, byStatus, byCategory }`. `byStatus` selalu memuat ketiga status (0 bila kosong) agar frontend tidak perlu menangani key yang hilang. `byCategory` hanya memuat kategori yang punya buku; buku tanpa kategori diwakili entri `categoryId: null`, sehingga jumlah `count` selalu sama dengan `total` (cocok untuk pie chart).
+- **Urutan `byCategory`:** `count` terbesar dulu, lalu nama A–Z, tanpa kategori paling akhir — deterministik untuk test dan tampilan.
+- **Dihitung di database** (`GROUP BY`), bukan `findMany` lalu dihitung di Node: biaya tetap kecil berapa pun jumlah buku.
+- **Ownership:** `where: { userId }` pada kedua `groupBy`. User B dengan 0 buku mendapat semua nol meski user A punya buku (diuji e2e dan Bruno).
+- **Route `stats` sebelum `:id`.** Express mencocokkan route sesuai urutan pendaftaran; tanpa ini `stats` ditolak 400 sebagai UUID tidak valid (inilah penyebab test merah).
+
+### Catatan data
+
+Setiap run Bruno kini membuat 2 user tambahan (`stats.*`, `statsempty.*@example.com`) dan 3 buku di database lokal. Dibiarkan, sesuai kebijakan data uji sebelumnya.
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` §4.8 (baru), §4.9, riwayat, status v1.2; `PRD.md` v1.2 §4.4 FR-14, §9, §10 dan workshop note, §11, §12; `JOBDESK-PANJI.md` BE-10, §2D, §7, §11, alur Git; `README.md` root dan `backend/README.md`.
+
+---
+
 ## Pekerjaan Tersisa
 
 | Pekerjaan | Pemilik | Status |
 |---|---|---|
-| Push `fix/register-name-trim` dan PR ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
+| Push `fix/register-name-trim` dan `feature/backend-book-stats`, lalu PR berurutan ke `main` (merge commit) | Panji (Team Lead) | ⏳ Menunggu persetujuan push |
 | Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | Tim | ⏳ |
 | Keputusan ObserveModule (isu #8 — saat ini aktif mengirim telemetri dari server lokal) | Panji | ⏳ |
-| Konfirmasi mentor terkait pengecualian dashboard (PRD §10) | Panji | ⏳ |
-| Frontend Next.js dan integrasi (termasuk logout = hapus token) | X (Frontend) + Panji | ⏳ |
+| ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk pekerjaan frontend |
+| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | Tim | ⏳ |
 | ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, branch `fix/register-name-trim`) |
 | Opsional: rate limiting login, unit test | Panji | — |
