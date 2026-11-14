@@ -677,16 +677,18 @@ Pembuatan issue lewat integrasi GitHub ditolak (`403 Resource not accessible by 
 
 Delapan issue untuk pekerjaan yang masih terbuka dibuat 2026-11-15:
 
-| Issue | Judul | Label | Assignee |
-|---|---|---|---|
-| #9 | Hapus repository lama yang tidak dipakai | documentation | DDDdonutss |
-| #10 | Putuskan nasib ObserveModule (telemetri NestJS Observe) | question | DDDdonutss |
-| #11 | Konfirmasi daftar kategori final dan akses `GET /categories` | question | DDDdonutss |
-| #12 | Frontend: integrasi Next.js dengan backend API | enhancement | — (menunggu akun GitHub X) |
-| #13 | Persiapan demo aplikasi | documentation | — |
-| #14 | Opsional: rate limiting untuk login dan register | enhancement | — |
-| #15 | Opsional: tolak token milik user yang sudah dihapus di semua endpoint | enhancement | — |
-| #16 | Rapikan format Prettier di `backend/src/prisma` | — | — |
+| Issue | Judul | Label | Assignee | Branch terhubung |
+|---|---|---|---|---|
+| #9 | Hapus repository lama yang tidak dipakai | documentation | DDDdonutss | — (tindakan di Settings GitHub, tanpa kode) |
+| #10 | Putuskan nasib ObserveModule (telemetri NestJS Observe) | question | DDDdonutss | `chore/observe-module-decision` |
+| #11 | Konfirmasi daftar kategori final dan akses `GET /categories` | question | DDDdonutss | `chore/category-list` |
+| #12 | Frontend: integrasi Next.js dengan backend API | enhancement | — (menunggu akun GitHub X) | `feature/frontend-integration` |
+| #13 | Persiapan demo aplikasi | documentation | — | `docs/demo-preparation` |
+| #14 | Opsional: rate limiting untuk login dan register | enhancement | — | `feature/auth-rate-limit` |
+| #15 | Opsional: tolak token milik user yang sudah dihapus di semua endpoint | enhancement | — | `fix/jwt-deleted-user` |
+| #16 | Rapikan format Prettier di `backend/src/prisma` | — | — | `chore/format-prisma` |
+
+Branch dibuat dengan `gh issue develop` dari `main` (`cd252f3`), sehingga muncul di bagian **Development** pada setiap issue. Sebelum mulai bekerja di salah satu branch, ambil perubahan terbaru dari `main` (`git merge main`).
 
 Nomor issue dan PR berbagi urutan di GitHub (PR #1–#8, issue #9–#16). Pekerjaan yang sudah selesai tidak dibuatkan issue mundur; jejaknya ada di PR #1–#8 dan dokumen ini. Mulai sekarang, PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`.
 
