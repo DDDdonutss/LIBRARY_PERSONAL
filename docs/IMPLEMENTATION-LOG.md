@@ -35,8 +35,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 3 — Database Design | ✅ Completed (schema, migration, seed kategori) |
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
-| 6 — Category API | ✅ Completed — daftar kategori menunggu konfirmasi tim |
-| 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 31 tes; unit 5 tes) |
+| 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR menunggu review) |
+| 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 33 tes; unit 5 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
 | 9 — Finalization | ⏳ In Progress (PR #1–#8 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule diputuskan dihapus — PR menunggu review; demo belum) |
 
@@ -68,7 +68,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 7 | `feature/backend-book-stats` | `703580e` | #7 | `ae82f1d` | ✅ Merged 2026-11-14 |
 | 8 | `fix/book-stats-review` | `ef3a244` | #8 | `cd252f3` | ✅ Merged 2026-11-15 |
 | 9 | `docs/record-pr-8` | `0ba57b0` | #17 | `224b784` | ✅ Merged 2026-11-15 |
-| 10 | `chore/observe-module-decision` | lihat entri "Penghapusan Integrasi NestJS Observe" | menuju `main` | — | ⏳ PR dibuka, menunggu review Team Lead (issue #10) |
+| 10 | `chore/observe-module-decision` | `bfa7542` | #18 | — | ⏳ Menunggu review Team Lead (`Closes #10`) |
+| 11 | `chore/category-list` | lihat entri "Finalisasi Kategori" | menuju `main` | — | ⏳ Menunggu review; **bertumpuk di atas branch 10 — merge PR #18 lebih dulu** (`Closes #11`) |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -753,6 +754,56 @@ Pemeriksaan seluruh repository (`ObserveModule`, `ObserveInstrument`, `createObs
 - `.env` lokal Team Lead masih berisi `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`. Nilainya kini tidak dipakai aplikasi; baris tersebut dapat dihapus manual, dan key pair dapat dicabut di dashboard NestJS Observe.
 - Data telemetri yang sudah terkirim sebelumnya tetap tersimpan di layanan Observe sesuai kebijakan retensinya.
 
+PR: **#18** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/pull/18), commit `bfa7542`.
+
+---
+
+## 2026-11-15 — Finalisasi Kategori dan Akses `GET /categories` (Issue #11)
+
+**Pelaksana:** Panji
+**Branch:** `chore/category-list` (terhubung ke issue #11)
+**Status issue #11:** PR dibuka dengan `Closes #11`; issue tertutup otomatis setelah PR di-review dan di-merge Team Lead.
+
+### Keputusan tim
+
+| Hal | Keputusan | Alasan |
+|---|---|---|
+| Daftar kategori | **Final**: Fiction, Science, Technology, History, Education, Other (6 kategori, sama dengan seed sejak 2026-11-13). Tidak ada kategori kustom, fitur kelola kategori, atau perubahan schema | Cukup untuk scope proyek saat ini |
+| `GET /api/v1/categories` | **Tetap wajib login (JWT)**; guard di `CategoriesController` tidak dilepas | Kategori hanya dibutuhkan di form buku setelah login; tidak ada kebutuhan mengambil kategori sebelum login; kebijakan autentikasi tetap konsisten |
+
+### Sinkronisasi branch
+
+Branch dibuat dari `main` lama (`cd252f3`), lalu di-fast-forward ke `origin/main` (`224b784`) dan ke `chore/observe-module-decision` (`bfa7542`). Penumpukan ini dipilih karena (1) kedua issue mengubah baris yang sama di dokumen ini dan JOBDESK, sehingga branch terpisah pasti konflik, dan (2) `node_modules` sudah tanpa `@nestjs/observe`, sedangkan kode `main` lama masih membutuhkannya. Tidak ada riwayat yang ditulis ulang. Konsekuensi: **PR #18 harus di-merge lebih dulu**; setelah itu PR issue #11 hanya menampilkan commit miliknya.
+
+### Verifikasi dan perubahan
+
+| Pekerjaan | File | Hasil |
+|---|---|---|
+| Verifikasi seed berisi tepat 6 kategori final | `backend/prisma/seed.ts` | ✅ Sesuai; komentar "daftar usulan" diganti keterangan daftar final + pengingat bahwa perubahan daftar adalah perubahan kontrak. Daftar tidak diubah |
+| Verifikasi guard JWT | `backend/src/categories/categories.controller.ts` | ✅ `@UseGuards(JwtAuthGuard)` tetap; komentar merujuk keputusan issue #11 |
+| Seed dijalankan ulang (`npm run db:seed`) | — | ✅ "6 kategori diproses, total 6 kategori di database" (idempotent) |
+| e2e: daftar **tepat** 6 kategori final, urut A–Z, hanya `id`/`name`; token rusak → 401 | `backend/test/app.e2e-spec.ts` | ✅ 2 tes baru, mengunci keputusan |
+| Bruno: tes `include.members` diganti pemeriksaan daftar persis | `bruno/02 Categories/01 Categories - list.bru` | ✅ |
+| PRD v1.3 §4.3 dan §9 | `docs/PRD.md` | Daftar final + akses wajib login. Sekaligus memperbaiki salah tempat dari v1.2: paragraf daftar kategori sempat tersisip di bawah judul §4.4 (Dashboard Statistics) dan dikembalikan ke §4.3 |
+| API Contract §3 | `docs/API-CONTRACT.md` | Daftar final, akses wajib login, riwayat perubahan, jumlah tes |
+| JOBDESK v1.5 §5, §10, §11 | `docs/JOBDESK-PANJI.md` | Keputusan final, jumlah tes |
+
+Endpoint, bentuk response, dan schema database **tidak berubah**; frontend tidak terdampak.
+
+### Pengujian (di atas branch yang sudah memuat penghapusan Observe)
+
+| Uji | Hasil |
+|---|---|
+| `npm run build` | ✅ exit 0 |
+| `tsc --noEmit` (termasuk test dan seed) | ✅ |
+| `npm run lint` | ✅ exit 0 |
+| Prettier (file yang diubah) | ✅ |
+| `npm test` (unit) | ✅ 5/5 |
+| `npm run test:e2e` | ✅ 33/33 (31 + 2 baru) |
+| Bruno seluruh koleksi (dev server dari branch ini) | ✅ 73 request, 115/115 tes |
+| Bruno `01 Auth` + `02 Categories` | ✅ 21 request, 34/34 tes |
+| `server.log` | ✅ Tidak ada error runtime |
+
 ---
 
 ## Pekerjaan Tersisa
@@ -762,8 +813,8 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Pekerjaan | Issue | Pemilik | Status |
 |---|---|---|---|
 | Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | #9 | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
-| Keputusan ObserveModule (isu keamanan #8) | #10 | Panji | 🔄 Diputuskan: **dihapus**. PR dari `chore/observe-module-decision` menunggu review/merge |
-| Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | #11 | Tim | ⏳ |
+| Keputusan ObserveModule (isu keamanan #8) | #10 | Panji | 🔄 Diputuskan: **dihapus**. PR #18 menunggu review/merge |
+| Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik | #11 | Tim | 🔄 Diputuskan: 6 kategori final, tetap wajib login. PR menunggu review/merge (setelah PR #18) |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |
 | Opsional: rate limiting login/register | #14 | Panji | — |
