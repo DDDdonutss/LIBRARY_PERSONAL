@@ -1,0 +1,29 @@
+meta {
+  name: Register - whitespace name
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "   ",
+    "email": "ws.{{$timestamp}}@example.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("status 400 — nama hanya spasi ditolak", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("pesan validasi menyebut name", function () {
+    expect(res.body.message.join(" ")).to.include("name should not be empty");
+  });
+}

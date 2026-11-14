@@ -8,8 +8,8 @@ import {
   MaxLength,
   ValidateIf,
 } from 'class-validator';
+import { trimString } from '../../common/transforms/trim-string.js';
 import { BookStatus } from '../../generated/prisma/enums.js';
-import { trimString } from './create-book.dto.js';
 
 // Field yang boleh tidak dikirim, tetapi TIDAK boleh null.
 // (@IsOptional() meloloskan null, padahal kolom title/author/status wajib terisi.)

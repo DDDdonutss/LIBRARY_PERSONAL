@@ -1,0 +1,29 @@
+meta {
+  name: Register - name trimmed
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "  User Trim  ",
+    "email": "trim.{{$timestamp}}@example.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("spasi di awal/akhir nama dihapus sebelum disimpan", function () {
+    expect(res.body.user.name).to.equal("User Trim");
+  });
+}

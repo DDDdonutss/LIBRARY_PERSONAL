@@ -66,7 +66,7 @@ export class AuthService {
     try {
       user = await this.prisma.user.create({
         data: {
-          name: registerDto.name.trim(),
+          name: registerDto.name, // sudah di-trim oleh @Transform di RegisterDto
           email,
           passwordHash,
         },

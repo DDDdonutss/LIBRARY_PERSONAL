@@ -108,6 +108,32 @@ describe('Personal Library API (e2e)', () => {
         .send({ name: '', email: 'bukan-email', password: '123' })
         .expect(400));
 
+    it('register dengan name hanya spasi → 400', async () => {
+      const res = await api()
+        .post(`${API}/auth/register`)
+        .send({ name: '   ', email: uniqueEmail('ws'), password: PASSWORD });
+
+      // Bila regresi membuat request ini lolos, user tetap dibersihkan.
+      if (res.body?.user?.id) createdUserIds.push(res.body.user.id);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message.join(' ')).toContain('name');
+    });
+
+    it('register dengan name berspasi di awal/akhir → 201 dan name di-trim', async () => {
+      const res = await api()
+        .post(`${API}/auth/register`)
+        .send({
+          name: '  Panji  ',
+          email: uniqueEmail('trim'),
+          password: PASSWORD,
+        })
+        .expect(201);
+
+      createdUserIds.push(res.body.user.id);
+      expect(res.body.user.name).toBe('Panji');
+    });
+
     it('register dengan field tidak dikenal → 400', () =>
       api()
         .post(`${API}/auth/register`)

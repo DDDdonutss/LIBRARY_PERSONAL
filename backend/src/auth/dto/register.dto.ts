@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -5,8 +6,12 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
+import { trimString } from '../../common/transforms/trim-string.js';
 
 export class RegisterDto {
+  // Trim berjalan SEBELUM validasi, sehingga nama yang hanya berisi spasi
+  // ditolak @IsNotEmpty() (tanpa ini nama "   " lolos dan tersimpan "").
+  @Transform(trimString)
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)

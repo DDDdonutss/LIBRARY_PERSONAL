@@ -4,7 +4,7 @@
 **Status:** Lengkap untuk scope PRD v1.0 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 60 request / 91 tes) dan e2e test (`npm run test:e2e`, 26 tes), kecuali ditandai lain.
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 62 request / 95 tes) dan e2e test (`npm run test:e2e`, 28 tes), kecuali ditandai lain.
 
 ---
 
@@ -89,7 +89,7 @@ Membuat akun baru dan langsung mengembalikan token (user tidak perlu login ulang
 
 | Field | Tipe | Aturan |
 |---|---|---|
-| `name` | string | Wajib, tidak kosong, maks. 100 karakter. Spasi di awal/akhir dihapus sebelum disimpan (⚠️ nama berisi spasi saja saat ini masih diterima — akan diperbaiki; frontend sebaiknya ikut memvalidasi) |
+| `name` | string | Wajib, maks. 100 karakter. Spasi di awal/akhir dihapus **sebelum validasi**, sehingga nama kosong atau hanya berisi spasi ditolak 400 (`name should not be empty`) dan nama tersimpan tanpa spasi berlebih |
 | `email` | string | Wajib, format email valid, maks. 255 karakter. Disimpan dalam huruf kecil |
 | `password` | string | Wajib, 8–72 karakter **dan** maks. 72 byte UTF-8 (batas bcrypt) |
 
@@ -357,3 +357,4 @@ Kirim hanya field yang ingin diubah. Contoh mengubah status membaca:
 | 2026-11-13 | Tambah `GET /categories` |
 | 2026-11-13 | Tambah endpoint Books: CRUD, search, filter, pagination |
 | 2026-11-13 | Endpoint bawaan `GET /api/v1` ("Hello World") dihapus; catatan pengujian e2e; catatan validasi `name` |
+| 2026-11-14 | `POST /auth/register`: `name` di-trim sebelum validasi — nama berisi spasi saja kini ditolak 400 (sebelumnya diterima dan tersimpan kosong). Jumlah tes diperbarui |
