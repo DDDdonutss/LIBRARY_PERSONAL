@@ -1,0 +1,21 @@
+meta {
+  name: Delete - already deleted
+  type: http
+  seq: 33
+}
+
+delete {
+  url: {{baseUrl}}/books/{{book3Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("status 404", function () {
+    expect(res.status).to.equal(404);
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Update - remove category
+  type: http
+  seq: 27
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book1Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "categoryId": null
+  }
+}
+
+tests {
+  test("status 200 dan kategori dihapus", function () {
+    expect(res.status).to.equal(200); expect(res.body.categoryId).to.equal(null); expect(res.body.category).to.equal(null);
+  });
+}

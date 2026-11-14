@@ -1,0 +1,21 @@
+meta {
+  name: User B - delete book of A
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/books/{{book2Id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+tests {
+  test("status 404", function () {
+    expect(res.status).to.equal(404);
+  });
+}

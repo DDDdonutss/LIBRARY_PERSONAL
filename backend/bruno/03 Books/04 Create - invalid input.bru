@@ -1,0 +1,33 @@
+meta {
+  name: Create - invalid input
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "",
+    "author": "Penulis",
+    "status": "DIBACA"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("pesan untuk title dan status", function () {
+    const m = res.body.message.join(" "); expect(m).to.include("title"); expect(m).to.include("status");
+  });
+}

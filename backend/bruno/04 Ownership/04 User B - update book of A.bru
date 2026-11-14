@@ -1,0 +1,27 @@
+meta {
+  name: User B - update book of A
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book2Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userBToken}}
+}
+
+body:json {
+  {
+    "title": "Diubah oleh B"
+  }
+}
+
+tests {
+  test("status 404", function () {
+    expect(res.status).to.equal(404);
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create - userId in body rejected
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Buku",
+    "author": "Penulis",
+    "userId": "00000000-0000-4000-8000-000000000000"
+  }
+}
+
+tests {
+  test("status 400 (userId tidak boleh dikirim client)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

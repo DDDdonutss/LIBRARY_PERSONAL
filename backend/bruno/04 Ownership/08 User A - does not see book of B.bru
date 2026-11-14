@@ -1,0 +1,21 @@
+meta {
+  name: User A - does not see book of B
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/books
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+tests {
+  test("daftar user A tetap 2 buku miliknya", function () {
+    expect(res.status).to.equal(200); expect(res.body.meta.total).to.equal(2); res.body.data.forEach((b) => expect(b.title).to.not.equal("Buku Milik B"));
+  });
+}

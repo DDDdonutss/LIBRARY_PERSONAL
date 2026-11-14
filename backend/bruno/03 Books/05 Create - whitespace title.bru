@@ -1,0 +1,28 @@
+meta {
+  name: Create - whitespace title
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "     ",
+    "author": "Penulis"
+  }
+}
+
+tests {
+  test("status 400 (judul kosong setelah trim)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create - categoryId not uuid
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Buku",
+    "author": "Penulis",
+    "categoryId": "fiction"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

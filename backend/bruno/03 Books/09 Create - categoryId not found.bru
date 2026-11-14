@@ -1,0 +1,33 @@
+meta {
+  name: Create - categoryId not found
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": "Buku",
+    "author": "Penulis",
+    "categoryId": "00000000-0000-4000-8000-000000000000"
+  }
+}
+
+tests {
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("pesan kategori tidak ditemukan", function () {
+    expect(res.body.message).to.equal("Kategori tidak ditemukan");
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Update - null title rejected
+  type: http
+  seq: 28
+}
+
+patch {
+  url: {{baseUrl}}/books/{{book1Id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userAToken}}
+}
+
+body:json {
+  {
+    "title": null
+  }
+}
+
+tests {
+  test("status 400 (title tidak boleh null)", function () {
+    expect(res.status).to.equal(400);
+  });
+}
