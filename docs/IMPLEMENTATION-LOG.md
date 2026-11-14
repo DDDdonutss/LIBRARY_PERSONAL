@@ -70,7 +70,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 9 | `docs/record-pr-8` | `0ba57b0` | #17 | `224b784` | ✅ Merged 2026-11-15 |
 | 10 | `chore/observe-module-decision` | `bfa7542` | #18 | `eabb131` | ✅ Merged 2026-11-15; menutup issue #10 |
 | 11 | `chore/category-list` | `7b3b229` | #19 | `f57d87e` | ✅ Merged 2026-11-15 (setelah #18, bertumpuk di atas branch 10); menutup issue #11 |
-| 12 | `docs/record-pr-18-19` | — | — | — | Pencatatan merge PR #18–#19 (dokumen ini) |
+| 12 | `docs/record-pr-18-19` | `ea55c95` | #20 | `b245340` | ✅ Merged 2026-11-15 |
+| 13 | `docs/sync-docs-audit` | — | — | — | Audit kesesuaian dokumen (entri "Audit Kesesuaian Dokumen dan Alur Kerja") |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -847,16 +848,64 @@ Dev server dihentikan dulu agar `npm run build` tidak menghentikannya, lalu dija
 
 ---
 
+## 2026-11-15 — Audit Kesesuaian Dokumen dan Alur Kerja
+
+**Pelaksana:** Panji
+**Branch:** `docs/sync-docs-audit`
+
+Atas permintaan Team Lead, seluruh dokumen di `docs/` (PRD, JOBDESK, API Contract, Implementation Log, dan `MASTER-PROMPT.md` lokal) dicocokkan dengan kode, test, riwayat Git, dan alur kerja yang disepakati.
+
+### Pemeriksaan otomatis
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Endpoint di kode vs API Contract | ✅ 10 route di controller = 10 endpoint terdokumentasi |
+| Attribution AI di seluruh riwayat `main` | ✅ 0 |
+| `.env` atau `MASTER-PROMPT.md` pernah ter-commit | ✅ Tidak pernah (`MASTER-PROMPT.md` di-ignore lewat `.gitignore`) |
+| Commit langsung ke `main` (bukan merge PR) sejak inisialisasi | ✅ Tidak ada; semua lewat PR #1–#20 dan di-merge Team Lead |
+| Jumlah test di semua dokumen | ✅ Konsisten: Bruno 73/115, e2e 33, unit 5 |
+| Issue #9 (repository lama) | ✅ Ketiga repository sudah tidak ada (`gh repo list`); issue ditutup dengan komentar bukti |
+| Dashboard NestJS Observe | ✅ Team Lead melaporkan project tidak memiliki API key ("This project has applications but no API keys"), sehingga tidak ada yang dapat mengirim telemetri |
+
+### Dokumen usang yang diperbaiki di branch ini
+
+| Dokumen | Sebelum | Sesudah |
+|---|---|---|
+| `JOBDESK-PANJI.md` header | `Version: 1.1` padahal riwayat revisi sudah sampai 1.5 | `Version: 1.5`; tanggal status §10 → 2026-11-15 |
+| `API-CONTRACT.md` | "Lengkap untuk scope PRD v1.2"; status 201 hanya menyebut register | PRD v1.3; 201 untuk register dan tambah buku |
+| `README.md` root | "scope PRD v1.2" | "scope PRD v1.3" |
+| `PRD.md` | §2 tidak menyebut unit test; §12 "Status per 2026-11-13" | Unit test disebut; tanggal 2026-11-15 (dicatat di revisi 1.3) |
+| `IMPLEMENTATION-LOG.md` | Issue #9 masih ⏳; PR #20 belum tercatat | Diperbarui (tabel branch dan Pekerjaan Tersisa) |
+
+### Konflik yang membutuhkan keputusan Team Lead
+
+| # | Konflik | Dampak | Rekomendasi |
+|---|---|---|---|
+| 1 | `MASTER-PROMPT.md` §2.2 butir 5 "Dashboard is excluded" vs PRD v1.2+ FR-14 (statistik dashboard **masuk scope** atas permintaan mentor, disetujui Team Lead 2026-11-14) | MASTER-PROMPT menyatakan keputusan §2.2 "authoritative"; pembaca baru bisa mengira `GET /books/stats` melanggar scope | Perbarui butir 5 menjadi "Dashboard sederhana (statistik) masuk scope sejak PRD v1.2". `MASTER-PROMPT.md` sengaja tidak diubah tanpa izin (instruksi Team Lead) |
+
+Konflik lain antara MASTER-PROMPT dan dokumen repository sudah diselesaikan sebelumnya dan tercatat di entri "Sinkronisasi Dokumen" (lokasi `.env.example`, penomoran phase, base path).
+
+### Penyimpangan alur kerja yang dicatat
+
+| # | Penyimpangan | Keterangan |
+|---|---|---|
+| 1 | `/review` dan `/security-review` tidak dijalankan **sebelum** merge PR #18 dan #19, padahal alur yang disepakati (2026-11-15) meminta review sebelum merge | Risiko rendah (penghapusan dependensi dan perubahan komentar/test/dokumen), tetapi tetap tidak sesuai alur. Dapat dijalankan susulan pada `main` |
+| 2 | PR #19 bertumpuk di atas branch #10, bukan langsung dari `main` (MASTER-PROMPT §9 butir 1) | Disengaja dan tercatat: kedua issue mengubah baris dokumen yang sama; urutan merge dipatuhi |
+| 3 | Format respons 7 bagian (MASTER-PROMPT §12) dan rekomendasi **satu** langkah berikutnya (§13) tidak selalu diikuti; laporan cenderung berbentuk tabel dan daftar beberapa langkah | Catatan untuk sesi berikutnya |
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
 
 | Pekerjaan | Issue | Pemilik | Status |
 |---|---|---|---|
-| Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library` | #9 | Panji (Team Lead) | ⏳ Manual (Settings → Danger Zone) |
+| ~~Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library`~~ | #9 | Panji (Team Lead) | ✅ Sudah tidak ada; issue ditutup 2026-11-15 |
+| Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard) — dokumen lokal, perlu izin Team Lead | — | Panji (Team Lead) | ⏳ Menunggu keputusan |
 | ~~Keputusan ObserveModule (isu keamanan #8)~~ | #10 | Panji | ✅ Dihapus — PR #18, issue ditutup 2026-11-15 |
 | ~~Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik~~ | #11 | Tim | ✅ 6 kategori final, tetap wajib login — PR #19, issue ditutup 2026-11-15 |
-| Hapus baris `OBSERVE_*` dari `backend/.env` lokal dan cabut key pair di dashboard NestJS Observe (tidak lagi dipakai aplikasi) | — | Panji (Team Lead) | ⏳ Manual |
+| Hapus baris `OBSERVE_*` dari `backend/.env` lokal (tidak lagi dipakai aplikasi) | — | Panji (Team Lead) | ⏳ Manual. Dashboard Observe sudah tanpa API key |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |
 | Opsional: rate limiting login/register | #14 | Panji | — |

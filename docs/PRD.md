@@ -45,7 +45,7 @@ Pengelolaan koleksi buku secara manual dapat menyulitkan pengguna dalam:
 | Authentication | JWT |
 | API | REST API |
 | Validation | DTO + class-validator |
-| API Testing | Bruno (`backend/bruno/`) + e2e test Vitest/supertest |
+| API Testing | Bruno (`backend/bruno/`) + e2e test Vitest/supertest + unit test Vitest |
 | Version Control | Git & GitHub |
 
 Versi yang dipakai backend: NestJS 12, Prisma 7, PostgreSQL 14+ (diuji dengan 18), Node.js 22.12+ (diuji dengan 26).
@@ -278,7 +278,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 
 ## 12. Definition of Done
 
-Status per 2026-11-13 (bukti: `docs/IMPLEMENTATION-LOG.md`):
+Status per 2026-11-15 (bukti: `docs/IMPLEMENTATION-LOG.md`):
 
 - [x] Register berhasil.
 - [x] Login menghasilkan JWT.
@@ -326,4 +326,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 | 1.0 | 2026-11-13 | Baseline awal |
 | 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |
 | 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup). Statistik dashboard sederhana masuk scope atas konfirmasi mentor: §4.4 FR-14, `GET /books/stats` di §9, §10 dan workshop note diperbarui, §11 dan §12 disesuaikan |
-| 1.3 | 2026-11-15 | §4.3: daftar kategori final (6 kategori, issue #11) dan akses kategori wajib login; paragraf daftar kategori yang tersisip keliru di bawah §4.4 pada v1.2 dikembalikan ke §4.3. §9: proteksi JWT `GET /categories` dikonfirmasi tim |
+| 1.3 | 2026-11-15 | §4.3: daftar kategori final (6 kategori, issue #11) dan akses kategori wajib login; paragraf daftar kategori yang tersisip keliru di bawah §4.4 pada v1.2 dikembalikan ke §4.3. §9: proteksi JWT `GET /categories` dikonfirmasi tim. Audit dokumen: §2 menyebut unit test, tanggal status §12 diperbarui |

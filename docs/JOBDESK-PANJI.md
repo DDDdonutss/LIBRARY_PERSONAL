@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.1  
-**Status:** Final — Baseline Tanggung Jawab (v1.1 menyinkronkan dengan hasil implementasi backend)  
+**Version:** 1.5  
+**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.5 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -308,7 +308,7 @@ Ketentuan:
 
 ### Status dan Pemetaan
 
-Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; dokumen internal, tidak disertakan di repository). Pemetaan dan status per 2026-11-13:
+Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; dokumen internal, tidak disertakan di repository). Pemetaan dan status per 2026-11-15:
 
 | Phase (Jobdesk) | Phase (MASTER-PROMPT) | Status |
 |---|---|---|

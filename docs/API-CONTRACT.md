@@ -1,7 +1,7 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Lengkap untuk scope PRD v1.2 — diperbarui setiap kali endpoint berubah.
+**Status:** Lengkap untuk scope PRD v1.3 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
 Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 73 request / 115 tes) dan e2e test (`npm run test:e2e`, 33 tes), kecuali ditandai lain. Logika `GET /books/stats` juga dicakup unit test (`npm test`, 5 tes).
@@ -66,7 +66,7 @@ Frontend sebaiknya menangani `message` sebagai string **atau** array.
 | Status | Kapan |
 |---|---|
 | `200 OK` | Berhasil (GET, login, PATCH, DELETE) |
-| `201 Created` | Resource baru dibuat (register) |
+| `201 Created` | Resource baru dibuat (register, tambah buku) |
 | `400 Bad Request` | Input tidak valid, field tidak dikenal, ID bukan UUID |
 | `401 Unauthorized` | Belum login / token tidak valid / kredensial salah |
 | `404 Not Found` | Resource tidak ada atau bukan milik user |
