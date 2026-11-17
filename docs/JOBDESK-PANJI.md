@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.7  
-**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.7 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
+**Version:** 1.8  
+**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.8 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -181,6 +181,7 @@ Semua endpoint buku memerlukan autentikasi. `GET /categories` juga memerlukan au
 - Jangan mengembalikan password atau passwordHash.
 - Endpoint privat harus menggunakan JWT Guard.
 - Token milik user yang sudah dihapus ditolak (401) di semua endpoint privat (issue #15).
+- Login dan register dibatasi per IP dengan `@nestjs/throttler` (`AUTH_RATE_LIMIT_PER_MINUTE`, default 5 per menit; issue #14).
 
 ### Authorization
 Setiap query terhadap buku harus mempertimbangkan pemiliknya.
@@ -258,6 +259,7 @@ backend/
 │   │   ├── auth.module.ts
 │   │   ├── jwt.config.ts        # Validasi JWT_SECRET, JWT_EXPIRES_IN
 │   │   ├── jwt.config.spec.ts   # Unit test JWT_EXPIRES_IN (npm test)
+│   │   ├── rate-limit.config.ts # Validasi AUTH_RATE_LIMIT_PER_MINUTE (+ spec)
 │   │   ├── dto/                 # register.dto.ts, login.dto.ts
 │   │   ├── strategies/          # jwt.strategy.ts (+ spec: user terhapus → 401)
 │   │   ├── guards/              # jwt-auth.guard.ts
@@ -300,6 +302,7 @@ Variabel yang dipakai (lihat `backend/.env.example`):
 | `JWT_EXPIRES_IN` | Tidak | `1d` | Masa berlaku token. Angka saja = detik (`3600`), atau angka + satuan `s`/`m`/`h`/`d`; format lain membuat aplikasi menolak start |
 | `PORT` | Tidak | `3001` | Port backend |
 | `CORS_ORIGIN` | Tidak | `http://localhost:3000` | Origin frontend, pisahkan dengan koma bila lebih dari satu |
+| `AUTH_RATE_LIMIT_PER_MINUTE` | Tidak | `5` | Batas percobaan login dan register per menit per IP (dihitung terpisah); bilangan bulat positif, nilai lain → aplikasi menolak start |
 
 Integrasi NestJS Observe (beserta `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`) dihapus pada 2026-11-15 (GitHub issue #10).
 
@@ -385,7 +388,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 48 tes), dan unit test (`npm test`, 41 tes: statistik, `JWT_EXPIRES_IN`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 51 tes), dan unit test (`npm test`, 52 tes: statistik, `JWT_EXPIRES_IN`, `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -394,6 +397,7 @@ Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129
 - [x] Login berhasil.
 - [x] Password salah ditolak.
 - [x] Token invalid ditolak. *(tanpa token, rusak, tanda tangan palsu, kedaluwarsa, milik user yang sudah dihapus)*
+- [x] Percobaan login/register berlebihan dibatasi. *(429 setelah batas per menit per IP; login dan register dihitung terpisah)*
 - [x] Konfigurasi JWT tidak valid ditolak saat startup. *(`JWT_SECRET` < 32 karakter, format `JWT_EXPIRES_IN` tidak dikenal)*
 - [x] Email berspasi di awal/akhir di-trim sebelum validasi.
 - [x] Current user berjalan.
@@ -465,7 +469,7 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 
 PR 1–7 di-merge ke `main` pada 2026-11-14, PR 8 pada 2026-11-15. Branch 8 dibuat dari `main` setelah merge PR 7.
 
-Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Temuan audit kode 2026-11-17 dilacak sebagai #22 (hardening backend, branch `fix/backend-hardening`, PR #24) dan #23 (unit test dan CI). Issue #15 (token milik user terhapus, opsi a) dikerjakan di branch `fix/jwt-deleted-user` bersama perbaikan hasil review PR #24. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
+Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Temuan audit kode 2026-11-17 dilacak sebagai #22 (hardening backend, branch `fix/backend-hardening`, PR #24) dan #23 (unit test dan CI). Issue #15 (token milik user terhapus, opsi a) dikerjakan di branch `fix/jwt-deleted-user` bersama perbaikan hasil review PR #24 (PR #25). Issue #14 (rate limiting) dikerjakan di branch `feature/auth-rate-limit`. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -481,3 +485,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.5 | 2026-11-15 | §5 dan §10: daftar kategori final dan proteksi JWT `GET /categories` dikonfirmasi (issue #11); jumlah tes e2e |
 | 1.6 | 2026-11-17 | Hardening hasil audit kode (issue #22, #16): §8 file baru (`jwt.config.spec.ts`, `prisma-exception.filter.ts`, folder Bruno `06 Hardening`); §9 format `JWT_EXPIRES_IN`; §11 jumlah tes dan item checklist baru; §13 issue #22–#23 |
 | 1.7 | 2026-11-17 | Issue #15 (opsi a): §6 token milik user terhapus ditolak; §8 file spec baru; §11 jumlah tes dan checklist token; §13 branch `fix/jwt-deleted-user` |
+| 1.8 | 2026-11-17 | Issue #14: §6 rate limiting login/register; §8 `rate-limit.config.ts`; §9 `AUTH_RATE_LIMIT_PER_MINUTE`; §11 jumlah tes dan checklist; §13 branch `feature/auth-rate-limit` |

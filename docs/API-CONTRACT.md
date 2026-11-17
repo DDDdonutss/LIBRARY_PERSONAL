@@ -1,10 +1,10 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Lengkap untuk scope PRD v1.5 — diperbarui setiap kali endpoint berubah.
+**Status:** Lengkap untuk scope PRD v1.6 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 48 tes), kecuali ditandai lain. Unit test (`npm test`, 41 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN`, validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 51 tes), kecuali ditandai lain. Unit test (`npm test`, 52 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN` dan rate limiting (§2.4), validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
 
 ---
 
@@ -71,6 +71,7 @@ Frontend sebaiknya menangani `message` sebagai string **atau** array.
 | `401 Unauthorized` | Belum login / token tidak valid / kredensial salah |
 | `404 Not Found` | Resource tidak ada atau bukan milik user |
 | `409 Conflict` | Data bentrok (email sudah terdaftar) |
+| `429 Too Many Requests` | Terlalu banyak percobaan login/register dalam satu menit (§2.4) |
 | `500 Internal Server Error` | Kesalahan server yang tidak terduga |
 
 Error database yang dikenali tetapi tidak ditangani endpoint secara khusus **tidak** dikembalikan sebagai 500. Pesan khusus endpoint (mis. `"Email sudah terdaftar"`, `"Buku tidak ditemukan"`) tetap didahulukan; sisanya memakai pesan umum:
@@ -131,6 +132,7 @@ Membuat akun baru dan langsung mengembalikan token (user tidak perlu login ulang
 | 400 | Validasi DTO gagal / field tidak dikenal | array pesan validasi |
 | 400 | Password > 72 byte | `"Password melebihi batas ukuran yang didukung"` |
 | 409 | Email sudah terdaftar (tidak peka huruf besar/kecil) | `"Email sudah terdaftar"` |
+| 429 | Melebihi batas percobaan register (§2.4) | `"Terlalu banyak percobaan. Coba lagi nanti."` |
 
 ### 2.2 `POST /auth/login`
 
@@ -169,6 +171,7 @@ Membuat akun baru dan langsung mengembalikan token (user tidak perlu login ulang
 |---|---|---|
 | 400 | Validasi DTO gagal | array pesan validasi |
 | 401 | Email tidak terdaftar **atau** password salah | `"Email atau password salah"` (sengaja sama) |
+| 429 | Melebihi batas percobaan login (§2.4) | `"Terlalu banyak percobaan. Coba lagi nanti."` |
 
 ### 2.3 `GET /auth/me` 🔒
 
@@ -190,6 +193,21 @@ Mengembalikan data user yang sedang login. Cocok dipanggil saat aplikasi dibuka 
 | Status | Kondisi |
 |---|---|
 | 401 | Token tidak ada, rusak, palsu, kedaluwarsa, atau user sudah tidak ada |
+
+### 2.4 Rate Limiting Login dan Register
+
+`POST /auth/login` dan `POST /auth/register` dibatasi **per IP**: maksimal `AUTH_RATE_LIMIT_PER_MINUTE` request per menit (default **5**), dihitung **terpisah** untuk login dan register. Request yang ditolak validasi (400) atau kredensial salah (401) tetap dihitung.
+
+Request yang melebihi batas dijawab:
+
+```json
+{
+  "statusCode": 429,
+  "message": "Terlalu banyak percobaan. Coba lagi nanti."
+}
+```
+
+dengan header `Retry-After` (detik sampai boleh mencoba lagi). Frontend sebaiknya menampilkan pesan ini dan tidak mencoba ulang otomatis. Endpoint lain (termasuk `GET /auth/me`) tidak dibatasi.
 
 ---
 
@@ -409,3 +427,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-15 | §3: daftar 6 kategori dinyatakan **final** dan `GET /categories` tetap wajib login (keputusan tim, issue #11). Endpoint dan bentuk response tidak berubah |
 | 2026-11-17 | Hardening hasil audit (issue #22): `JWT_EXPIRES_IN` tanpa satuan = detik (§1.3); error database yang tidak ditangani → 409/400/404, bukan 500 (§1.5, §4.9); email di-trim sebelum validasi (§2.1, §2.2); batas atas `page` dan pencarian literal untuk `%`, `_`, `\` (§4.4). §1.3 diperbaiki agar sesuai implementasi untuk token milik user yang sudah dihapus (keputusan akhir di issue #15). Endpoint dan bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Token milik user yang sudah dihapus → 401 di semua endpoint 🔒 (issue #15, opsi a; §1.3, §4.9). Batas atas `page` menjadi 90071992547409 agar offset selalu tepat (§4.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
+| 2026-11-17 | Rate limiting login dan register per IP (issue #14): status 429 dengan `Retry-After` (§1.5, §2.1, §2.2, §2.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |

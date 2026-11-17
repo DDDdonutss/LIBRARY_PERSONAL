@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
-| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 48 tes; unit 41 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 51 tes; unit 52 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#24 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24, merged); token user terhapus #15 dan perbaikan review PR #24 di PR #25 (menunggu merge); rate limiting #14 dan unit test/CI #23 belum; demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#25 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24) dan token user terhapus #15 (PR #25) merged; rate limiting #14 di PR #26 (menunggu merge); unit test/CI #23 belum; demo belum) |
 
 ### Endpoint
 
@@ -73,7 +73,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 12 | `docs/record-pr-18-19` | `ea55c95` | #20 | `b245340` | ✅ Merged 2026-11-15 |
 | 13 | `docs/sync-docs-audit` | `4867b82` | #21 | `90a8888` | ✅ Merged 2026-11-15 — audit kesesuaian dokumen (entri "Audit Kesesuaian Dokumen dan Alur Kerja") |
 | 14 | `fix/backend-hardening` | `a66df34` | #24 | `906edf5` | ✅ Merged 2026-11-17; menutup issue #22 dan #16 |
-| 15 | `fix/jwt-deleted-user` | `411c998` (+ commit dokumen) | #25 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #15 (opsi a) dan memuat perbaikan review PR #24 |
+| 15 | `fix/jwt-deleted-user` | `8be53db` | #25 | `63ca322` | ✅ Merged 2026-11-17; menutup issue #15 (opsi a) dan memuat perbaikan review PR #24 |
+| 16 | `feature/auth-rate-limit` | `f4d2a30` (+ commit dokumen) | #26 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #14 |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -1073,6 +1074,73 @@ Issue #15: **opsi (a)** — `JwtStrategy.validate()` memeriksa keberadaan user, 
 
 ---
 
+## 2026-11-17 — Merge PR #25, Penutupan Ulang Issue #10, dan Rate Limiting (Issue #14)
+
+**Pelaksana:** Panji
+**Branch:** `feature/auth-rate-limit` (terhubung ke issue #14; di-fast-forward ke `main` `63ca322` sebelum diubah)
+**Commit:** `f4d2a30` `feat(auth): rate limit login and register per IP`
+**PR:** #26 (https://github.com/DDDdonutss/LIBRARY_PERSONAL/pull/26) — `Closes #14`; menunggu review dan merge Team Lead.
+
+### Merge PR #25
+
+PR #25 di-merge Team Lead 2026-11-17 dengan "Create a merge commit" → `main` = `63ca322`; issue #15 tertutup otomatis. Isi tree `main` identik dengan `8be53db`, yang sudah lolos unit 41/41, e2e 48/48, build, dan Bruno 82 request / 129 tes (entri sebelumnya).
+
+### Issue #10 disesuaikan dengan kondisi kode
+
+Issue #10 sempat dibuka kembali. Atas permintaan Team Lead, setiap butir checklist dicocokkan dengan kondisi kode di `main` (`63ca322`) sebelum dicentang:
+
+| Butir checklist | Bukti | Status |
+|---|---|---|
+| Tim memutuskan: pertahankan atau hapus | Diputuskan hapus (entri "Penghapusan Integrasi NestJS Observe") | ✅ |
+| Terapkan keputusan dan jalankan ulang e2e + Bruno | PR #18; saat itu e2e 31/31 dan Bruno 73/115. Kini: 0 referensi Observe di kode, konfigurasi, test, lockfile; `node_modules/@nestjs/observe` tidak ada; `dist/` bersih; `.env` lokal tanpa `OBSERVE_*` | ✅ |
+| Catat keputusan di log (isu #8, tabel Security Review) | Baris isu #8: "✅ Closed, dihapus di PR #18" | ✅ |
+
+Ketiga butir dicentang di deskripsi issue, bukti ditambahkan sebagai komentar, dan issue ditutup kembali (*completed*).
+
+### Keputusan desain rate limiting
+
+- **`@nestjs/throttler` 6.7.1**, paket resmi NestJS (direkomendasikan `backend/AGENTS.md`). Versi 6.8.0 tidak dipakai karena baru dirilis 2026-11-16; 6.7.1 (2026-09-24) sudah mendukung Nest 12 dan tidak punya dependensi runtime. Lockfile hanya bertambah blok paket ini; `npm install` melaporkan 0 vulnerability.
+- **Cakupan:** `@UseGuards(ThrottlerGuard)` hanya pada `POST /auth/register` dan `POST /auth/login`; hitungan per route per IP. Guard berjalan sebelum `ValidationPipe`, sehingga request tidak valid tetap dihitung. Endpoint lain tidak dibatasi.
+- **Batas:** `AUTH_RATE_LIMIT_PER_MINUTE` (default 5, sesuai usulan issue #14), TTL 1 menit. Variabel ini diperlukan karena koleksi Bruno lengkap mengirim 12 request register dan 6 request login dalam beberapa detik; untuk menjalankannya, batas dinaikkan sementara (mis. 50). Nilai tidak valid → aplikasi gagal start.
+- **Respons:** 429 `"Terlalu banyak percobaan. Coba lagi nanti."` dengan header `Retry-After` (detik).
+- **Batasan:** hitungan in-memory per proses (hilang saat restart, tidak dibagi antar-instance); pelacakan berdasarkan `req.ip`, sehingga di belakang reverse proxy perlu `trust proxy`. Ini menggantikan "Risiko yang Diterima: belum ada rate limiting" (entri 2026-11-13).
+
+### Test-driven development
+
+1. **Merah:** `rate-limit.config.spec.ts` gagal dimuat (modul belum ada). Setelah modul konfigurasi dibuat, e2e: 2 gagal dari 51 — percobaan ke-6 login → 401 dan ke-6 register → 400 (belum ada pembatasan).
+2. **Hijau:** unit 52/52, e2e 51/51.
+
+### Perubahan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| Dependensi `@nestjs/throttler` 6.7.1 | `package.json`, `package-lock.json` | ✅ | ✅ | ✅ | ✅ |
+| `ThrottlerModule.forRootAsync` (TTL 1 menit, batas dari env, pesan 429) | `src/auth/auth.module.ts` | ✅ | ✅ | ✅ | ✅ |
+| Validasi `AUTH_RATE_LIMIT_PER_MINUTE` (fail-fast) | `src/auth/rate-limit.config.ts` (+ spec, 11 tes) | ✅ | ✅ | ✅ | — |
+| `ThrottlerGuard` pada register dan login | `src/auth/auth.controller.ts` | ✅ | ✅ | ✅ | ✅ |
+| E2E: aplikasi utama `overrideGuard(ThrottlerGuard)`; instance terpisah menguji 429 + `Retry-After`, hitungan terpisah, `/auth/me` tidak dibatasi (3 tes) | `test/app.e2e-spec.ts` | ✅ | ✅ | ✅ | — |
+| Dokumentasi variabel baru | `.env.example`, `backend/README.md` | ✅ | — | — | — |
+
+### Verifikasi
+
+| Uji | Hasil |
+|---|---|
+| `tsc --noEmit` (`tsconfig.json` dan `tsconfig.build.json`) | ✅ exit 0 |
+| `npm run lint` | ✅ exit 0 |
+| Prettier | ✅ |
+| Unit test | ✅ 52/52 |
+| `npm run test:e2e` | ✅ 51/51 |
+| `npm run build` | ✅ exit 0 |
+| Server hasil build, batas default: 6× login salah dari IP yang sama (curl) | ✅ 5× 401, ke-6 → 429 dengan body di atas dan `Retry-After: 60`; register tetap punya hitungan sendiri (400) |
+| Startup `AUTH_RATE_LIMIT_PER_MINUTE=abc` | ✅ gagal start (exit 1), pesan menyebut variabelnya |
+| Bruno seluruh koleksi dengan `AUTH_RATE_LIMIT_PER_MINUTE=50` | ✅ 82 request, 129/129 tes; 0 respons 429; log server 0 error |
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` (§1.5, §2.1, §2.2, §2.4 baru, riwayat, jumlah tes); `PRD.md` v1.6 (§8.1); `JOBDESK-PANJI.md` v1.8 (§6, §8, §9, §11, §13); `README.md` (versi PRD); `backend/README.md` (env, script, jumlah tes, Bruno, struktur, keamanan); `backend/.env.example`.
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
@@ -1087,12 +1155,12 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |
 | ~~Hardening hasil audit kode 2026-11-17 (JWT expiry, `page`, search, error Prisma, trim email)~~ | #22 | Panji | ✅ PR #24, merged 2026-11-17. Item INFO opsional ditunda |
-| Perbaikan hasil review ulang PR #24 (log filter, offset `page`, trim email di service) | — | Panji | ✅ PR #25, menunggu merge |
-| Rate limiting login/register (MEDIUM pada audit 2026-11-17) | #14 | Panji | ⏳ Setelah PR #25 di-merge; branch `feature/auth-rate-limit` perlu `git merge main` lagi |
-| Tolak token milik user yang sudah dihapus | #15 | Panji | ✅ Opsi (a), PR #25, menunggu merge |
+| ~~Perbaikan hasil review ulang PR #24 (log filter, offset `page`, trim email di service)~~ | — | Panji | ✅ PR #25, merged 2026-11-17 |
+| Rate limiting login/register (MEDIUM pada audit 2026-11-17) | #14 | Panji | ✅ PR #26, menunggu merge |
+| ~~Tolak token milik user yang sudah dihapus~~ | #15 | Panji | ✅ Opsi (a), PR #25, merged 2026-11-17 |
 | ~~Rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal)~~ | #16 | Panji | ✅ PR #24, merged 2026-11-17 |
-| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ⏳ Setelah PR #25 di-merge |
-| Konfirmasi apakah issue #10 sengaja dibuka kembali | #10 | Panji (Team Lead) | ⏳ |
+| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ⏳ Setelah PR #26 di-merge |
+| ~~Konfirmasi apakah issue #10 sengaja dibuka kembali~~ | #10 | Panji (Team Lead) | ✅ Disesuaikan dengan kondisi kode: checklist dicentang dan issue ditutup kembali 2026-11-17 |
 | ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16, #22–#23 | Panji | ✅ 2026-11-15; #22–#23 dari audit kode 2026-11-17 |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | — | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk #12 |
 | ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | — | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, PR #6) |

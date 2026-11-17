@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # Personal Library Management
 
-**Version:** 1.5  
-**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor; v1.3 memfinalkan daftar kategori dan akses `GET /categories`; v1.4–v1.5 merinci aturan validasi hasil hardening backend tanpa mengubah scope)  
+**Version:** 1.6  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor; v1.3 memfinalkan daftar kategori dan akses `GET /categories`; v1.4–v1.5 merinci aturan validasi hasil hardening backend tanpa mengubah scope; v1.6 menambahkan rate limiting login/register)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -189,6 +189,7 @@ Logout menggunakan pendekatan stateless:
 ### 8.1 Security
 - Password menggunakan hashing.
 - Endpoint privat dilindungi JWT Guard.
+- Login dan register dibatasi jumlah percobaannya per IP (rate limiting; default 5 per menit) untuk menghambat tebak password.
 - Data buku diisolasi berdasarkan pengguna.
 - Environment variables digunakan untuk konfigurasi rahasia.
 - File `.env` tidak boleh masuk repository.
@@ -329,3 +330,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 | 1.3 | 2026-11-15 | §4.3: daftar kategori final (6 kategori, issue #11) dan akses kategori wajib login; paragraf daftar kategori yang tersisip keliru di bawah §4.4 pada v1.2 dikembalikan ke §4.3. §9: proteksi JWT `GET /categories` dikonfirmasi tim. Audit dokumen: §2 menyebut unit test, tanggal status §12 diperbarui |
 | 1.4 | 2026-11-17 | §8.2 (hasil audit kode, issue #22): email di-trim sebelum validasi, batas atas `page`, karakter `%`/`_`/`\` pada search dicari apa adanya. Scope fitur tidak berubah |
 | 1.5 | 2026-11-17 | §8.2: batas atas `page` menjadi 90071992547409 (hasil review PR #24: offset ke database selalu tepat). Scope fitur tidak berubah |
+| 1.6 | 2026-11-17 | §8.1: rate limiting login dan register per IP (issue #14; sebelumnya dicatat di luar scope). Fitur produk tidak berubah |
