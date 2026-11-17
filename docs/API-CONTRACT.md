@@ -1,10 +1,10 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Lengkap untuk scope PRD v1.3 — diperbarui setiap kali endpoint berubah.
+**Status:** Lengkap untuk scope PRD v1.4 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 73 request / 115 tes) dan e2e test (`npm run test:e2e`, 33 tes), kecuali ditandai lain. Logika `GET /books/stats` juga dicakup unit test (`npm test`, 5 tes).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 40 tes), kecuali ditandai lain. Unit test (`npm test`, 28 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN`, dan pemetaan error database (§1.5).
 
 ---
 
@@ -35,9 +35,10 @@ Authorization: Bearer <accessToken>
 ```
 
 - `accessToken` didapat dari response register atau login.
-- Masa berlaku token default **1 hari** (`JWT_EXPIRES_IN`). Tidak ada refresh token.
+- Masa berlaku token default **1 hari** (`JWT_EXPIRES_IN`; angka tanpa satuan berarti detik). Tidak ada refresh token.
 - **Logout** dilakukan di frontend dengan menghapus token yang disimpan. Tidak ada endpoint logout (PRD §7, Logout Rule).
-- Token hilang, rusak, palsu, kedaluwarsa, atau milik user yang sudah tidak ada → `401`.
+- Token hilang, rusak, palsu, atau kedaluwarsa → `401`.
+- Token milik user yang sudah dihapus: `GET /auth/me` → `401`. Endpoint lain belum memeriksa keberadaan user (token stateless); perilaku akhirnya diputuskan di GitHub issue #15. Belum ada fitur hapus user, sehingga kondisi ini hanya terjadi bila user dihapus langsung di database.
 
 ### 1.4 CORS
 
@@ -67,11 +68,19 @@ Frontend sebaiknya menangani `message` sebagai string **atau** array.
 |---|---|
 | `200 OK` | Berhasil (GET, login, PATCH, DELETE) |
 | `201 Created` | Resource baru dibuat (register, tambah buku) |
-| `400 Bad Request` | Input tidak valid, field tidak dikenal, ID bukan UUID |
+| `400 Bad Request` | Input tidak valid, field tidak dikenal, ID bukan UUID, data terkait tidak ada |
 | `401 Unauthorized` | Belum login / token tidak valid / kredensial salah |
 | `404 Not Found` | Resource tidak ada atau bukan milik user |
 | `409 Conflict` | Data bentrok (email sudah terdaftar) |
 | `500 Internal Server Error` | Kesalahan server yang tidak terduga |
+
+Error database yang dikenali tetapi tidak ditangani endpoint secara khusus **tidak** dikembalikan sebagai 500. Pesan khusus endpoint (mis. `"Email sudah terdaftar"`, `"Buku tidak ditemukan"`) tetap didahulukan; sisanya memakai pesan umum:
+
+| Kondisi | Status | `message` |
+|---|---|---|
+| Data unik bentrok | 409 | `"Data sudah ada"` |
+| Data terkait (foreign key) tidak ada | 400 | `"Data terkait tidak ditemukan"` |
+| Record yang dibutuhkan tidak ditemukan | 404 | `"Data tidak ditemukan"` |
 
 ### 1.6 Field Tidak Dikenal
 
@@ -90,7 +99,7 @@ Membuat akun baru dan langsung mengembalikan token (user tidak perlu login ulang
 | Field | Tipe | Aturan |
 |---|---|---|
 | `name` | string | Wajib, maks. 100 karakter. Spasi di awal/akhir dihapus **sebelum validasi**, sehingga nama kosong atau hanya berisi spasi ditolak 400 (`name should not be empty`) dan nama tersimpan tanpa spasi berlebih |
-| `email` | string | Wajib, format email valid, maks. 255 karakter. Disimpan dalam huruf kecil |
+| `email` | string | Wajib, format email valid, maks. 255 karakter. Spasi di awal/akhir dihapus **sebelum validasi**. Disimpan dalam huruf kecil |
 | `password` | string | Wajib, 8–72 karakter **dan** maks. 72 byte UTF-8 (batas bcrypt) |
 
 ```json
@@ -130,7 +139,7 @@ Membuat akun baru dan langsung mengembalikan token (user tidak perlu login ulang
 
 | Field | Tipe | Aturan |
 |---|---|---|
-| `email` | string | Wajib, format email valid. Tidak peka huruf besar/kecil |
+| `email` | string | Wajib, format email valid. Spasi di awal/akhir dihapus sebelum validasi. Tidak peka huruf besar/kecil |
 | `password` | string | Wajib, maks. 72 karakter |
 
 ```json
@@ -276,9 +285,9 @@ Buku milik user lain diperlakukan **sama dengan buku yang tidak ada** (`404`), s
 
 | Parameter | Tipe | Default | Aturan |
 |---|---|---|---|
-| `page` | integer | `1` | ≥ 1 |
+| `page` | integer | `1` | 1 – 9007199254740991 (`Number.MAX_SAFE_INTEGER`); di luar rentang → 400 |
 | `limit` | integer | `10` | 1–100 |
-| `search` | string | — | Cari di **judul**, tidak peka huruf besar/kecil, cocok sebagian (`clean` cocok dengan "Clean Code"). Maks. 200 karakter |
+| `search` | string | — | Cari di **judul**, tidak peka huruf besar/kecil, cocok sebagian (`clean` cocok dengan "Clean Code"). Karakter `%`, `_`, dan `\` dicari apa adanya (bukan wildcard). Maks. 200 karakter |
 | `status` | enum | — | `WANT_TO_READ`, `READING`, atau `COMPLETED` |
 | `categoryId` | UUID | — | ID kategori |
 
@@ -381,6 +390,7 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 400 | `:id` bukan UUID | `"Validation failed (uuid is expected)"` |
 | 400 | `categoryId` berformat UUID tetapi kategorinya tidak ada | `"Kategori tidak ditemukan"` |
 | 400 | `PATCH` dengan body kosong `{}` | `"Tidak ada data yang diubah"` |
+| 400 | Data terkait hilang saat buku disimpan (mis. kategori terhapus tepat saat itu, atau akun pemilik token sudah dihapus — §1.3) | `"Data terkait tidak ditemukan"` |
 | 401 | Token tidak ada atau tidak valid | `"Unauthorized"` |
 | 404 | Buku tidak ada **atau milik user lain** | `"Buku tidak ditemukan"` |
 
@@ -398,3 +408,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-14 | Tambah `GET /books/stats` (§4.8) — ringkasan total, per status, per kategori untuk dashboard (permintaan mentor). Bagian error Books menjadi §4.9 |
 | 2026-11-14 | §4.8 diperjelas setelah code review: jaminan konsistensi `total`, pasangan `categoryId`/`name` selalu sama-sama terisi atau `null`, aturan urutan saat `count` sama, perlakuan kategori terhapus. Bentuk response tidak berubah |
 | 2026-11-15 | §3: daftar 6 kategori dinyatakan **final** dan `GET /categories` tetap wajib login (keputusan tim, issue #11). Endpoint dan bentuk response tidak berubah |
+| 2026-11-17 | Hardening hasil audit (issue #22): `JWT_EXPIRES_IN` tanpa satuan = detik (§1.3); error database yang tidak ditangani → 409/400/404, bukan 500 (§1.5, §4.9); email di-trim sebelum validasi (§2.1, §2.2); batas atas `page` dan pencarian literal untuk `%`, `_`, `\` (§4.4). §1.3 diperbaiki agar sesuai implementasi untuk token milik user yang sudah dihapus (keputusan akhir di issue #15). Endpoint dan bentuk response sukses tidak berubah; jumlah tes diperbarui |

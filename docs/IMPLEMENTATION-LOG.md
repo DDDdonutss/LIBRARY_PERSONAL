@@ -4,7 +4,7 @@
 Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
 **Repository:** https://github.com/DDDdonutss/LIBRARY_PERSONAL
-**Terakhir diperbarui:** 2026-11-15
+**Terakhir diperbarui:** 2026-11-17
 
 > Semua hash commit di dokumen ini merujuk ke riwayat repository `LIBRARY_PERSONAL`, yang ditulis ulang tanpa `docs/MASTER-PROMPT.md` (lihat entri "Remote GitHub dan Push", langkah 7).
 
@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
-| 7 — API Testing | ✅ Completed (Bruno 73 request / 115 tes; e2e 33 tes; unit 5 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 40 tes; unit 28 tes) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#19 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18); kategori final (#19); demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#21 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening issue #22 (menunggu merge), unit test dan CI issue #23; demo belum) |
 
 ### Endpoint
 
@@ -71,7 +71,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 10 | `chore/observe-module-decision` | `bfa7542` | #18 | `eabb131` | ✅ Merged 2026-11-15; menutup issue #10 |
 | 11 | `chore/category-list` | `7b3b229` | #19 | `f57d87e` | ✅ Merged 2026-11-15 (setelah #18, bertumpuk di atas branch 10); menutup issue #11 |
 | 12 | `docs/record-pr-18-19` | `ea55c95` | #20 | `b245340` | ✅ Merged 2026-11-15 |
-| 13 | `docs/sync-docs-audit` | — | — | — | Audit kesesuaian dokumen (entri "Audit Kesesuaian Dokumen dan Alur Kerja") |
+| 13 | `docs/sync-docs-audit` | `4867b82` | #21 | `90a8888` | ✅ Merged 2026-11-15 — audit kesesuaian dokumen (entri "Audit Kesesuaian Dokumen dan Alur Kerja") |
+| 14 | `fix/backend-hardening` | `48bf887` (+ commit dokumen) | #24 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #22 dan #16 |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -895,6 +896,94 @@ Konflik lain antara MASTER-PROMPT dan dokumen repository sudah diselesaikan sebe
 
 ---
 
+## 2026-11-17 — Audit Kode Menyeluruh dan Hardening Backend (Issue #22, #16)
+
+**Pelaksana:** Panji
+**Branch:** `fix/backend-hardening` (terhubung ke issue #22, dibuat dengan `gh issue develop` dari `main` `90a8888`)
+**Commit:**
+- `ff3422c` `style(prisma): format prisma module and service with Prettier`
+- `48bf887` `fix(backend): harden JWT expiry, pagination, search, and Prisma errors`
+
+**PR:** #24 (https://github.com/DDDdonutss/LIBRARY_PERSONAL/pull/24) — `Closes #22`, `Closes #16`; menunggu review dan merge Team Lead.
+
+### Audit kode pada `main` (`90a8888`)
+
+Pemeriksaan read-only seluruh repository atas permintaan Team Lead. Sekaligus menjadi review susulan yang tercatat sebagai penyimpangan alur kerja #1 pada entri sebelumnya.
+
+| Metode | Hasil |
+|---|---|
+| `/code-review` (level high, seluruh `backend/` karena tidak ada diff) | 10 temuan, semuanya diverifikasi manual |
+| `/security-review` (diterapkan ke seluruh codebase; sub-agent identifikasi) | 0 vulnerability HIGH/MEDIUM dengan confidence ≥ 0,7. Kepemilikan data (IDOR), validasi input, JWT (hanya algoritma HS256/384/512, `alg: none` ditolak), bcrypt, dan kebocoran `passwordHash`/`userId` diperiksa per endpoint |
+| `/posthog:review-hog-authoring` | Dilewati — proyek tidak memakai PostHog |
+| Pemeriksaan non-destruktif | `tsc`, oxlint, unit test lolos; Prettier gagal di 2 file `src/prisma` (#16); kompilasi query Prisma offline membuktikan `%`/`_` tidak di-escape dan `skip` 1e21 → `PrismaClientValidationError` |
+
+Ringkasan temuan: 0 CRITICAL/HIGH, 2 MEDIUM, 7 LOW, 6 INFO.
+
+| Temuan | Severity | Tindak lanjut |
+|---|---|---|
+| `JWT_EXPIRES_IN` angka tanpa satuan dibaca sebagai milidetik; format salah baru gagal saat register/login | MEDIUM | ✅ PR #24 |
+| Tidak ada rate limiting login/register | MEDIUM | #14 (branch `feature/auth-rate-limit` disinkronkan ke `90a8888`) |
+| `page` sangat besar → 500 | LOW | ✅ PR #24 |
+| Token milik user terhapus diterima di endpoint selain `/auth/me`; API Contract §1.3 menyatakan 401 | LOW | §1.3 diperbaiki agar sesuai implementasi; keputusan akhir di #15 |
+| Error Prisma tidak dipetakan terpusat (P2003 → 500) | LOW | ✅ PR #24 |
+| Wildcard `%`/`_` pada search | LOW | ✅ PR #24 |
+| Email berspasi ditolak; `trim()` di service tidak pernah tercapai | LOW | ✅ PR #24 |
+| Enumerasi email (409 register, timing login) | LOW | Sudah tercatat sebagai **risiko yang diterima** sejak 2026-11-13 (entri "Stabilize & Verify Register"). Komentar di #15 meminta keputusan ulang; risiko ini tetap diterima kecuali tim memutuskan lain |
+| Unit test sempit, tidak ada CI | LOW | #23 |
+| Shutdown hooks, helmet, index, duplikasi `seed.ts`, format Prettier, desain JWT | INFO | Format Prettier ✅ PR #24 (#16); sisanya ditunda (opsional di #22) |
+
+Tindakan GitHub: issue #22 (hardening) dan #23 (unit test dan CI) dibuat; komentar tindak lanjut di #10 (penghapusan Observe bersih) dan #15 (temuan audit dan keputusan yang dibutuhkan); `feature/auth-rate-limit` di-fast-forward dari `cd252f3` ke `90a8888`.
+
+### Test-driven development
+
+1. **Merah:** test ditulis lebih dulu. Unit: 19 gagal (`getJwtExpiresIn` mengembalikan string, mis. `'1d'`) dan `prisma-exception.filter.spec.ts` belum bisa dimuat. E2E: 6 gagal dari 40 — `page=1e20` → 500, `page=9007199254740992` → 200, `search=%` mengembalikan keempat judul, P2003 → 500, email berspasi → 400, `exp - iat` ≠ `JWT_EXPIRES_IN` dalam detik.
+2. **Hijau:** unit 28/28, e2e 40/40.
+
+### Perubahan
+
+| Pekerjaan | File | W | C | T | S |
+|---|---|---|---|---|---|
+| `getJwtExpiresIn()` mengembalikan detik; angka saja = detik, atau angka + `s`/`m`/`h`/`d`; format lain → gagal start | `src/auth/jwt.config.ts`, `jwt.config.spec.ts`, `.env.example` | ✅ | ✅ | ✅ | ✅ |
+| Batas atas `page` = `Number.MAX_SAFE_INTEGER` (offset maks. ±9 × 10^17, di bawah batas int64) | `src/books/dto/query-books.dto.ts` | ✅ | ✅ | ✅ | — |
+| `PrismaExceptionFilter` global: P2002→409, P2003→400, P2025→404, kode lain tetap 500 | `src/prisma/prisma-exception.filter.ts` (+ spec), `src/app.setup.ts` | ✅ | ✅ | ✅ | ✅ |
+| Email di-trim sebelum validasi; `normalizeEmail()` cukup menyamakan huruf | `src/auth/dto/register.dto.ts`, `login.dto.ts`, `auth.service.ts` | ✅ | ✅ | ✅ | — |
+| Escape `\`, `%`, `_` pada search judul | `src/books/books.service.ts` | ✅ | ✅ | ✅ | — |
+| Format Prettier (#16) | `src/prisma/prisma.module.ts`, `prisma.service.ts` | ✅ | ✅ | — | — |
+| E2E: 7 tes baru (masa berlaku token, email berspasi, batas `page` ×3, search literal, P2003) | `test/app.e2e-spec.ts` | ✅ | ✅ | ✅ | — |
+| Bruno folder mandiri `06 Hardening`: 9 request / 14 tes, user sendiri | `bruno/06 Hardening/` | ✅ | — | ✅ | — |
+
+### Verifikasi
+
+| Uji | Hasil |
+|---|---|
+| `tsc --noEmit` (`tsconfig.json` dan `tsconfig.build.json`) | ✅ exit 0 |
+| `npm run lint` (oxlint) | ✅ exit 0 |
+| Prettier (`src`, `test`, `prisma`) | ✅ semua file sesuai |
+| Unit test (`npm test`) | ✅ 28/28 |
+| `npm run test:e2e` | ✅ 40/40 |
+| `npm run build` | ✅ exit 0 |
+| Startup `JWT_EXPIRES_IN=1w` | ✅ gagal start (exit 1), pesan menyebut `JWT_EXPIRES_IN` |
+| Startup `JWT_EXPIRES_IN=60` | ✅ aplikasi start |
+| Bruno seluruh koleksi terhadap `dist/main.js` dengan `JWT_EXPIRES_IN=300` (dengan kode lama = 0,3 detik) | ✅ 82 request, 129/129 tes |
+| Log server selama Bruno | ✅ 0 error |
+
+### Keputusan desain
+
+- **`JWT_EXPIRES_IN` dikirim ke jsonwebtoken sebagai angka detik**, bukan string, agar `"60"` tidak bermakna milidetik. Format dibatasi pada yang didokumentasikan (`s`, `m`, `h`, `d`); nilai seperti `"1w"`, `"1y"`, atau `"1.5h"` yang dulu diterima `ms` kini menolak start. Tidak ada dependensi baru.
+- **Filter global sebagai jaring pengaman**, bukan pengganti penanganan di service: pesan domain (`"Email sudah terdaftar"`, `"Buku tidak ditemukan"`, `"Kategori tidak ditemukan"`) tetap didahulukan. P2003 dipetakan ke 400 umum (`"Data terkait tidak ditemukan"`) karena meta error tidak dipakai untuk membedakan foreign key mana yang gagal.
+- **Token milik user terhapus** kini menghasilkan 400 (bukan 500) pada `POST /books`. Status akhirnya (401 atau tetap) diputuskan di #15; e2e menandai hal ini.
+- **Batas `page`** memakai `Number.MAX_SAFE_INTEGER`, sehingga semua nilai yang realistis tetap mengikuti kontrak "page melebihi `totalPages` → 200 dengan `data: []`".
+
+### Catatan data
+
+E2E membuat user uji sendiri dan menghapusnya di akhir (termasuk user yang dihapus di tengah test). Bruno membuat user dan buku uji baru di database lokal pada setiap run, sesuai catatan di `backend/README.md`.
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` (§1.3, §1.5, §2.1, §2.2, §4.4, §4.9, riwayat, jumlah tes); `PRD.md` v1.4 (§8.2); `JOBDESK-PANJI.md` v1.6 (§8, §9, §11, §13); `README.md` (versi PRD); `backend/README.md` (env, script, jumlah tes, struktur, keamanan); `backend/.env.example`.
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
@@ -905,13 +994,14 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard) — dokumen lokal, perlu izin Team Lead | — | Panji (Team Lead) | ⏳ Menunggu keputusan |
 | ~~Keputusan ObserveModule (isu keamanan #8)~~ | #10 | Panji | ✅ Dihapus — PR #18, issue ditutup 2026-11-15 |
 | ~~Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik~~ | #11 | Tim | ✅ 6 kategori final, tetap wajib login — PR #19, issue ditutup 2026-11-15 |
-| Hapus baris `OBSERVE_*` dari `backend/.env` lokal (tidak lagi dipakai aplikasi) | — | Panji (Team Lead) | ⏳ Manual. Dashboard Observe sudah tanpa API key |
+| ~~Hapus baris `OBSERVE_*` dari `backend/.env` lokal (tidak lagi dipakai aplikasi)~~ | — | Panji (Team Lead) | ✅ Dicek 2026-11-17: tidak ada baris `OBSERVE_*` tersisa. Dashboard Observe sudah tanpa API key |
 | Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
 | Persiapan demo | #13 | Tim | ⏳ |
-| Opsional: rate limiting login/register | #14 | Panji | — |
-| Opsional: tolak token milik user yang sudah dihapus | #15 | Panji | — |
-| Opsional: rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal) | #16 | Panji | — |
-| Opsional: unit test untuk modul lain (statistik sudah punya unit test) | — | Panji | — |
-| ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16 | Panji | ✅ 2026-11-15 |
+| Hardening hasil audit kode 2026-11-17 (JWT expiry, `page`, search, error Prisma, trim email) | #22 | Panji | ✅ PR #24, menunggu merge. Item INFO opsional ditunda |
+| Rate limiting login/register (MEDIUM pada audit 2026-11-17) | #14 | Panji | ⏳ Branch `feature/auth-rate-limit` sudah disinkronkan ke `main` `90a8888`; dikerjakan bersama #15 |
+| Tolak token milik user yang sudah dihapus | #15 | Panji | ⏳ Menunggu keputusan tim: cek user di `JwtStrategy`, atau batasi jaminan 401 pada `/auth/me` (komentar 2026-11-17) |
+| ~~Rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal)~~ | #16 | Panji | ✅ PR #24, menunggu merge |
+| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ⏳ Setelah PR #24 di-merge |
+| ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16, #22–#23 | Panji | ✅ 2026-11-15; #22–#23 dari audit kode 2026-11-17 |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | — | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk #12 |
 | ~~Bug kecil: register dengan `name` berisi spasi saja lolos validasi~~ | — | Panji | ✅ Ditutup 2026-11-14 (`2d8c0a8`, PR #6) |

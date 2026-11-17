@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.5  
-**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.5 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
+**Version:** 1.6  
+**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.6 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -241,7 +241,7 @@ Rancangan awal di versi 1.0 diikuti; struktur di bawah adalah hasil implementasi
 
 ```text
 backend/
-├── bruno/                       # Koleksi Bruno: 01 Auth, 02 Categories, 03 Books, 04 Ownership, 05 Stats
+├── bruno/                       # Koleksi Bruno: 01 Auth, 02 Categories, 03 Books, 04 Ownership, 05 Stats, 06 Hardening
 ├── prisma/
 │   ├── schema.prisma
 │   ├── migrations/              # 20261113060551_init
@@ -255,6 +255,7 @@ backend/
 │   │   ├── auth.service.ts
 │   │   ├── auth.module.ts
 │   │   ├── jwt.config.ts        # Validasi JWT_SECRET, JWT_EXPIRES_IN
+│   │   ├── jwt.config.spec.ts   # Unit test JWT_EXPIRES_IN (npm test)
 │   │   ├── dto/                 # register.dto.ts, login.dto.ts
 │   │   ├── strategies/          # jwt.strategy.ts
 │   │   ├── guards/              # jwt-auth.guard.ts
@@ -274,10 +275,12 @@ backend/
 │   │   └── transforms/          # trim-string.ts (dipakai DTO auth dan books)
 │   ├── prisma/
 │   │   ├── prisma.service.ts
-│   │   └── prisma.module.ts
+│   │   ├── prisma.module.ts
+│   │   ├── prisma-exception.filter.ts       # Filter global: error Prisma → 409/400/404
+│   │   └── prisma-exception.filter.spec.ts  # Unit test pemetaan error (npm test)
 │   ├── generated/prisma/        # Prisma Client hasil generate (tidak di-commit)
 │   ├── app.module.ts
-│   ├── app.setup.ts             # Prefix /api/v1, CORS, ValidationPipe
+│   ├── app.setup.ts             # Prefix /api/v1, CORS, ValidationPipe, filter error Prisma
 │   └── main.ts
 ├── .env                         # Tidak di-commit
 ├── .env.example
@@ -292,7 +295,7 @@ Variabel yang dipakai (lihat `backend/.env.example`):
 |---|---|---|---|
 | `DATABASE_URL` | Ya | — | Koneksi PostgreSQL |
 | `JWT_SECRET` | Ya | — | Minimal 32 karakter; aplikasi menolak start bila kosong/terlalu pendek |
-| `JWT_EXPIRES_IN` | Tidak | `1d` | Masa berlaku token |
+| `JWT_EXPIRES_IN` | Tidak | `1d` | Masa berlaku token. Angka saja = detik (`3600`), atau angka + satuan `s`/`m`/`h`/`d`; format lain membuat aplikasi menolak start |
 | `PORT` | Tidak | `3001` | Port backend |
 | `CORS_ORIGIN` | Tidak | `http://localhost:3000` | Origin frontend, pisahkan dengan koma bila lebih dari satu |
 
@@ -380,7 +383,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115 tes), e2e test (`npm run test:e2e`, 33 tes), dan unit test statistik (`npm test`, 5 tes). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 40 tes), dan unit test (`npm test`, 28 tes: statistik, `JWT_EXPIRES_IN`, pemetaan error Prisma). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -389,6 +392,8 @@ Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115
 - [x] Login berhasil.
 - [x] Password salah ditolak.
 - [x] Token invalid ditolak. *(tanpa token, rusak, tanda tangan palsu, kedaluwarsa)*
+- [x] Konfigurasi JWT tidak valid ditolak saat startup. *(`JWT_SECRET` < 32 karakter, format `JWT_EXPIRES_IN` tidak dikenal)*
+- [x] Email berspasi di awal/akhir di-trim sebelum validasi.
 - [x] Current user berjalan.
 
 ### Books
@@ -397,9 +402,9 @@ Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 73 request / 115
 - [x] Get detail berhasil.
 - [x] Update berhasil.
 - [x] Delete berhasil.
-- [x] Search berhasil.
+- [x] Search berhasil. *(`%`, `_`, `\` dicari apa adanya)*
 - [x] Filter berhasil.
-- [x] Pagination berhasil.
+- [x] Pagination berhasil. *(termasuk batas atas `page`: di luar rentang → 400, bukan 500)*
 - [x] Statistik koleksi benar (per status, per kategori) dan hanya menghitung buku user sendiri.
 
 ### Data Ownership
@@ -458,7 +463,7 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 
 PR 1–7 di-merge ke `main` pada 2026-11-14, PR 8 pada 2026-11-15. Branch 8 dibuat dari `main` setelah merge PR 7.
 
-Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
+Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Temuan audit kode 2026-11-17 dilacak sebagai #22 (hardening backend, branch `fix/backend-hardening`) dan #23 (unit test dan CI). Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -472,3 +477,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.3 | 2026-11-14 | PR 6–7 di-merge; branch perbaikan hasil review; unit test pertama (`books.service.spec.ts`); jumlah tes |
 | 1.4 | 2026-11-15 | §9: variabel `OBSERVE_*` dihapus bersama integrasi NestJS Observe (issue #10) |
 | 1.5 | 2026-11-15 | §5 dan §10: daftar kategori final dan proteksi JWT `GET /categories` dikonfirmasi (issue #11); jumlah tes e2e |
+| 1.6 | 2026-11-17 | Hardening hasil audit kode (issue #22, #16): §8 file baru (`jwt.config.spec.ts`, `prisma-exception.filter.ts`, folder Bruno `06 Hardening`); §9 format `JWT_EXPIRES_IN`; §11 jumlah tes dan item checklist baru; §13 issue #22–#23 |
