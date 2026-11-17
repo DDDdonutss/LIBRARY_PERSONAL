@@ -88,7 +88,7 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest, tanpa database, 52 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN` dan `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
+| `npm test` | Unit test (Vitest, tanpa database, 74 tes): `AuthService` (register, login, user saat ini), `BooksService` (statistik, pemetaan error update/hapus), konfigurasi `JWT_SECRET`, `JWT_EXPIRES_IN`, dan `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, batas `page`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
 | `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
@@ -120,10 +120,14 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 51 test (auth, kategori, buku, statistik, kepemilikan data, hardening input, token milik user yang sudah dihapus, rate limiting) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 53 test (auth, kategori, buku, statistik, kepemilikan data, hardening input, token kedaluwarsa dan milik user yang sudah dihapus, register paralel, rate limiting) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
+
+### CI (GitHub Actions)
+
+Workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) berjalan pada setiap pull request ke `main` dan setiap push ke `main`: `npm ci`, lint, type check, cek format Prettier, unit test, build, lalu migration + seed + e2e test terhadap PostgreSQL 18 (service container, database baru setiap run) dengan Node 26. Koleksi Bruno tidak dijalankan di CI.
 
 ### Bruno (manual atau CLI)
 

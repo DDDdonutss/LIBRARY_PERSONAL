@@ -4,7 +4,7 @@
 **Status:** Lengkap untuk scope PRD v1.6 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 51 tes), kecuali ditandai lain. Unit test (`npm test`, 52 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN` dan rate limiting (§2.4), validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 53 tes), kecuali ditandai lain; unit dan e2e test juga berjalan otomatis di CI (GitHub Actions) pada setiap pull request. Unit test (`npm test`, 74 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN` dan rate limiting (§2.4), validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
 
 ---
 
@@ -428,3 +428,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-17 | Hardening hasil audit (issue #22): `JWT_EXPIRES_IN` tanpa satuan = detik (§1.3); error database yang tidak ditangani → 409/400/404, bukan 500 (§1.5, §4.9); email di-trim sebelum validasi (§2.1, §2.2); batas atas `page` dan pencarian literal untuk `%`, `_`, `\` (§4.4). §1.3 diperbaiki agar sesuai implementasi untuk token milik user yang sudah dihapus (keputusan akhir di issue #15). Endpoint dan bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Token milik user yang sudah dihapus → 401 di semua endpoint 🔒 (issue #15, opsi a; §1.3, §4.9). Batas atas `page` menjadi 90071992547409 agar offset selalu tepat (§4.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Rate limiting login dan register per IP (issue #14): status 429 dengan `Retry-After` (§1.5, §2.1, §2.2, §2.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
+| 2026-11-17 | Tidak ada perubahan endpoint. Jumlah tes diperbarui dan CI GitHub Actions ditambahkan (issue #23) |

@@ -11,7 +11,7 @@ Aplikasi web untuk mengelola koleksi buku pribadi dengan dukungan banyak akun. S
 | Database | PostgreSQL |
 | ORM | Prisma 7 |
 | Authentication | JWT |
-| API Testing | Bruno, Vitest (e2e dan unit test) |
+| API Testing | Bruno, Vitest (e2e dan unit test), GitHub Actions (CI) |
 
 ## Project Status
 

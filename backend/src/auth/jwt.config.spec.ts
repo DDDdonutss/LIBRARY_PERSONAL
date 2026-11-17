@@ -1,4 +1,4 @@
-import { getJwtExpiresIn } from './jwt.config.js';
+import { getJwtExpiresIn, getJwtSecret } from './jwt.config.js';
 
 /**
  * JWT_EXPIRES_IN dari environment selalu berupa string. jsonwebtoken membaca
@@ -47,5 +47,27 @@ describe('getJwtExpiresIn', () => {
     vi.stubEnv('JWT_EXPIRES_IN', value);
 
     expect(() => getJwtExpiresIn()).toThrow('JWT_EXPIRES_IN');
+  });
+});
+
+describe('getJwtSecret', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([undefined, '', 'x'.repeat(31)])(
+    'secret %j ditolak (kosong atau < 32 karakter)',
+    (value) => {
+      vi.stubEnv('JWT_SECRET', value);
+
+      expect(() => getJwtSecret()).toThrow('JWT_SECRET');
+    },
+  );
+
+  it('secret ≥ 32 karakter diterima apa adanya', () => {
+    const secret = 'x'.repeat(32);
+    vi.stubEnv('JWT_SECRET', secret);
+
+    expect(getJwtSecret()).toBe(secret);
   });
 });

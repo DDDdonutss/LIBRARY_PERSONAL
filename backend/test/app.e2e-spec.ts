@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import request from 'supertest';
@@ -615,6 +616,45 @@ describe('Personal Library API (e2e)', () => {
       await call(method, `${API}${path}`)
         .set('Authorization', bearer(deleted))
         .expect(401);
+    });
+  });
+
+  describe('Skenario tambahan (issue #23)', () => {
+    it('token kedaluwarsa (tanda tangan valid) → 401', async () => {
+      // Ditandatangani dengan secret aplikasi, tetapi exp sudah lewat 60 detik.
+      const expired = await app
+        .get(JwtService)
+        .signAsync({ sub: userA.id, email: userA.email }, { expiresIn: -60 });
+
+      for (const path of ['/auth/me', '/books']) {
+        await api()
+          .get(`${API}${path}`)
+          .set('Authorization', `Bearer ${expired}`)
+          .expect(401);
+      }
+    });
+
+    it('register paralel dengan email yang sama → tepat satu 201, sisanya 409, tanpa 500', async () => {
+      const email = uniqueEmail('parallel');
+      const responses = await Promise.all(
+        Array.from({ length: 5 }, () =>
+          api()
+            .post(`${API}/auth/register`)
+            .send({ name: 'Paralel', email, password: PASSWORD }),
+        ),
+      );
+
+      for (const res of responses) {
+        if (res.status === 201) createdUserIds.push(res.body.user.id);
+      }
+      const statuses = responses.map((res) => res.status).sort((a, b) => a - b);
+      expect(statuses).toEqual([201, 409, 409, 409, 409]);
+      // Pesan domain dari AuthService (bukan pesan umum filter global), baik
+      // dari pengecekan awal maupun dari jalur race P2002.
+      for (const res of responses.filter((res) => res.status === 409)) {
+        expect(res.body.message).toBe('Email sudah terdaftar');
+      }
+      expect(await prisma.user.count({ where: { email } })).toBe(1);
     });
   });
 

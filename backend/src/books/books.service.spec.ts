@@ -1,3 +1,5 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Prisma } from '../generated/prisma/client.js';
 import { BooksService } from './books.service.js';
 
 /**
@@ -133,5 +135,104 @@ describe('BooksService.getStats', () => {
       byCategory: [],
     });
     expect(findByIds).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Pemetaan error di update/remove (issue #23): P2025 berarti buku tidak ada
+ * ATAU milik user lain — keduanya 404 dengan pesan yang sama, sehingga
+ * keberadaan buku user lain tidak bocor.
+ */
+describe('BooksService.update dan remove', () => {
+  const BOOK_ID = 'book-1';
+  const NOT_FOUND = new NotFoundException('Buku tidak ditemukan');
+
+  const prismaError = (code: string) =>
+    new Prisma.PrismaClientKnownRequestError(`Prisma error ${code}`, {
+      code,
+      clientVersion: 'test',
+    });
+
+  function setupWrites() {
+    const update = vi.fn();
+    const remove = vi.fn();
+    const ensureExists = vi.fn().mockResolvedValue(undefined);
+    const prisma = { book: { update, delete: remove } };
+    const service = new BooksService(
+      prisma as never,
+      { ensureExists } as never,
+    );
+    return { service, update, remove, ensureExists };
+  }
+
+  it('update selalu dibatasi id DAN userId dari token', async () => {
+    const { service, update } = setupWrites();
+    update.mockResolvedValue({ id: BOOK_ID });
+
+    await service.update(USER_ID, BOOK_ID, { status: 'READING' });
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: BOOK_ID, userId: USER_ID },
+        data: { status: 'READING' },
+      }),
+    );
+  });
+
+  it('update: P2025 (tidak ada / milik user lain) → 404', async () => {
+    const { service, update } = setupWrites();
+    update.mockRejectedValue(prismaError('P2025'));
+
+    await expect(
+      service.update(USER_ID, BOOK_ID, { title: 'Baru' }),
+    ).rejects.toThrow(NOT_FOUND);
+  });
+
+  it('update: body kosong → 400 tanpa menyentuh database', async () => {
+    const { service, update } = setupWrites();
+
+    await expect(service.update(USER_ID, BOOK_ID, {})).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('update: categoryId divalidasi lewat CategoriesService, null tidak', async () => {
+    const { service, update, ensureExists } = setupWrites();
+    update.mockResolvedValue({ id: BOOK_ID });
+
+    await service.update(USER_ID, BOOK_ID, { categoryId: 'cat-1' });
+    await service.update(USER_ID, BOOK_ID, { categoryId: null });
+
+    expect(ensureExists).toHaveBeenCalledTimes(1);
+    expect(ensureExists).toHaveBeenCalledWith('cat-1');
+  });
+
+  it('remove: berhasil → pesan dan id, dibatasi userId', async () => {
+    const { service, remove } = setupWrites();
+    remove.mockResolvedValue({ id: BOOK_ID });
+
+    await expect(service.remove(USER_ID, BOOK_ID)).resolves.toEqual({
+      message: 'Buku berhasil dihapus',
+      id: BOOK_ID,
+    });
+    expect(remove).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: BOOK_ID, userId: USER_ID } }),
+    );
+  });
+
+  it('remove: P2025 → 404', async () => {
+    const { service, remove } = setupWrites();
+    remove.mockRejectedValue(prismaError('P2025'));
+
+    await expect(service.remove(USER_ID, BOOK_ID)).rejects.toThrow(NOT_FOUND);
+  });
+
+  it('error database lain diteruskan apa adanya (ditangani filter global)', async () => {
+    const { service, remove } = setupWrites();
+    const error = prismaError('P2003');
+    remove.mockRejectedValue(error);
+
+    await expect(service.remove(USER_ID, BOOK_ID)).rejects.toBe(error);
   });
 });
