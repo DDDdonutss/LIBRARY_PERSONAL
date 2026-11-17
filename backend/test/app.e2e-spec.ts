@@ -647,7 +647,7 @@ describe('Personal Library API (e2e)', () => {
       for (const res of responses) {
         if (res.status === 201) createdUserIds.push(res.body.user.id);
       }
-      const statuses = responses.map((res) => res.status).sort();
+      const statuses = responses.map((res) => res.status).sort((a, b) => a - b);
       expect(statuses).toEqual([201, 409, 409, 409, 409]);
       // Pesan domain dari AuthService (bukan pesan umum filter global), baik
       // dari pengecekan awal maupun dari jalur race P2002.
