@@ -15,6 +15,14 @@ import { BookStatus } from '../../generated/prisma/enums.js';
 export const DEFAULT_PAGE_LIMIT = 10;
 export const MAX_PAGE_LIMIT = 100;
 
+/**
+ * Batas atas `page`. @IsInt menerima angka sebesar 1e20, dan offset
+ * (page - 1) * limit sebesar itu melewati batas int64 sehingga Prisma
+ * melempar error (500). Dengan page ≤ Number.MAX_SAFE_INTEGER dan
+ * limit ≤ 100, offset maksimal ±9 × 10^17, masih di bawah batas int64.
+ */
+export const MAX_PAGE = Number.MAX_SAFE_INTEGER;
+
 /** Query string untuk GET /books, mis. ?page=2&limit=10&search=clean&status=READING */
 export class QueryBooksDto {
   // Query string selalu berupa teks; @Type mengubahnya menjadi number.
@@ -22,6 +30,7 @@ export class QueryBooksDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(MAX_PAGE)
   page: number = 1;
 
   @IsOptional()

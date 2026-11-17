@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # Personal Library Management
 
-**Version:** 1.3  
-**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor; v1.3 memfinalkan daftar kategori dan akses `GET /categories`)  
+**Version:** 1.4  
+**Status:** Final — Baseline Pengembangan (v1.1 menambahkan keputusan implementasi backend; v1.2 memperbaiki aturan validasi nama dan memasukkan statistik dashboard sederhana ke scope atas permintaan mentor; v1.3 memfinalkan daftar kategori dan akses `GET /categories`; v1.4 merinci aturan validasi hasil hardening backend tanpa mengubah scope)  
 **Project Type:** Full-Stack Web Application  
 **Architecture:** Monorepo  
 **Team Size:** 2 Developers
@@ -207,10 +207,10 @@ Rincian yang ditetapkan saat implementasi:
 | Aturan | Nilai |
 |---|---|
 | Password maksimal | 72 karakter **dan** 72 byte UTF-8 (batas bcrypt) |
-| Email maksimal | 255 karakter; disimpan dan dicocokkan dalam huruf kecil |
+| Email maksimal | 255 karakter; spasi di awal/akhir dihapus sebelum validasi; disimpan dan dicocokkan dalam huruf kecil |
 | Nama, judul, penulis | Spasi di awal/akhir dihapus sebelum validasi; tidak boleh kosong setelahnya (nama berisi spasi saja ditolak 400) |
-| Pagination | `page` ≥ 1 (default 1); `limit` 1–100 (default 10) |
-| Search | Pada judul, tidak peka huruf besar/kecil, cocok sebagian |
+| Pagination | `page` 1 – `Number.MAX_SAFE_INTEGER` (default 1); `limit` 1–100 (default 10) |
+| Search | Pada judul, tidak peka huruf besar/kecil, cocok sebagian; `%`, `_`, dan `\` dicari apa adanya (bukan wildcard) |
 | `categoryId` | Harus UUID kategori yang ada, atau kosong/`null` |
 | Field tidak dikenal | Ditolak (400), termasuk `userId` dari frontend |
 
@@ -327,3 +327,4 @@ Pembagian lebih rinci terdapat dalam `JOBDESK-PANJI.md` dan dokumen jobdesk fron
 | 1.1 | 2026-11-13 | Menambahkan keputusan implementasi backend: versi stack, kategori seed, default status, perilaku relasi (§6.4), rincian validasi/pagination/search (§8.2), base URL lokal dan proteksi endpoint kategori (§9), status Definition of Done. Scope fitur tidak berubah |
 | 1.2 | 2026-11-14 | §8.2: nama di-trim sebelum validasi (bug nama berisi spasi saja ditutup). Statistik dashboard sederhana masuk scope atas konfirmasi mentor: §4.4 FR-14, `GET /books/stats` di §9, §10 dan workshop note diperbarui, §11 dan §12 disesuaikan |
 | 1.3 | 2026-11-15 | §4.3: daftar kategori final (6 kategori, issue #11) dan akses kategori wajib login; paragraf daftar kategori yang tersisip keliru di bawah §4.4 pada v1.2 dikembalikan ke §4.3. §9: proteksi JWT `GET /categories` dikonfirmasi tim. Audit dokumen: §2 menyebut unit test, tanggal status §12 diperbarui |
+| 1.4 | 2026-11-17 | §8.2 (hasil audit kode, issue #22): email di-trim sebelum validasi, batas atas `page`, karakter `%`/`_`/`\` pada search dicari apa adanya. Scope fitur tidak berubah |

@@ -81,7 +81,9 @@ export class BooksService {
 
     const where: Prisma.BookWhereInput = {
       userId,
-      ...(search && { title: { contains: search, mode: 'insensitive' } }),
+      ...(search && {
+        title: { contains: escapeLikePattern(search), mode: 'insensitive' },
+      }),
       ...(status && { status }),
       ...(categoryId && { categoryId }),
     };
@@ -236,6 +238,15 @@ function compareCategoryStats(a: CategoryStat, b: CategoryStat): number {
     return Number(a.categoryId === null) - Number(b.categoryId === null);
   }
   return categoryNameCollator.compare(a.name, b.name);
+}
+
+/**
+ * Prisma meneruskan `contains` ke ILIKE apa adanya, sehingga `%` dan `_`
+ * menjadi wildcard ("%" cocok dengan semua judul). Karakter itu, dan `\`
+ * (karakter escape bawaan PostgreSQL), di-escape agar pencarian literal.
+ */
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 
 /** P2025 = record yang di-update/delete tidak ditemukan (atau bukan milik user). */

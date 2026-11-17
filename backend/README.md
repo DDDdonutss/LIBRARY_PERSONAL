@@ -48,11 +48,11 @@ Lalu isi `.env` dengan editor teks (simpan sebagai UTF-8):
 |---|---|
 | `DATABASE_URL` | Koneksi PostgreSQL, mis. `postgresql://postgres:password@localhost:5432/personal_library_db?schema=public` |
 | `JWT_SECRET` | **Wajib diganti**, minimal 32 karakter. Buat dengan `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-| `JWT_EXPIRES_IN` | Masa berlaku token, default `1d` |
+| `JWT_EXPIRES_IN` | Masa berlaku token, default `1d`. Angka saja = detik (`3600`), atau angka + satuan `s`/`m`/`h`/`d` (`15m`, `7d`) |
 | `PORT` | Port backend, default `3001` |
 | `CORS_ORIGIN` | Origin frontend yang diizinkan, default `http://localhost:3000` |
 
-Aplikasi **menolak start** bila `JWT_SECRET` kosong atau kurang dari 32 karakter. File `.env` tidak boleh di-commit.
+Aplikasi **menolak start** bila `JWT_SECRET` kosong atau kurang dari 32 karakter, atau bila format `JWT_EXPIRES_IN` tidak dikenal. File `.env` tidak boleh di-commit.
 
 **3. Buat database**
 
@@ -87,7 +87,7 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest, tanpa database): logika statistik buku (`src/books/books.service.spec.ts`) |
+| `npm test` | Unit test (Vitest, tanpa database, 28 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
 | `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
@@ -119,14 +119,14 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 33 test (auth, kategori, buku, statistik, kepemilikan data) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 40 test (auth, kategori, buku, statistik, kepemilikan data, hardening input) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
 
 ### Bruno (manual atau CLI)
 
-Koleksi Bruno ada di [`bruno/`](./bruno): 73 request dan 115 tes untuk auth, kategori, buku, kepemilikan data, dan statistik. Folder `05 Stats` mandiri dan bisa dijalankan sendiri (`npx @usebruno/cli run "05 Stats" --env local`).
+Koleksi Bruno ada di [`bruno/`](./bruno): 82 request dan 129 tes untuk auth, kategori, buku, kepemilikan data, statistik, dan hardening input. Folder `05 Stats` dan `06 Hardening` mandiri dan bisa dijalankan sendiri (mis. `npx @usebruno/cli run "05 Stats" --env local`).
 
 Dengan backend berjalan dan kategori sudah di-seed:
 
@@ -156,10 +156,10 @@ backend/
     ├── books/             # CRUD buku, search, filter, pagination, statistik, ownership
     ├── categories/        # GET /categories
     ├── common/transforms/ # trimString: trim sebelum validasi (DTO auth & books)
-    ├── prisma/            # PrismaService (koneksi database)
+    ├── prisma/            # PrismaService (koneksi database), filter global error Prisma
     ├── generated/prisma/  # Prisma Client hasil generate (tidak di-commit)
     ├── app.module.ts
-    ├── app.setup.ts       # Prefix /api/v1, CORS, ValidationPipe (dipakai main.ts dan e2e)
+    ├── app.setup.ts       # Prefix /api/v1, CORS, ValidationPipe, filter error Prisma (dipakai main.ts dan e2e)
     └── main.ts            # Membuat aplikasi dan listen di PORT
 ```
 
@@ -169,5 +169,6 @@ backend/
 - Semua endpoint buku dan kategori dilindungi JWT.
 - Setiap query buku memfilter `userId` dari token. Buku milik user lain menghasilkan 404.
 - `userId` dari body request ditolak (400); field yang tidak dikenal juga ditolak.
+- Error database yang dikenali tetapi tidak ditangani service (unique, foreign key, record tidak ada) dikembalikan sebagai 409/400/404, bukan 500.
 - Secret disimpan di `.env` (di-ignore Git); `.env.example` hanya berisi placeholder.
 - Tidak ada telemetri ke layanan eksternal. Log hanya ditulis ke console oleh Logger bawaan NestJS.

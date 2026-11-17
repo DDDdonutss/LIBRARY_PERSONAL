@@ -17,6 +17,9 @@ export class RegisterDto {
   @MaxLength(100)
   name: string;
 
+  // Trim sebelum validasi: tanpa ini @IsEmail menolak email hasil salin-tempel
+  // yang berspasi di awal/akhir (" user@example.com ").
+  @Transform(trimString)
   @IsEmail()
   @IsNotEmpty()
   @MaxLength(255)

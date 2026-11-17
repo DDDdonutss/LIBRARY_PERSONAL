@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { getJwtExpiresIn } from '../src/auth/jwt.config.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 /**
@@ -28,6 +29,12 @@ interface TestUser {
 function uniqueEmail(label: string): string {
   const suffix = Math.random().toString(36).slice(2, 8);
   return `e2e.${label}.${Date.now()}.${suffix}@example.com`;
+}
+
+/** Isi (payload) JWT tanpa verifikasi tanda tangan — hanya untuk memeriksa klaim. */
+function decodeJwtPayload(token: string): { iat: number; exp: number } {
+  const [, payload] = token.split('.');
+  return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
 }
 
 describe('Personal Library API (e2e)', () => {
@@ -172,6 +179,36 @@ describe('Personal Library API (e2e)', () => {
         .get(`${API}/auth/me`)
         .set('Authorization', 'Bearer bukan.token.valid')
         .expect(401));
+
+    it('masa berlaku token = JWT_EXPIRES_IN dalam detik (issue #22)', () => {
+      // Regresi: string angka seperti "60" dulu dibaca jsonwebtoken sebagai
+      // milidetik, sehingga exp = iat dan token langsung kedaluwarsa.
+      const { iat, exp } = decodeJwtPayload(userA.token);
+
+      expect(exp - iat).toBe(getJwtExpiresIn());
+      expect(exp - iat).toBeGreaterThan(0);
+    });
+
+    it('register dan login dengan email berspasi di awal/akhir → di-trim (issue #22)', async () => {
+      const email = uniqueEmail('spaced');
+
+      const registered = await api()
+        .post(`${API}/auth/register`)
+        .send({
+          name: 'Spasi',
+          email: `  ${email.toUpperCase()}  `,
+          password: PASSWORD,
+        })
+        .expect(201);
+      createdUserIds.push(registered.body.user.id);
+      expect(registered.body.user.email).toBe(email);
+
+      const loggedIn = await api()
+        .post(`${API}/auth/login`)
+        .send({ email: `  ${email}  `, password: PASSWORD })
+        .expect(200);
+      expect(loggedIn.body.user.id).toBe(registered.body.user.id);
+    });
   });
 
   describe('Categories', () => {
@@ -447,5 +484,73 @@ describe('Personal Library API (e2e)', () => {
 
     it('GET /books/stats tanpa token → 401', () =>
       api().get(`${API}/books/stats`).expect(401));
+  });
+
+  describe('Hardening input dan error database (issue #22)', () => {
+    it.each(['1e20', String(Number.MAX_SAFE_INTEGER + 1)])(
+      'GET /books?page=%s → 400 (dulu 500 karena offset melewati batas int64)',
+      async (page) => {
+        await api()
+          .get(`${API}/books`)
+          .query({ page })
+          .set('Authorization', bearer(userA))
+          .expect(400);
+      },
+    );
+
+    it('GET /books dengan page = Number.MAX_SAFE_INTEGER dan limit 100 → 200 data kosong', async () => {
+      const res = await api()
+        .get(`${API}/books`)
+        .query({ page: String(Number.MAX_SAFE_INTEGER), limit: '100' })
+        .set('Authorization', bearer(userA))
+        .expect(200);
+
+      expect(res.body.data).toEqual([]);
+      expect(res.body.meta.page).toBe(Number.MAX_SAFE_INTEGER);
+    });
+
+    it('search memperlakukan %, _, dan \\ sebagai karakter biasa', async () => {
+      // User sendiri, agar jumlah hasil tidak bergantung pada test lain.
+      const user = await registerUser('search');
+      const titles = ['100% Organic', 'snake_case Guide', 'AC\\DC', 'Plain'];
+      for (const title of titles) {
+        await api()
+          .post(`${API}/books`)
+          .set('Authorization', bearer(user))
+          .send({ title, author: 'A' })
+          .expect(201);
+      }
+
+      const titlesFor = async (search: string) => {
+        const res = await api()
+          .get(`${API}/books`)
+          .query({ search })
+          .set('Authorization', bearer(user))
+          .expect(200);
+        return res.body.data.map((book: { title: string }) => book.title);
+      };
+
+      // Tanpa escape, '%' dan '_' adalah wildcard ILIKE dan cocok dengan
+      // semua judul; '\' adalah karakter escape bawaan PostgreSQL.
+      expect(await titlesFor('%')).toEqual(['100% Organic']);
+      expect(await titlesFor('_')).toEqual(['snake_case Guide']);
+      expect(await titlesFor('\\')).toEqual(['AC\\DC']);
+      expect(await titlesFor('100%')).toEqual(['100% Organic']);
+    });
+
+    it('error foreign key (P2003) → 400, bukan 500: POST /books oleh user yang sudah dihapus', async () => {
+      // Status akhir untuk token milik user terhapus diputuskan di issue #15;
+      // yang dijamin di sini: error database yang dikenali tidak menjadi 500.
+      const user = await registerUser('deleted');
+      await prisma.user.delete({ where: { id: user.id } });
+
+      const res = await api()
+        .post(`${API}/books`)
+        .set('Authorization', bearer(user))
+        .send({ title: 'Buku', author: 'A' })
+        .expect(400);
+
+      expect(res.body.message).toBe('Data terkait tidak ditemukan');
+    });
   });
 });
