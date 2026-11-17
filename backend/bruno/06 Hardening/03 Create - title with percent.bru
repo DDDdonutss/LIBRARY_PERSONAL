@@ -1,0 +1,28 @@
+meta {
+  name: Create - title with percent
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+body:json {
+  {
+    "title": "100% Organic",
+    "author": "Penulis Hardening"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

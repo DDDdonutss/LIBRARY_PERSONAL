@@ -1,4 +1,5 @@
 import { type INestApplication, ValidationPipe } from '@nestjs/common';
+import { PrismaExceptionFilter } from './prisma/prisma-exception.filter.js';
 
 /**
  * Konfigurasi global aplikasi. Dipakai oleh main.ts dan e2e test,
@@ -23,4 +24,7 @@ export function configureApp(app: INestApplication): void {
       transform: true,
     }),
   );
+
+  // Error Prisma yang dikenali tetapi tidak ditangani service → 4xx, bukan 500.
+  app.useGlobalFilters(new PrismaExceptionFilter(app.getHttpAdapter()));
 }

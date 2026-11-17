@@ -1,0 +1,28 @@
+meta {
+  name: Create - title with underscore
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+body:json {
+  {
+    "title": "snake_case Guide",
+    "author": "Penulis Hardening"
+  }
+}
+
+tests {
+  test("status 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}

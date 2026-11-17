@@ -1,0 +1,21 @@
+meta {
+  name: List - page over max
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/books?page=9007199254740992
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+tests {
+  test("status 400 (page maksimal Number.MAX_SAFE_INTEGER; dulu 1e20 → 500)", function () {
+    expect(res.status).to.equal(400);
+  });
+}

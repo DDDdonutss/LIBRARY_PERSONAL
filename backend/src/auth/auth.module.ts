@@ -10,7 +10,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
   imports: [
     PassportModule,
     // registerAsync: konfigurasi dibaca saat aplikasi start, sehingga aplikasi
-    // langsung gagal (fail-fast) bila JWT_SECRET tidak dikonfigurasi dengan benar.
+    // langsung gagal (fail-fast) bila JWT_SECRET atau JWT_EXPIRES_IN tidak valid.
     JwtModule.registerAsync({
       useFactory: (): JwtModuleOptions => ({
         secret: getJwtSecret(),
