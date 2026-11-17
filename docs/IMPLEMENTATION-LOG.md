@@ -38,7 +38,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
 | 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 53 tes; unit 74 tes; unit dan e2e otomatis di CI GitHub Actions) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#26 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 di PR #27 (menunggu merge); demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#27 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 (PR #27) merged; deskripsi tugas frontend #12 dilengkapi 2026-11-17; demo belum) |
 
 ### Endpoint
 
@@ -75,7 +75,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 14 | `fix/backend-hardening` | `a66df34` | #24 | `906edf5` | ✅ Merged 2026-11-17; menutup issue #22 dan #16 |
 | 15 | `fix/jwt-deleted-user` | `8be53db` | #25 | `63ca322` | ✅ Merged 2026-11-17; menutup issue #15 (opsi a) dan memuat perbaikan review PR #24 |
 | 16 | `feature/auth-rate-limit` | `dda51e8` | #26 | `278e95c` | ✅ Merged 2026-11-17; menutup issue #14 |
-| 17 | `chore/tests-ci` | `d28b47c` (+ perbaikan lint dan commit dokumen) | #27 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #23 |
+| 17 | `chore/tests-ci` | `353659f` | #27 | `08be376` | ✅ Merged 2026-11-17; menutup issue #23 |
+| 18 | `docs/record-pr-27` | lihat PR | — | — | ⏳ Menunggu review dan merge Team Lead (dokumen saja) |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -1205,6 +1206,37 @@ Catatan: pada percobaan pertama, mutasi P2002 tidak terdeteksi e2e karena filter
 
 ---
 
+## 2026-11-17 — Merge PR #27 dan Kelengkapan Tugas Frontend (Issue #12)
+
+**Pelaksana:** Panji
+**Branch:** `docs/record-pr-27` (dari `main` `08be376`; dokumen saja)
+
+### Merge PR #27
+
+PR #27 di-merge Team Lead 2026-11-17 dengan "Create a merge commit" → `main` = `08be376`; issue #23 tertutup otomatis. Isi tree `main` identik dengan `353659f`. CI pada push ke `main` (run `44096751433`): ✅ sukses.
+
+### Issue #12 dilengkapi
+
+Atas permintaan Team Lead, deskripsi #12 ditulis ulang agar tugas Frontend Developer (X) jelas; judul menjadi "Frontend: aplikasi Next.js dan integrasi dengan backend API". Isinya: 4 tahap (setup, autentikasi, kelola buku, dashboard; satu PR per tahap), tabel penanganan respons per status, loading/empty/error state, catatan teknis, aturan kerja, dan kriteria selesai (28 butir checklist). Kesembilan butir lama tercakup. Yang sebelumnya belum ada: loading dan empty state (MASTER-PROMPT §3.2), respons 429 (PR #26), dan 401 di semua endpoint termasuk token milik akun yang sudah dihapus (PR #25). Komentar perubahan ditambahkan di issue.
+
+Catatan teknis di issue diverifikasi lebih dulu terhadap server hasil build dari `main`:
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Preflight `PATCH` dari `http://localhost:3000` | ✅ 204; metode `PATCH` serta header `Authorization` dan `Content-Type` diizinkan |
+| Request dari origin lain (`http://localhost:3002`) | Tanpa header CORS → diblokir browser; frontend harus berjalan di port 3000 |
+| 429 dari origin 3000 | `Access-Control-Allow-Origin` dan `Retry-After: 60` ada, tetapi tanpa `Access-Control-Expose-Headers` → `Retry-After` tidak terbaca JavaScript di browser |
+| Body 401 dari guard dan 400 validasi | Sesuai API Contract §1.5 |
+| Dokumentasi resmi Next.js | Environment variable untuk browser wajib berawalan `NEXT_PUBLIC_`; sejak v16 script `lint` hanya dibuat bila ESLint atau Biome dipilih saat `create-next-app` |
+
+API Contract §2.4 diberi catatan tentang `Retry-After`. Perbaikan di backend (CORS `exposedHeaders`) dicatat sebagai pekerjaan opsional.
+
+### MASTER-PROMPT
+
+Butir "Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard)" ternyata sudah dikerjakan: isi lokal kini menyatakan dashboard sederhana masuk scope sejak PRD v1.2. Statusnya diperbarui di tabel Pekerjaan Tersisa.
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
@@ -1212,18 +1244,19 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Pekerjaan | Issue | Pemilik | Status |
 |---|---|---|---|
 | ~~Hapus repository lama `PENYIMPAN_BUKU`, `PERSONAL_LIBRARY01`, `Personal_Library`~~ | #9 | Panji (Team Lead) | ✅ Sudah tidak ada; issue ditutup 2026-11-15 |
-| Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard) — dokumen lokal, perlu izin Team Lead | — | Panji (Team Lead) | ⏳ Menunggu keputusan |
+| ~~Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard) — dokumen lokal, perlu izin Team Lead~~ | — | Panji (Team Lead) | ✅ Dicek 2026-11-17: isi lokal sudah menyatakan dashboard masuk scope sejak PRD v1.2 |
 | ~~Keputusan ObserveModule (isu keamanan #8)~~ | #10 | Panji | ✅ Dihapus — PR #18, issue ditutup 2026-11-15 |
 | ~~Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik~~ | #11 | Tim | ✅ 6 kategori final, tetap wajib login — PR #19, issue ditutup 2026-11-15 |
 | ~~Hapus baris `OBSERVE_*` dari `backend/.env` lokal (tidak lagi dipakai aplikasi)~~ | — | Panji (Team Lead) | ✅ Dicek 2026-11-17: tidak ada baris `OBSERVE_*` tersisa. Dashboard Observe sudah tanpa API key |
-| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ |
+| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ Deskripsi dilengkapi 2026-11-17 (4 tahap, 28 butir); menunggu X diundang sebagai collaborator dan ditetapkan sebagai assignee |
 | Persiapan demo | #13 | Tim | ⏳ |
 | ~~Hardening hasil audit kode 2026-11-17 (JWT expiry, `page`, search, error Prisma, trim email)~~ | #22 | Panji | ✅ PR #24, merged 2026-11-17. Item INFO opsional ditunda |
 | ~~Perbaikan hasil review ulang PR #24 (log filter, offset `page`, trim email di service)~~ | — | Panji | ✅ PR #25, merged 2026-11-17 |
 | ~~Rate limiting login/register (MEDIUM pada audit 2026-11-17)~~ | #14 | Panji | ✅ PR #26, merged 2026-11-17 |
 | ~~Tolak token milik user yang sudah dihapus~~ | #15 | Panji | ✅ Opsi (a), PR #25, merged 2026-11-17 |
 | ~~Rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal)~~ | #16 | Panji | ✅ PR #24, merged 2026-11-17 |
-| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ✅ PR #27, menunggu merge |
+| ~~Unit test modul lain dan CI GitHub Actions~~ | #23 | Panji | ✅ PR #27, merged 2026-11-17 |
+| Opsional: izinkan browser membaca header `Retry-After` (CORS `exposedHeaders`) | — | Panji | ⏳ Opsional; saat ini frontend cukup menampilkan pesan 429 |
 | ~~Konfirmasi apakah issue #10 sengaja dibuka kembali~~ | #10 | Panji (Team Lead) | ✅ Disesuaikan dengan kondisi kode: checklist dicentang dan issue ditutup kembali 2026-11-17 |
 | ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16, #22–#23 | Panji | ✅ 2026-11-15; #22–#23 dari audit kode 2026-11-17 |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | — | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk #12 |
