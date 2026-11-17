@@ -209,6 +209,8 @@ Request yang melebihi batas dijawab:
 
 dengan header `Retry-After` (detik sampai boleh mencoba lagi). Frontend sebaiknya menampilkan pesan ini dan tidak mencoba ulang otomatis. Endpoint lain (termasuk `GET /auth/me`) tidak dibatasi.
 
+> Catatan: header `Retry-After` belum diizinkan lewat CORS (`Access-Control-Expose-Headers`), sehingga JavaScript di browser belum bisa membacanya (`null`). Frontend cukup menampilkan pesan dan menyarankan mencoba lagi sekitar 1 menit.
+
 ---
 
 ## 3. Categories
@@ -429,3 +431,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-17 | Token milik user yang sudah dihapus → 401 di semua endpoint 🔒 (issue #15, opsi a; §1.3, §4.9). Batas atas `page` menjadi 90071992547409 agar offset selalu tepat (§4.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Rate limiting login dan register per IP (issue #14): status 429 dengan `Retry-After` (§1.5, §2.1, §2.2, §2.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Tidak ada perubahan endpoint. Jumlah tes diperbarui dan CI GitHub Actions ditambahkan (issue #23) |
+| 2026-11-17 | §2.4: catatan bahwa `Retry-After` belum terbaca oleh JavaScript di browser (CORS). Tidak ada perubahan endpoint |
