@@ -7,6 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
@@ -18,13 +19,18 @@ import type { AuthenticatedUser } from './interfaces/authenticated-user.interfac
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // ThrottlerGuard: batas percobaan per menit per IP (issue #14), dihitung
+  // terpisah untuk register dan login. Berjalan sebelum ValidationPipe,
+  // sehingga request yang tidak valid tetap dihitung.
   @Post('register')
+  @UseGuards(ThrottlerGuard)
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   // Login tidak membuat resource baru, jadi 200 (bukan 201 bawaan POST).
   @Post('login')
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);

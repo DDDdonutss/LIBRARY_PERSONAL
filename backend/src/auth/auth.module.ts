@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import {
+  minutes,
+  ThrottlerModule,
+  type ThrottlerModuleOptions,
+} from '@nestjs/throttler';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { getJwtExpiresIn, getJwtSecret } from './jwt.config.js';
+import { getAuthRateLimitPerMinute } from './rate-limit.config.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 @Module({
@@ -15,6 +21,15 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
       useFactory: (): JwtModuleOptions => ({
         secret: getJwtSecret(),
         signOptions: { expiresIn: getJwtExpiresIn() },
+      }),
+    }),
+    // Rate limiting login/register (issue #14): batas per menit per IP,
+    // dipakai lewat @UseGuards(ThrottlerGuard) di AuthController. Hitungan
+    // disimpan in-memory per proses aplikasi.
+    ThrottlerModule.forRootAsync({
+      useFactory: (): ThrottlerModuleOptions => ({
+        throttlers: [{ ttl: minutes(1), limit: getAuthRateLimitPerMinute() }],
+        errorMessage: 'Terlalu banyak percobaan. Coba lagi nanti.',
       }),
     }),
   ],

@@ -51,6 +51,7 @@ Lalu isi `.env` dengan editor teks (simpan sebagai UTF-8):
 | `JWT_EXPIRES_IN` | Masa berlaku token, default `1d`. Angka saja = detik (`3600`), atau angka + satuan `s`/`m`/`h`/`d` (`15m`, `7d`) |
 | `PORT` | Port backend, default `3001` |
 | `CORS_ORIGIN` | Origin frontend yang diizinkan, default `http://localhost:3000` |
+| `AUTH_RATE_LIMIT_PER_MINUTE` | Batas percobaan login dan register per menit per IP (dihitung terpisah), default `5`. Bilangan bulat positif; nilai lain membuat aplikasi menolak start |
 
 Aplikasi **menolak start** bila `JWT_SECRET` kosong atau kurang dari 32 karakter, atau bila format `JWT_EXPIRES_IN` tidak dikenal. File `.env` tidak boleh di-commit.
 
@@ -87,7 +88,7 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest, tanpa database, 41 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN`, validasi token, normalisasi email, batas `page`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
+| `npm test` | Unit test (Vitest, tanpa database, 52 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN` dan `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
 | `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
@@ -119,7 +120,7 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 48 test (auth, kategori, buku, statistik, kepemilikan data, hardening input, token milik user yang sudah dihapus) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 51 test (auth, kategori, buku, statistik, kepemilikan data, hardening input, token milik user yang sudah dihapus, rate limiting) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
@@ -139,6 +140,8 @@ Hasil yang diharapkan: `Status ✓ PASS`. Koleksi dapat dijalankan berulang (ema
 
 Catatan: setiap run membuat user dan buku uji baru di database.
 
+Koleksi lengkap mengirim 12 request register dan 6 request login dalam beberapa detik, melebihi batas default `AUTH_RATE_LIMIT_PER_MINUTE` (5 per menit per IP) sehingga sebagian akan mendapat 429. Saat menjalankan koleksi lengkap, jalankan backend dengan batas lebih longgar, mis. `AUTH_RATE_LIMIT_PER_MINUTE=50` di `.env` lokal. Rate limiting sendiri diuji oleh e2e test.
+
 ## 6. Struktur Proyek
 
 ```text
@@ -152,7 +155,7 @@ backend/
 ├── test/
 │   └── app.e2e-spec.ts    # E2E test API
 └── src/
-    ├── auth/              # Register, login, JWT strategy/guard, /auth/me
+    ├── auth/              # Register, login, JWT strategy/guard, /auth/me, rate limiting
     ├── books/             # CRUD buku, search, filter, pagination, statistik, ownership
     ├── categories/        # GET /categories
     ├── common/transforms/ # trimString: trim sebelum validasi (DTO auth & books)
@@ -167,6 +170,7 @@ backend/
 
 - Password di-hash dengan bcrypt (cost 12); `passwordHash` tidak pernah dikirim di response.
 - Semua endpoint buku dan kategori dilindungi JWT. Token milik user yang sudah dihapus ditolak (401) di semua endpoint.
+- Login dan register dibatasi per IP (`AUTH_RATE_LIMIT_PER_MINUTE`, default 5 per menit, dihitung terpisah); kelebihannya dijawab 429 dengan header `Retry-After`. Hitungan disimpan di memori proses: berlaku per instance aplikasi dan hilang saat restart. Di belakang reverse proxy, atur `trust proxy` agar IP klien terbaca benar.
 - Setiap query buku memfilter `userId` dari token. Buku milik user lain menghasilkan 404.
 - `userId` dari body request ditolak (400); field yang tidak dikenal juga ditolak.
 - Error database yang dikenali tetapi tidak ditangani service (unique, foreign key, record tidak ada) dikembalikan sebagai 409/400/404, bukan 500, dan dicatat sebagai warning di log server.
