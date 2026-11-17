@@ -1,10 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { getJwtExpiresIn } from '../src/auth/jwt.config.js';
+import { getAuthRateLimitPerMinute } from '../src/auth/rate-limit.config.js';
 import { MAX_PAGE } from '../src/books/dto/query-books.dto.js';
 import { CategoriesService } from '../src/categories/categories.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -63,9 +65,15 @@ describe('Personal Library API (e2e)', () => {
   }
 
   beforeAll(async () => {
+    // Rate limiting login/register dimatikan untuk aplikasi utama, karena
+    // test ini melakukan banyak register/login dari IP yang sama. Pembatasan
+    // diuji dengan aplikasi terpisah di bagian "Rate limiting" (issue #14).
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     app = moduleRef.createNestApplication();
     configureApp(app);
@@ -607,6 +615,66 @@ describe('Personal Library API (e2e)', () => {
       await call(method, `${API}${path}`)
         .set('Authorization', bearer(deleted))
         .expect(401);
+    });
+  });
+
+  describe('Rate limiting login dan register (issue #14)', () => {
+    // Aplikasi terpisah TANPA override ThrottlerGuard dan dengan penyimpanan
+    // hitungan sendiri (in-memory), memakai batas dari environment.
+    let limitedApp: INestApplication<App>;
+    let limit: number;
+    const limitedApi = () => request(limitedApp.getHttpServer());
+
+    beforeAll(async () => {
+      limit = getAuthRateLimitPerMinute();
+      const moduleRef = await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+
+      limitedApp = moduleRef.createNestApplication();
+      configureApp(limitedApp);
+      await limitedApp.init();
+    });
+
+    afterAll(async () => {
+      await limitedApp?.close();
+    });
+
+    it('POST /auth/login: percobaan melebihi batas per menit → 429 dengan Retry-After', async () => {
+      const body = {
+        email: uniqueEmail('throttle'),
+        password: 'password-salah',
+      };
+      for (let attempt = 0; attempt < limit; attempt++) {
+        await limitedApi().post(`${API}/auth/login`).send(body).expect(401);
+      }
+
+      const res = await limitedApi()
+        .post(`${API}/auth/login`)
+        .send(body)
+        .expect(429);
+
+      expect(res.body.message).toBe(
+        'Terlalu banyak percobaan. Coba lagi nanti.',
+      );
+      expect(Number(res.headers['retry-after'])).toBeGreaterThan(0);
+    });
+
+    it('POST /auth/register dihitung terpisah dari login; melebihi batas → 429', async () => {
+      // Request yang ditolak validasi tetap dihitung (guard berjalan sebelum
+      // ValidationPipe), dan tidak ada user yang dibuat.
+      const body = { name: 'X', email: 'bukan-email', password: '123' };
+      for (let attempt = 0; attempt < limit; attempt++) {
+        await limitedApi().post(`${API}/auth/register`).send(body).expect(400);
+      }
+
+      await limitedApi().post(`${API}/auth/register`).send(body).expect(429);
+    });
+
+    it('GET /auth/me tidak dibatasi', async () => {
+      for (let attempt = 0; attempt < limit + 2; attempt++) {
+        await limitedApi().get(`${API}/auth/me`).expect(401);
+      }
     });
   });
 });

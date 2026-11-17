@@ -17,7 +17,7 @@ Aplikasi web untuk mengelola koleksi buku pribadi dengan dukungan banyak akun. S
 
 | Bagian | Status |
 |---|---|
-| Backend | ✅ Selesai untuk scope PRD v1.5 (termasuk `GET /books/stats` untuk dashboard) — semua endpoint diimplementasikan dan diuji |
+| Backend | ✅ Selesai untuk scope PRD v1.6 (termasuk `GET /books/stats` untuk dashboard) — semua endpoint diimplementasikan dan diuji |
 | Frontend | ⏳ Belum dimulai (tanggung jawab Frontend Developer), termasuk tampilan dashboard |
 | Integrasi frontend–backend | ⏳ Backend siap (CORS, API Contract) |
 
