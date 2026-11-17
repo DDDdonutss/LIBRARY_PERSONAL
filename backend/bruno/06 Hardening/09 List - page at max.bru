@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/books?page=9007199254740991&limit=100
+  url: {{baseUrl}}/books?page=90071992547409&limit=100
   body: none
   auth: bearer
 }
@@ -21,6 +21,6 @@ tests {
 
   test("halaman di luar data → data kosong", function () {
     expect(res.body.data).to.have.lengthOf(0);
-    expect(res.body.meta.page).to.equal(9007199254740991);
+    expect(res.body.meta.page).to.equal(90071992547409);
   });
 }

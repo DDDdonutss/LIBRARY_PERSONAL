@@ -87,7 +87,7 @@ API tersedia di **`http://localhost:3001/api/v1`**. Server siap bila log menampi
 | `npm run prisma:generate` | Generate ulang Prisma Client (setelah mengubah `schema.prisma`) |
 | `npm run lint` | Lint dengan oxlint |
 | `npm run format` | Format kode dengan Prettier |
-| `npm test` | Unit test (Vitest, tanpa database, 28 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
+| `npm test` | Unit test (Vitest, tanpa database, 41 tes): statistik buku, konfigurasi `JWT_EXPIRES_IN`, validasi token, normalisasi email, batas `page`, dan pemetaan error Prisma (`src/**/*.spec.ts`) |
 | `npm run test:e2e` | E2E test: seluruh API terhadap database dari `.env` (lihat §5) |
 
 Saat mengembangkan schema, buat migration baru dengan `npx prisma migrate dev --name <nama_perubahan>`.
@@ -119,7 +119,7 @@ Logout dilakukan di frontend dengan menghapus token (stateless, tanpa endpoint).
 npm run test:e2e
 ```
 
-Menjalankan 40 test (auth, kategori, buku, statistik, kepemilikan data, hardening input) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
+Menjalankan 48 test (auth, kategori, buku, statistik, kepemilikan data, hardening input, token milik user yang sudah dihapus) terhadap aplikasi lengkap dengan konfigurasi yang sama seperti `main.ts`. Server **tidak** perlu dijalankan terlebih dahulu.
 
 - Prasyarat: `.env` terisi, migration diterapkan, dan kategori sudah di-seed.
 - Test memakai database dari `DATABASE_URL`. Test membuat user uji sendiri (`e2e.*@example.com`) lalu **menghapus hanya user tersebut** di akhir; data lain tidak disentuh.
@@ -166,9 +166,9 @@ backend/
 ## 7. Aturan Keamanan yang Diterapkan
 
 - Password di-hash dengan bcrypt (cost 12); `passwordHash` tidak pernah dikirim di response.
-- Semua endpoint buku dan kategori dilindungi JWT.
+- Semua endpoint buku dan kategori dilindungi JWT. Token milik user yang sudah dihapus ditolak (401) di semua endpoint.
 - Setiap query buku memfilter `userId` dari token. Buku milik user lain menghasilkan 404.
 - `userId` dari body request ditolak (400); field yang tidak dikenal juga ditolak.
-- Error database yang dikenali tetapi tidak ditangani service (unique, foreign key, record tidak ada) dikembalikan sebagai 409/400/404, bukan 500.
+- Error database yang dikenali tetapi tidak ditangani service (unique, foreign key, record tidak ada) dikembalikan sebagai 409/400/404, bukan 500, dan dicatat sebagai warning di log server.
 - Secret disimpan di `.env` (di-ignore Git); `.env.example` hanya berisi placeholder.
 - Tidak ada telemetri ke layanan eksternal. Log hanya ditulis ke console oleh Logger bawaan NestJS.

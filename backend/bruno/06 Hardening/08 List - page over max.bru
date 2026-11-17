@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/books?page=9007199254740992
+  url: {{baseUrl}}/books?page=90071992547410
   body: none
   auth: bearer
 }
@@ -15,7 +15,7 @@ auth:bearer {
 }
 
 tests {
-  test("status 400 (page maksimal Number.MAX_SAFE_INTEGER; dulu 1e20 → 500)", function () {
+  test("status 400 (page maksimal 90071992547409; dulu 1e20 → 500)", function () {
     expect(res.status).to.equal(400);
   });
 }
