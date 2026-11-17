@@ -140,10 +140,12 @@ export class AuthService {
   }
 }
 
-// Spasi di awal/akhir sudah dihapus oleh @Transform di RegisterDto/LoginDto
-// (sebelum @IsEmail), sehingga di sini cukup menyamakan huruf.
+// @Transform di RegisterDto/LoginDto sudah men-trim email sebelum @IsEmail.
+// Trim di sini tetap dipertahankan agar service sendiri menjamin email yang
+// disimpan/dicari selalu ternormalisasi, juga untuk pemanggil yang tidak
+// melewati ValidationPipe.
 function normalizeEmail(email: string): string {
-  return email.toLowerCase();
+  return email.trim().toLowerCase();
 }
 
 function exceedsBcryptLimit(password: string): boolean {

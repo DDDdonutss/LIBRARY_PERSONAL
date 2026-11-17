@@ -1,10 +1,10 @@
 # API Contract
 # Personal Library Management — Backend REST API
 
-**Status:** Lengkap untuk scope PRD v1.4 — diperbarui setiap kali endpoint berubah.
+**Status:** Lengkap untuk scope PRD v1.5 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 40 tes), kecuali ditandai lain. Unit test (`npm test`, 28 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN`, dan pemetaan error database (§1.5).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 48 tes), kecuali ditandai lain. Unit test (`npm test`, 41 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN`, validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
 
 ---
 
@@ -37,8 +37,7 @@ Authorization: Bearer <accessToken>
 - `accessToken` didapat dari response register atau login.
 - Masa berlaku token default **1 hari** (`JWT_EXPIRES_IN`; angka tanpa satuan berarti detik). Tidak ada refresh token.
 - **Logout** dilakukan di frontend dengan menghapus token yang disimpan. Tidak ada endpoint logout (PRD §7, Logout Rule).
-- Token hilang, rusak, palsu, atau kedaluwarsa → `401`.
-- Token milik user yang sudah dihapus: `GET /auth/me` → `401`. Endpoint lain belum memeriksa keberadaan user (token stateless); perilaku akhirnya diputuskan di GitHub issue #15. Belum ada fitur hapus user, sehingga kondisi ini hanya terjadi bila user dihapus langsung di database.
+- Token hilang, rusak, palsu, kedaluwarsa, atau milik user yang sudah dihapus → `401` di **semua** endpoint 🔒 (setiap request memeriksa keberadaan user; GitHub issue #15). Belum ada fitur hapus user, sehingga kasus terakhir hanya terjadi bila user dihapus langsung di database.
 
 ### 1.4 CORS
 
@@ -285,7 +284,7 @@ Buku milik user lain diperlakukan **sama dengan buku yang tidak ada** (`404`), s
 
 | Parameter | Tipe | Default | Aturan |
 |---|---|---|---|
-| `page` | integer | `1` | 1 – 9007199254740991 (`Number.MAX_SAFE_INTEGER`); di luar rentang → 400 |
+| `page` | integer | `1` | 1 – 90071992547409; di luar rentang → 400 |
 | `limit` | integer | `10` | 1–100 |
 | `search` | string | — | Cari di **judul**, tidak peka huruf besar/kecil, cocok sebagian (`clean` cocok dengan "Clean Code"). Karakter `%`, `_`, dan `\` dicari apa adanya (bukan wildcard). Maks. 200 karakter |
 | `status` | enum | — | `WANT_TO_READ`, `READING`, atau `COMPLETED` |
@@ -390,7 +389,7 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 400 | `:id` bukan UUID | `"Validation failed (uuid is expected)"` |
 | 400 | `categoryId` berformat UUID tetapi kategorinya tidak ada | `"Kategori tidak ditemukan"` |
 | 400 | `PATCH` dengan body kosong `{}` | `"Tidak ada data yang diubah"` |
-| 400 | Data terkait hilang saat buku disimpan (mis. kategori terhapus tepat saat itu, atau akun pemilik token sudah dihapus — §1.3) | `"Data terkait tidak ditemukan"` |
+| 400 | Data terkait hilang saat buku disimpan (mis. kategori terhapus tepat saat itu) | `"Data terkait tidak ditemukan"` |
 | 401 | Token tidak ada atau tidak valid | `"Unauthorized"` |
 | 404 | Buku tidak ada **atau milik user lain** | `"Buku tidak ditemukan"` |
 
@@ -409,3 +408,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-14 | §4.8 diperjelas setelah code review: jaminan konsistensi `total`, pasangan `categoryId`/`name` selalu sama-sama terisi atau `null`, aturan urutan saat `count` sama, perlakuan kategori terhapus. Bentuk response tidak berubah |
 | 2026-11-15 | §3: daftar 6 kategori dinyatakan **final** dan `GET /categories` tetap wajib login (keputusan tim, issue #11). Endpoint dan bentuk response tidak berubah |
 | 2026-11-17 | Hardening hasil audit (issue #22): `JWT_EXPIRES_IN` tanpa satuan = detik (§1.3); error database yang tidak ditangani → 409/400/404, bukan 500 (§1.5, §4.9); email di-trim sebelum validasi (§2.1, §2.2); batas atas `page` dan pencarian literal untuk `%`, `_`, `\` (§4.4). §1.3 diperbaiki agar sesuai implementasi untuk token milik user yang sudah dihapus (keputusan akhir di issue #15). Endpoint dan bentuk response sukses tidak berubah; jumlah tes diperbarui |
+| 2026-11-17 | Token milik user yang sudah dihapus → 401 di semua endpoint 🔒 (issue #15, opsi a; §1.3, §4.9). Batas atas `page` menjadi 90071992547409 agar offset selalu tepat (§4.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |

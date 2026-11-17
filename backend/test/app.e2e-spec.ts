@@ -5,6 +5,8 @@ import { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { getJwtExpiresIn } from '../src/auth/jwt.config.js';
+import { MAX_PAGE } from '../src/books/dto/query-books.dto.js';
+import { CategoriesService } from '../src/categories/categories.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 /**
@@ -487,7 +489,7 @@ describe('Personal Library API (e2e)', () => {
   });
 
   describe('Hardening input dan error database (issue #22)', () => {
-    it.each(['1e20', String(Number.MAX_SAFE_INTEGER + 1)])(
+    it.each(['1e20', String(MAX_PAGE + 1)])(
       'GET /books?page=%s → 400 (dulu 500 karena offset melewati batas int64)',
       async (page) => {
         await api()
@@ -498,15 +500,15 @@ describe('Personal Library API (e2e)', () => {
       },
     );
 
-    it('GET /books dengan page = Number.MAX_SAFE_INTEGER dan limit 100 → 200 data kosong', async () => {
+    it('GET /books dengan page = MAX_PAGE dan limit 100 → 200 data kosong', async () => {
       const res = await api()
         .get(`${API}/books`)
-        .query({ page: String(Number.MAX_SAFE_INTEGER), limit: '100' })
+        .query({ page: String(MAX_PAGE), limit: '100' })
         .set('Authorization', bearer(userA))
         .expect(200);
 
       expect(res.body.data).toEqual([]);
-      expect(res.body.meta.page).toBe(Number.MAX_SAFE_INTEGER);
+      expect(res.body.meta.page).toBe(MAX_PAGE);
     });
 
     it('search memperlakukan %, _, dan \\ sebagai karakter biasa', async () => {
@@ -538,19 +540,73 @@ describe('Personal Library API (e2e)', () => {
       expect(await titlesFor('100%')).toEqual(['100% Organic']);
     });
 
-    it('error foreign key (P2003) → 400, bukan 500: POST /books oleh user yang sudah dihapus', async () => {
-      // Status akhir untuk token milik user terhapus diputuskan di issue #15;
-      // yang dijamin di sini: error database yang dikenali tidak menjadi 500.
-      const user = await registerUser('deleted');
-      await prisma.user.delete({ where: { id: user.id } });
+    it('error foreign key (P2003) → 400 lewat filter global: kategori terhapus di antara pengecekan dan penyimpanan', async () => {
+      // Race nyata: categoryId lolos ensureExists(), lalu kategorinya hilang
+      // sebelum buku disimpan. Database menolak dengan pelanggaran foreign key.
+      const category = await prisma.category.create({
+        data: { name: `E2E Race ${Date.now()}` },
+        select: { id: true },
+      });
+      const ensureExists = vi
+        .spyOn(app.get(CategoriesService), 'ensureExists')
+        .mockImplementationOnce(async (id: string) => {
+          await prisma.category.delete({ where: { id } });
+        });
 
-      const res = await api()
-        .post(`${API}/books`)
-        .set('Authorization', bearer(user))
-        .send({ title: 'Buku', author: 'A' })
-        .expect(400);
+      try {
+        const res = await api()
+          .post(`${API}/books`)
+          .set('Authorization', bearer(userA))
+          .send({ title: 'Race', author: 'A', categoryId: category.id })
+          .expect(400);
 
-      expect(res.body.message).toBe('Data terkait tidak ditemukan');
+        expect(res.body.message).toBe('Data terkait tidak ditemukan');
+        expect(ensureExists).toHaveBeenCalledOnce();
+      } finally {
+        ensureExists.mockRestore();
+        await prisma.category.deleteMany({ where: { id: category.id } });
+      }
+    });
+  });
+
+  describe('Token milik user yang sudah dihapus → 401 di semua endpoint (issue #15)', () => {
+    type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+    let deleted: TestUser;
+
+    beforeAll(async () => {
+      // Token bertanda tangan valid, tetapi user-nya dihapus langsung di database.
+      deleted = await registerUser('deleted');
+      await prisma.user.delete({ where: { id: deleted.id } });
+    });
+
+    const call = (method: Method, url: string) => {
+      switch (method) {
+        case 'GET':
+          return api().get(url);
+        case 'POST':
+          return api().post(url).send({ title: 'Buku', author: 'A' });
+        case 'PATCH':
+          return api().patch(url).send({ title: 'Buku' });
+        case 'DELETE':
+          return api().delete(url);
+      }
+    };
+
+    const cases: [Method, string][] = [
+      ['GET', '/auth/me'],
+      ['GET', '/categories'],
+      ['GET', '/books'],
+      ['GET', '/books/stats'],
+      ['GET', `/books/${NIL_UUID}`],
+      ['POST', '/books'],
+      ['PATCH', `/books/${NIL_UUID}`],
+      ['DELETE', `/books/${NIL_UUID}`],
+    ];
+
+    it.each(cases)('%s %s → 401', async (method, path) => {
+      await call(method, `${API}${path}`)
+        .set('Authorization', bearer(deleted))
+        .expect(401);
     });
   });
 });

@@ -1,10 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
-import { toHttpException } from './prisma-exception.filter.js';
+import {
+  PrismaExceptionFilter,
+  toHttpException,
+} from './prisma-exception.filter.js';
 
 /**
  * Filter global hanya jaring pengaman: error Prisma yang dikenali tetapi tidak
@@ -41,5 +45,62 @@ describe('toHttpException', () => {
 
   it('kode lain tidak dipetakan (tetap 500 lewat filter bawaan)', () => {
     expect(toHttpException(prismaError('P1001'))).toBeUndefined();
+  });
+});
+
+describe('PrismaExceptionFilter', () => {
+  function setup() {
+    const reply = vi.fn();
+    const httpAdapter = {
+      isHeadersSent: vi.fn().mockReturnValue(false),
+      reply,
+      end: vi.fn(),
+    };
+    const response = {};
+    const host = { getArgByIndex: vi.fn().mockReturnValue(response) };
+    const filter = new PrismaExceptionFilter(httpAdapter as never);
+    return { filter, host: host as never, reply, response };
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('error yang dipetakan tetap dicatat di log server (warning berisi kode Prisma)', () => {
+    // Error ini berarti ada kasus yang tidak ditangani service; tanpa log,
+    // penyebabnya tidak bisa dilacak karena client hanya menerima pesan umum.
+    const warn = vi
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    const { filter, host, reply, response } = setup();
+
+    filter.catch(prismaError('P2003'), host);
+
+    expect(reply).toHaveBeenCalledWith(
+      response,
+      expect.objectContaining({
+        statusCode: 400,
+        message: 'Data terkait tidak ditemukan',
+      }),
+      400,
+    );
+    expect(warn).toHaveBeenCalledOnce();
+    expect(String(warn.mock.calls[0][0])).toContain('P2003');
+  });
+
+  it('kode lain diteruskan ke filter bawaan: 500 dan dicatat sebagai error', () => {
+    const error = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const { filter, host, reply, response } = setup();
+
+    filter.catch(prismaError('P1001'), host);
+
+    expect(reply).toHaveBeenCalledWith(
+      response,
+      { statusCode: 500, message: 'Internal server error' },
+      500,
+    );
+    expect(error).toHaveBeenCalled();
   });
 });
