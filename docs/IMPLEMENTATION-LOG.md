@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
-| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 51 tes; unit 52 tes) |
+| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 53 tes; unit 74 tes; unit dan e2e otomatis di CI GitHub Actions) |
 | 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#25 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24) dan token user terhapus #15 (PR #25) merged; rate limiting #14 di PR #26 (menunggu merge); unit test/CI #23 belum; demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#26 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 di PR #27 (menunggu merge); demo belum) |
 
 ### Endpoint
 
@@ -74,7 +74,8 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 13 | `docs/sync-docs-audit` | `4867b82` | #21 | `90a8888` | ✅ Merged 2026-11-15 — audit kesesuaian dokumen (entri "Audit Kesesuaian Dokumen dan Alur Kerja") |
 | 14 | `fix/backend-hardening` | `a66df34` | #24 | `906edf5` | ✅ Merged 2026-11-17; menutup issue #22 dan #16 |
 | 15 | `fix/jwt-deleted-user` | `8be53db` | #25 | `63ca322` | ✅ Merged 2026-11-17; menutup issue #15 (opsi a) dan memuat perbaikan review PR #24 |
-| 16 | `feature/auth-rate-limit` | `f4d2a30` (+ commit dokumen) | #26 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #14 |
+| 16 | `feature/auth-rate-limit` | `dda51e8` | #26 | `278e95c` | ✅ Merged 2026-11-17; menutup issue #14 |
+| 17 | `chore/tests-ci` | `d28b47c` (+ perbaikan lint dan commit dokumen) | #27 | — | ⏳ Menunggu review dan merge Team Lead; menutup issue #23 |
 
 Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
 
@@ -1141,6 +1142,69 @@ Ketiga butir dicentang di deskripsi issue, bukti ditambahkan sebagai komentar, d
 
 ---
 
+## 2026-11-17 — Merge PR #26, Unit Test Tambahan, dan CI GitHub Actions (Issue #23)
+
+**Pelaksana:** Panji
+**Branch:** `chore/tests-ci` (terhubung ke issue #23, dibuat dengan `gh issue develop` dari `main` `278e95c`)
+**Commit:**
+- `d28b47c` `test: cover auth and book write paths and add GitHub Actions CI`
+- perbaikan warning lint dan commit dokumen ini (lihat PR)
+
+**PR:** #27 (https://github.com/DDDdonutss/LIBRARY_PERSONAL/pull/27) — `Closes #23`; menunggu review dan merge Team Lead. Tidak ada perubahan kode aplikasi.
+
+### Merge PR #26
+
+PR #26 di-merge Team Lead 2026-11-17 dengan "Create a merge commit" → `main` = `278e95c`; issue #14 tertutup otomatis. Isi tree `main` identik dengan `dda51e8`, yang sudah lolos unit 52/52, e2e 51/51, build, dan Bruno 82 request / 129 tes (entri sebelumnya).
+
+### Checklist issue #23
+
+| Butir | Hasil |
+|---|---|
+| Unit test `AuthService` (register, login, `getCurrentUser`) | ✅ 11 tes baru: hash bcrypt tersimpan (bukan password asli), batas 72 byte sebelum query, duplikat → 409, race P2002 → 409, error lain diteruskan, login sukses tanpa `passwordHash`, pesan 401 seragam (password salah, email tidak terdaftar, > 72 byte), `getCurrentUser` → 401 bila user hilang |
+| Unit test `jwt.config` | ✅ `getJwtSecret`: kosong / < 32 karakter ditolak, ≥ 32 diterima (4 tes); `getJwtExpiresIn` sudah ada sejak PR #24 |
+| Unit test pemetaan error `BooksService` | ✅ 7 tes: `update`/`remove` dibatasi `id` + `userId`, P2025 → 404 "Buku tidak ditemukan", body kosong → 400 tanpa query, validasi `categoryId`, error lain diteruskan ke filter global |
+| Token kedaluwarsa → 401 | ✅ E2E: token bertanda tangan valid dengan `exp` lewat 60 detik → 401 di `/auth/me` dan `/books` |
+| Token user terhapus, `page` sangat besar, search `%`/`_` | ✅ Sudah tercakup e2e sejak PR #24 dan #25 |
+| Register paralel (jalur P2002) | ✅ E2E: 5 request bersamaan dengan email sama → tepat satu 201, empat 409 "Email sudah terdaftar", satu baris di database |
+| GitHub Actions | ✅ `.github/workflows/ci.yml` |
+
+### CI GitHub Actions
+
+`.github/workflows/ci.yml` berjalan pada setiap pull request ke `main` dan setiap push ke `main`: `npm ci`, lint, type check (`tsc --noEmit`), cek format Prettier, unit test, build, lalu `prisma migrate deploy` + seed + e2e terhadap service container PostgreSQL 18 (database baru setiap run). Versi disamakan dengan lingkungan lokal Team Lead (Node 26.13, npm 12, PostgreSQL 18.6). `JWT_SECRET` di workflow adalah nilai khusus CI untuk token uji, bukan secret aplikasi. Koleksi Bruno tidak dijalankan di CI (membutuhkan server berjalan).
+
+Run pertama pada PR #27 (commit `d28b47c`, run `44093572998`): ✅ semua langkah sukses — unit 74/74, migration 1 diterapkan, seed 6 kategori, e2e 53/53. Log run memuat satu warning oxlint (`require-array-sort-compare` pada `.sort()` di test register paralel) yang tidak terlihat secara lokal karena output lint tidak ditampilkan; diperbaiki di commit berikutnya (`.sort((a, b) => a - b)`), dan oxlint lokal kini tanpa warning. Log CI juga menunjukkan bahwa warning ini satu-satunya di seluruh kode, jadi PR sebelumnya bersih.
+
+### Uji mutasi
+
+Kode aplikasi dirusak sementara satu per satu (lalu dikembalikan dengan `git checkout`) untuk memastikan test benar-benar menangkap kesalahan:
+
+| Mutasi | Hasil |
+|---|---|
+| Batas 72 byte bcrypt dihapus | ✅ unit `AuthService` gagal |
+| Penanganan P2002 di register dihapus | ✅ unit `AuthService` gagal; e2e register paralel gagal setelah assertion diperketat (lihat catatan) |
+| P2025 tidak dipetakan ke 404 | ✅ unit `BooksService` gagal |
+| `userId` dihapus dari `where` di `update` / `remove` | ✅ unit `BooksService` gagal |
+| Batas `JWT_SECRET` menjadi 31 karakter | ✅ unit `jwt.config` gagal |
+| `ignoreExpiration: true` | ✅ e2e token kedaluwarsa gagal |
+
+Catatan: pada percobaan pertama, mutasi P2002 tidak terdeteksi e2e karena filter global (PR #24) tetap mengubah P2002 menjadi 409 dengan pesan umum "Data sudah ada". Assertion diperketat agar memeriksa pesan domain "Email sudah terdaftar". Satu mutasi awal juga salah sasaran (`sed` mengenai `findOne`, bukan `update`) dan diulang dengan target yang benar.
+
+### Verifikasi lokal
+
+| Uji | Hasil |
+|---|---|
+| `tsc --noEmit` | ✅ exit 0 |
+| oxlint | ✅ exit 0, tanpa warning |
+| Prettier | ✅ |
+| Unit test | ✅ 74/74 (sebelumnya 52) |
+| `npm run test:e2e` | ✅ 53/53 (sebelumnya 51) |
+
+### Dokumen yang disesuaikan
+
+`API-CONTRACT.md` (jumlah tes, catatan CI, riwayat); `JOBDESK-PANJI.md` v1.9 (§11, §13); `README.md` (stack: CI); `backend/README.md` (script, jumlah tes, bagian CI).
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
@@ -1156,10 +1220,10 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | Persiapan demo | #13 | Tim | ⏳ |
 | ~~Hardening hasil audit kode 2026-11-17 (JWT expiry, `page`, search, error Prisma, trim email)~~ | #22 | Panji | ✅ PR #24, merged 2026-11-17. Item INFO opsional ditunda |
 | ~~Perbaikan hasil review ulang PR #24 (log filter, offset `page`, trim email di service)~~ | — | Panji | ✅ PR #25, merged 2026-11-17 |
-| Rate limiting login/register (MEDIUM pada audit 2026-11-17) | #14 | Panji | ✅ PR #26, menunggu merge |
+| ~~Rate limiting login/register (MEDIUM pada audit 2026-11-17)~~ | #14 | Panji | ✅ PR #26, merged 2026-11-17 |
 | ~~Tolak token milik user yang sudah dihapus~~ | #15 | Panji | ✅ Opsi (a), PR #25, merged 2026-11-17 |
 | ~~Rapikan format Prettier di `backend/src/prisma` (sudah ada sejak awal)~~ | #16 | Panji | ✅ PR #24, merged 2026-11-17 |
-| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ⏳ Setelah PR #26 di-merge |
+| Unit test modul lain dan CI GitHub Actions | #23 | Panji | ✅ PR #27, menunggu merge |
 | ~~Konfirmasi apakah issue #10 sengaja dibuka kembali~~ | #10 | Panji (Team Lead) | ✅ Disesuaikan dengan kondisi kode: checklist dicentang dan issue ditutup kembali 2026-11-17 |
 | ~~Buat issue GitHub untuk pekerjaan terbuka~~ | #9–#16, #22–#23 | Panji | ✅ 2026-11-15; #22–#23 dari audit kode 2026-11-17 |
 | ~~Konfirmasi mentor terkait pengecualian dashboard (PRD §10)~~ | — | Panji | ✅ Mentor meminta dashboard sederhana (2026-11-14); backend `GET /books/stats` selesai (`ed34f55`), tampilan dashboard masuk #12 |

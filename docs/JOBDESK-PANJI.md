@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.8  
-**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.8 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
+**Version:** 1.9  
+**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.9 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -388,7 +388,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 51 tes), dan unit test (`npm test`, 52 tes: statistik, `JWT_EXPIRES_IN`, `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 53 tes), dan unit test (`npm test`, 74 tes: `AuthService`, `BooksService`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Unit dan e2e test berjalan otomatis di CI GitHub Actions (`.github/workflows/ci.yml`) pada setiap pull request ke `main`. Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -469,7 +469,7 @@ Pekerjaan backend dibagi ke branch bertumpuk dan digabung lewat Pull Request ber
 
 PR 1–7 di-merge ke `main` pada 2026-11-14, PR 8 pada 2026-11-15. Branch 8 dibuat dari `main` setelah merge PR 7.
 
-Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Temuan audit kode 2026-11-17 dilacak sebagai #22 (hardening backend, branch `fix/backend-hardening`, PR #24) dan #23 (unit test dan CI). Issue #15 (token milik user terhapus, opsi a) dikerjakan di branch `fix/jwt-deleted-user` bersama perbaikan hasil review PR #24 (PR #25). Issue #14 (rate limiting) dikerjakan di branch `feature/auth-rate-limit`. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
+Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9–#16); PR yang menyelesaikan issue mencantumkan `Closes #<nomor>`. Temuan audit kode 2026-11-17 dilacak sebagai #22 (hardening backend, branch `fix/backend-hardening`, PR #24) dan #23 (unit test dan CI). Issue #15 (token milik user terhapus, opsi a) dikerjakan di branch `fix/jwt-deleted-user` bersama perbaikan hasil review PR #24 (PR #25). Issue #14 (rate limiting) dikerjakan di branch `feature/auth-rate-limit` (PR #26), dan issue #23 (unit test dan CI) di branch `chore/tests-ci`. Sejak PR #27, setiap PR ke `main` diperiksa CI sebelum di-merge. Issue dan PR dapat dibuat dari terminal dengan GitHub CLI (`gh`).
 
 **Prinsip utama:** Panji bertanggung jawab memastikan backend aman, database konsisten, API jelas, dan integrasi frontend-backend berjalan.
 
@@ -486,3 +486,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.6 | 2026-11-17 | Hardening hasil audit kode (issue #22, #16): §8 file baru (`jwt.config.spec.ts`, `prisma-exception.filter.ts`, folder Bruno `06 Hardening`); §9 format `JWT_EXPIRES_IN`; §11 jumlah tes dan item checklist baru; §13 issue #22–#23 |
 | 1.7 | 2026-11-17 | Issue #15 (opsi a): §6 token milik user terhapus ditolak; §8 file spec baru; §11 jumlah tes dan checklist token; §13 branch `fix/jwt-deleted-user` |
 | 1.8 | 2026-11-17 | Issue #14: §6 rate limiting login/register; §8 `rate-limit.config.ts`; §9 `AUTH_RATE_LIMIT_PER_MINUTE`; §11 jumlah tes dan checklist; §13 branch `feature/auth-rate-limit` |
+| 1.9 | 2026-11-17 | Issue #23: §11 jumlah tes dan CI GitHub Actions; §13 branch `chore/tests-ci` dan pemeriksaan CI pada setiap PR |
