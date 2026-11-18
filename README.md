@@ -56,7 +56,7 @@ API tersedia di `http://localhost:3001/api/v1`. Panduan lengkap (termasuk pembua
 | [`docs/API-CONTRACT.md`](docs/API-CONTRACT.md) | Kontrak REST API untuk frontend |
 | [`docs/JOBDESK-PANJI.md`](docs/JOBDESK-PANJI.md) | Tanggung jawab backend, database, dan integrasi |
 | [`docs/IMPLEMENTATION-LOG.md`](docs/IMPLEMENTATION-LOG.md) | Riwayat implementasi, verifikasi, dan keputusan teknis |
-| `docs/MASTER-PROMPT.md` | Panduan teknis internal — tidak disertakan di repository |
+
 
 ## Alur Kontribusi
 
