@@ -69,6 +69,7 @@ Buka `http://localhost:3000` (port ini wajib karena CORS backend hanya mengizink
 | [`docs/API-CONTRACT.md`](docs/API-CONTRACT.md) | Kontrak REST API untuk frontend |
 | [`docs/JOBDESK-PANJI.md`](docs/JOBDESK-PANJI.md) | Tanggung jawab backend, database, dan integrasi |
 | [`docs/IMPLEMENTATION-LOG.md`](docs/IMPLEMENTATION-LOG.md) | Riwayat implementasi, verifikasi, dan keputusan teknis |
+| [`docs/RIWAYAT-COMMIT.md`](docs/RIWAYAT-COMMIT.md) | Penjelasan setiap commit di `main` dalam bahasa Indonesia, per PR |
 
 
 ## Alur Kontribusi
