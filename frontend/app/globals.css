@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Aplikasi memakai tema terang saja, agar warna kartu, tabel, dan form konsisten. */
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
