@@ -38,7 +38,7 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
 | 7 — API Testing | ✅ Completed (Bruno 88 request / 141 tes; e2e 53 tes; unit 74 tes; unit dan e2e otomatis di CI GitHub Actions) |
 | 8 — Frontend Integration | ✅ Completed — issue #29–#34 selesai lewat PR #35–#40 (merged 2026-11-21); alur lengkap diuji end-to-end di browser — lihat entri 2026-11-21 |
-| 9 — Finalization | ⏳ In Progress (PR #1–#42 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 (PR #27) merged; deskripsi tugas frontend #12 dilengkapi 2026-11-17 lalu dipecah menjadi #29–#34 (2026-11-21); frontend selesai dan di-merge (PR #35–#40) beserta tes Bruno tambahan (PR #41), lalu #12 ditutup lewat PR #42; demo belum) |
+| 9 — Finalization | ⏳ In Progress (PR #1–#43 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 (PR #27) merged; deskripsi tugas frontend #12 dilengkapi 2026-11-17 lalu dipecah menjadi #29–#34 (2026-11-21); frontend selesai dan di-merge (PR #35–#40) beserta tes Bruno tambahan (PR #41), lalu #12 ditutup lewat PR #42; demo belum) |
 
 ### Endpoint
 
@@ -85,8 +85,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 24 | `feature/frontend-dashboard` | `b09e8b0` | #40 | `ede065b` | ✅ Merged 2026-11-21; menutup issue #34 |
 | 25 | `test/bruno-frontend-contract` | `a1709f4` | #41 | `2559e7b` | ✅ Merged 2026-11-21; tes Bruno dan API Contract |
 | 26 | `docs/record-frontend-prs` | `45f6da7` | #42 | `d28c4ce` | ✅ Merged 2026-11-21; menutup issue #12 (dokumen saja) |
+| 27 | `docs/record-pr-42` | `832f571` | #43 | `592fb59` | ✅ Merged 2026-11-21 (dokumen saja) |
 
-Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`), kecuali branch 25 yang tidak punya issue. Branch 1–18 dihapus dari GitHub dan dari lokal pada 2026-11-21 setelah di-merge; commit-nya tetap ada di `main`, dan halaman setiap PR menyediakan tombol "Restore branch". Branch 19–24 adalah branch tertaut issue #29–#34: dibuat dari `main` `c7154b3`, lalu disamakan dengan `main` terbaru sebelum setiap tahap. Branch 19–26 dihapus setelah masing-masing di-merge.
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, branch untuk pekerjaan yang punya issue dibuat dengan `gh issue develop` sehingga tertaut ke issue tersebut. Branch 1–18 dihapus dari GitHub dan dari lokal pada 2026-11-21 setelah di-merge; commit-nya tetap ada di `main`, dan halaman setiap PR menyediakan tombol "Restore branch". Branch 19–24 adalah branch tertaut issue #29–#34: dibuat dari `main` `c7154b3`, lalu disamakan dengan `main` terbaru sebelum setiap tahap. Branch 19–27 dihapus setelah masing-masing di-merge.
 
 ---
 
@@ -1261,6 +1262,7 @@ Butir "Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard)" ternyata sudah dik
 | 2026-11-21 | Branch tertaut issue dibuat dari `main` `c7154b3`: `feature/frontend-setup` (#29), `feature/frontend-auth` (#30), `feature/frontend-books` (#31), `feature/frontend-book-detail` (#32), `feature/frontend-books-search` (#33), `feature/frontend-dashboard` (#34). Bagian "Cara mengirim" di setiap issue diperbarui: perbarui branch dengan `git pull origin main` sebelum mulai |
 | 2026-11-21 | Pekerjaan frontend diambil alih Team Lead: #29–#34 di-assign ke `DDDdonutss`, dan akun frontend dilepas dari #12 |
 | 2026-11-21 | Atas keputusan Team Lead, branch lama tanpa PR `feature/frontend-integration` dan `chore/format-prisma` dihapus dari GitHub. Keduanya menunjuk ke `cd252f3` (merge PR #8), yang sudah ada di `main`. `docs/demo-preparation` (juga `cd252f3`) dipertahankan untuk #13 |
+| 2026-11-21 | Atas permintaan Team Lead agar riwayat commit mudah dibaca, ditambahkan [`RIWAYAT-COMMIT.md`](RIWAYAT-COMMIT.md): penjelasan bahasa Indonesia untuk ke-94 commit di `main` sampai PR #43, dikelompokkan per PR. History tidak ditulis ulang (rebase atau force push), karena SHA-nya dirujuk di dokumen ini, di PR, dan di issue |
 
 ### Setup project (#29)
 
