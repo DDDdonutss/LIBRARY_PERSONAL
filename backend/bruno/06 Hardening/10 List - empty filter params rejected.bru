@@ -1,0 +1,29 @@
+meta {
+  name: List - empty filter params rejected
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/books?status=&categoryId=&page=
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+tests {
+  // Frontend tidak boleh mengirim parameter kosong (issue #33): pilihan
+  // "Semua status/kategori" berarti parameternya tidak dikirim sama sekali.
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("status, categoryId, dan page kosong masing-masing ditolak", function () {
+    expect(res.body.message).to.include("status must be one of the following values: WANT_TO_READ, READING, COMPLETED");
+    expect(res.body.message).to.include("categoryId must be a UUID");
+    expect(res.body.message).to.include("page must not be less than 1");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: List - empty search ignored
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/books?search=
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+tests {
+  test("status 200 (search kosong tidak ditolak)", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("search kosong diabaikan: ketiga buku user tetap tampil", function () {
+    expect(res.body.meta.total).to.equal(3);
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Update - categoryId empty string rejected
+  type: http
+  seq: 14
+}
+
+patch {
+  url: {{baseUrl}}/books/{{hardeningBookId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+body:json {
+  {
+    "categoryId": ""
+  }
+}
+
+tests {
+  // Menghapus kategori dari buku memakai null, bukan "" (issue #32).
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("categoryId string kosong bukan UUID", function () {
+    expect(res.body.message).to.include("categoryId must be a UUID");
+  });
+}

@@ -131,7 +131,7 @@ Workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) berjalan pada
 
 ### Bruno (manual atau CLI)
 
-Koleksi Bruno ada di [`bruno/`](./bruno): 82 request dan 129 tes untuk auth, kategori, buku, kepemilikan data, statistik, dan hardening input. Folder `05 Stats` dan `06 Hardening` mandiri dan bisa dijalankan sendiri (mis. `npx @usebruno/cli run "05 Stats" --env local`).
+Koleksi Bruno ada di [`bruno/`](./bruno): 88 request dan 141 tes untuk auth, kategori, buku, kepemilikan data, statistik, dan hardening input (termasuk parameter query kosong, `categoryId` null atau string kosong, dan field asing pada `PATCH`). Folder `05 Stats` dan `06 Hardening` mandiri dan bisa dijalankan sendiri (mis. `npx @usebruno/cli run "05 Stats" --env local`).
 
 Dengan backend berjalan dan kategori sudah di-seed:
 
