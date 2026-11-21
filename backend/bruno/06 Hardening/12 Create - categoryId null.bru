@@ -1,0 +1,39 @@
+meta {
+  name: Create - categoryId null
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+body:json {
+  {
+    "title": "Buku tanpa kategori",
+    "author": "Penulis Hardening",
+    "categoryId": null
+  }
+}
+
+script:post-response {
+  bru.setVar("hardeningBookId", res.body.id);
+}
+
+tests {
+  // Body yang dikirim frontend untuk pilihan "Tanpa kategori" (issue #31).
+  test("status 201 (categoryId null diterima)", function () {
+    expect(res.status).to.equal(201);
+  });
+
+  test("buku tersimpan tanpa kategori", function () {
+    expect(res.body.categoryId).to.equal(null);
+    expect(res.body.category).to.equal(null);
+  });
+}

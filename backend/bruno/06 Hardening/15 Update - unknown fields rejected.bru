@@ -1,0 +1,43 @@
+meta {
+  name: Update - unknown fields rejected
+  type: http
+  seq: 15
+}
+
+patch {
+  url: {{baseUrl}}/books/{{hardeningBookId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hardeningToken}}
+}
+
+body:json {
+  {
+    "id": "{{hardeningBookId}}",
+    "title": "Buku tanpa kategori (diubah)",
+    "author": "Penulis Hardening",
+    "status": "READING",
+    "categoryId": null,
+    "category": null,
+    "createdAt": "2026-11-21T00:00:00.000Z",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  }
+}
+
+tests {
+  // Mengirim balik seluruh objek dari GET /books/:id ditolak (issue #32):
+  // PATCH hanya boleh berisi title, author, status, dan/atau categoryId.
+  test("status 400", function () {
+    expect(res.status).to.equal(400);
+  });
+
+  test("field di luar kontrak disebut satu per satu", function () {
+    expect(res.body.message).to.include("property id should not exist");
+    expect(res.body.message).to.include("property category should not exist");
+    expect(res.body.message).to.include("property createdAt should not exist");
+    expect(res.body.message).to.include("property updatedAt should not exist");
+  });
+}
