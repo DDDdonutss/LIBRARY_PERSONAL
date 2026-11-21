@@ -135,9 +135,24 @@ export interface BookInput {
   categoryId: string | null;
 }
 
-/** Halaman pertama daftar buku (10 buku terbaru). */
-export function getBooks() {
-  return apiFetch<BookList>('/books');
+export interface BookQuery {
+  page: number;
+  search: string;
+  status: BookStatus | '';
+  categoryId: string;
+}
+
+export function getBooks(query: BookQuery) {
+  // Parameter kosong tidak dikirim: backend menolak `status=`, `categoryId=`,
+  // dan `page=` tanpa nilai (400).
+  const params = new URLSearchParams();
+  if (query.page > 1) params.set('page', String(query.page));
+  if (query.search) params.set('search', query.search);
+  if (query.status) params.set('status', query.status);
+  if (query.categoryId) params.set('categoryId', query.categoryId);
+
+  const queryString = params.toString();
+  return apiFetch<BookList>(queryString ? `/books?${queryString}` : '/books');
 }
 
 export function getBook(id: string) {
