@@ -1,10 +1,10 @@
 # Implementation Log
-# Personal Library Management — Backend
+# Personal Library Management — Backend & Frontend
 
-Dokumen ini mencatat riwayat implementasi backend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
+Dokumen ini mencatat riwayat implementasi backend dan frontend: apa yang sudah dibuat, apa yang sudah diverifikasi, dan apa yang belum. Entri disusun kronologis; status terkini dirangkum di bagian pertama.
 
 **Repository:** https://github.com/DDDdonutss/LIBRARY_PERSONAL
-**Terakhir diperbarui:** 2026-11-17
+**Terakhir diperbarui:** 2026-11-21
 
 > Semua hash commit di dokumen ini merujuk ke riwayat repository `LIBRARY_PERSONAL`, yang ditulis ulang tanpa `docs/MASTER-PROMPT.md` (lihat entri "Remote GitHub dan Push", langkah 7).
 
@@ -36,9 +36,9 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 4 — Authentication | ✅ Completed (register, login, JWT strategy/guard, `/auth/me`) |
 | 5 — Book Management | ✅ Completed (CRUD, search, filter, pagination, ownership, statistik dashboard) |
 | 6 — Category API | ✅ Completed — daftar 6 kategori final dan `GET /categories` wajib login (issue #11, PR #19) |
-| 7 — API Testing | ✅ Completed (Bruno 82 request / 129 tes; e2e 53 tes; unit 74 tes; unit dan e2e otomatis di CI GitHub Actions) |
-| 8 — Frontend Integration | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 9 — Finalization | ⏳ In Progress (PR #1–#27 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 (PR #27) merged; deskripsi tugas frontend #12 dilengkapi 2026-11-17; demo belum) |
+| 7 — API Testing | ✅ Completed (Bruno 88 request / 141 tes; e2e 53 tes; unit 74 tes; unit dan e2e otomatis di CI GitHub Actions) |
+| 8 — Frontend Integration | ✅ Completed — issue #29–#34 selesai lewat PR #35–#40 (merged 2026-11-21); alur lengkap diuji end-to-end di browser — lihat entri 2026-11-21 |
+| 9 — Finalization | ⏳ In Progress (PR #1–#41 di-merge ke `main`; security review dan code review dijalankan, temuan review ditutup; ObserveModule dihapus (#18, issue #10 ditutup ulang 2026-11-17); kategori final (#19); audit kode menyeluruh 2026-11-17 → hardening #22 (PR #24), token user terhapus #15 (PR #25), dan rate limiting #14 (PR #26) merged; unit test dan CI #23 (PR #27) merged; deskripsi tugas frontend #12 dilengkapi 2026-11-17 lalu dipecah menjadi #29–#34 (2026-11-21); frontend selesai dan di-merge (PR #35–#40) beserta tes Bruno tambahan (PR #41); demo belum) |
 
 ### Endpoint
 
@@ -76,9 +76,16 @@ Simbol: ✅ selesai · ⚠️ selesai dengan catatan · ❌ belum · — tidak b
 | 15 | `fix/jwt-deleted-user` | `8be53db` | #25 | `63ca322` | ✅ Merged 2026-11-17; menutup issue #15 (opsi a) dan memuat perbaikan review PR #24 |
 | 16 | `feature/auth-rate-limit` | `dda51e8` | #26 | `278e95c` | ✅ Merged 2026-11-17; menutup issue #14 |
 | 17 | `chore/tests-ci` | `353659f` | #27 | `08be376` | ✅ Merged 2026-11-17; menutup issue #23 |
-| 18 | `docs/record-pr-27` | lihat PR | — | — | ⏳ Menunggu review dan merge Team Lead (dokumen saja) |
+| 18 | `docs/record-pr-27` | `6cf9d5a` | #28 | `addedeb` | ✅ Merged 2026-11-17 (dokumen saja) |
+| 19 | `feature/frontend-setup` | `727be34` | #35 | `2ca49f9` | ✅ Merged 2026-11-21; menutup issue #29 |
+| 20 | `feature/frontend-auth` | `cd92f47` | #36 | `c874245` | ✅ Merged 2026-11-21; menutup issue #30 |
+| 21 | `feature/frontend-books` | `c886156` | #37 | `b0bd861` | ✅ Merged 2026-11-21; menutup issue #31 |
+| 22 | `feature/frontend-book-detail` | `08c85d0` | #38 | `dd98ef5` | ✅ Merged 2026-11-21; menutup issue #32 |
+| 23 | `feature/frontend-books-search` | `f9a90f1` | #39 | `663892f` | ✅ Merged 2026-11-21; menutup issue #33 |
+| 24 | `feature/frontend-dashboard` | `b09e8b0` | #40 | `ede065b` | ✅ Merged 2026-11-21; menutup issue #34 |
+| 25 | `test/bruno-frontend-contract` | `a1709f4` | #41 | `2559e7b` | ✅ Merged 2026-11-21; tes Bruno dan API Contract |
 
-Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`).
+Branch 1–5 dibuat bertumpuk (setiap branch dari branch sebelumnya) dan di-merge berurutan dengan **"Create a merge commit"** — bukan squash/rebase — sehingga setiap PR hanya menampilkan commit miliknya. Branch 6 dibuat dari `main` setelah merge PR 5; branch 7 dari branch 6; branch 8 dari `main` setelah merge PR 7. Mulai branch 10, setiap branch terhubung ke GitHub issue (`gh issue develop`). Branch 1–18 dihapus dari GitHub dan dari lokal pada 2026-11-21 setelah di-merge; commit-nya tetap ada di `main`, dan halaman setiap PR menyediakan tombol "Restore branch". Branch 19–24 adalah branch tertaut issue #29–#34: dibuat dari `main` `c7154b3`, lalu disamakan dengan `main` terbaru sebelum setiap tahap. Branch 19–25 dihapus setelah masing-masing di-merge.
 
 ---
 
@@ -1237,6 +1244,152 @@ Butir "Perbarui `MASTER-PROMPT.md` §2.2 butir 5 (dashboard)" ternyata sudah dik
 
 ---
 
+## 2026-11-21 — Frontend (Issue #29–#34) dan Tes Bruno: Implementasi, PR #35–#41, dan Merge
+
+**Pelaksana:** Panji
+**Status:** ✅ Selesai. Frontend dan 6 request Bruno baru dibuat dan diuji lebih dulu di working copy lokal (`main` `c7154b3`) tanpa perubahan di GitHub, atas instruksi Team Lead. Setelah dikonfirmasi, kode dikirim per tahap (satu branch dan satu PR per issue, PR #35–#40) ditambah PR #41 untuk tes Bruno, dan semuanya di-merge ke `main`. Lihat "Rilis ke GitHub".
+
+### Aktivitas GitHub sebelumnya
+
+| Tanggal | Aktivitas |
+|---|---|
+| 2026-11-18 | Commit `c7154b3` langsung ke `main` lewat web GitHub: baris `docs/MASTER-PROMPT.md` dihapus dari tabel Dokumentasi di `README.md` (CI ✅) |
+| 2026-11-21 | Issue #12 diubah menjadi issue induk tanpa menyebut nama, dengan 6 sub-issue bertahap: #29 setup, #30 daftar akun/masuk/keluar, #31 daftar dan tambah buku, #32 detail/ubah/hapus, #33 cari/filter/pindah halaman, #34 dashboard. Endpoint, validasi, dan kode status di setiap issue dicocokkan dengan kode backend dan dokumentasi Next.js 16 |
+| 2026-11-21 | Akun frontend `HameedaHere` menerima undangan collaborator (write) dan di-assign ke #12 (bersama `DDDdonutss`) serta #29–#34 |
+| 2026-11-21 | 18 branch milik PR yang sudah merged (#1–#8, #17–#21, #24–#28) dihapus dari GitHub dan lokal. Setiap ujung branch sudah ada di `main` |
+| 2026-11-21 | Branch tertaut issue dibuat dari `main` `c7154b3`: `feature/frontend-setup` (#29), `feature/frontend-auth` (#30), `feature/frontend-books` (#31), `feature/frontend-book-detail` (#32), `feature/frontend-books-search` (#33), `feature/frontend-dashboard` (#34). Bagian "Cara mengirim" di setiap issue diperbarui: perbarui branch dengan `git pull origin main` sebelum mulai |
+| 2026-11-21 | Pekerjaan frontend diambil alih Team Lead: #29–#34 di-assign ke `DDDdonutss`, dan akun frontend dilepas dari #12 |
+
+### Setup project (#29)
+
+- `npx create-next-app@16.4.5 frontend --ts --eslint --tailwind --app --use-npm --no-cache-components` → Next.js 16.4.5, React 19.3.0, Tailwind CSS 4.3.5, ESLint 9, TypeScript 5.9; `npm audit`: 0 kerentanan.
+- Versi 16.4.5 dipilih, bukan 16.4.6 yang terbaru: dirilis 2026-11-03 (≥ 2 minggu, aturan yang sama dengan dependensi backend) dan memuat perbaikan keamanan. Versi 16.4.6 (2026-11-09) hanya berisi backport perbaikan bug.
+- `--no-cache-components`: bila Cache Components aktif (bawaan 16.4), `useParams()` di `/books/[id]` membuat `npm run build` gagal tanpa `<Suspense>` (dokumentasi Next.js). Semua data diambil dari browser, jadi fitur ini tidak dibutuhkan.
+- `frontend/.gitignore` bawaan berisi `.env*`, sehingga `.env.example` ikut diabaikan (dibuktikan dengan `git check-ignore`). Ditambah baris `!.env.example`.
+- `frontend/AGENTS.md` dibuat otomatis oleh Next.js (panduan untuk AI coding agent) dan dibiarkan. Lima SVG contoh di `public/` dihapus karena tidak dipakai.
+
+### File per tahap
+
+| Tahap | Issue | File di `frontend/` |
+|---|---|---|
+| 1 — Setup | #29 | `.env.example`, `.gitignore`, `README.md`, `app/layout.tsx` (judul, `lang="id"`), `app/globals.css` (tema terang), `lib/types.ts`, `lib/labels.ts`, `lib/auth.ts`, `lib/api.ts`, `lib/ui.ts` |
+| 2 — Daftar akun, masuk, keluar | #30 | `app/page.tsx`, `app/login/page.tsx`, `app/register/page.tsx`, `app/(app)/layout.tsx`, `components/AppHeader.tsx`, `components/AuthCard.tsx`, `components/ErrorAlert.tsx`, `lib/validation.ts` |
+| 3 — Daftar dan tambah buku | #31 | `app/(app)/books/page.tsx`, `app/(app)/books/new/page.tsx`, `components/BookForm.tsx`, `lib/useCategories.ts` |
+| 4 — Detail, ubah, hapus | #32 | `app/(app)/books/[id]/page.tsx`, `lib/format.ts`; ganti status per baris di `app/(app)/books/page.tsx` |
+| 5 — Cari, filter, pindah halaman | #33 | `app/(app)/books/page.tsx` (form cari, filter, navigasi halaman); `getBooks` di `lib/api.ts` |
+| 6 — Dashboard | #34 | `app/(app)/dashboard/page.tsx`; menu Buku/Dashboard di `components/AppHeader.tsx` |
+
+### Keputusan teknis
+
+| Keputusan | Alasan |
+|---|---|
+| Token di `localStorage`, dibaca lewat `useSyncExternalStore` (`useToken`) | Tidak dibaca saat render di server (tanpa hydration mismatch) dan memenuhi aturan lint React 19 `react-hooks/set-state-in-effect`, yang di proyek ini bertipe error |
+| Status "memuat" diturunkan dari data (kunci query yang menghasilkan data), bukan di-set di dalam effect | Aturan lint yang sama; data lama tidak tampil untuk query baru |
+| Satu layout untuk folder `(app)`: tanpa token → `/login`; dengan token → `GET /auth/me` dulu sebelum halaman dirender | Satu tempat untuk perlindungan halaman dan header; token rusak atau kedaluwarsa tidak sempat menampilkan isi |
+| `apiFetch` satu-satunya pemanggil API: 401 selain login → hapus token lalu `/login`; 5xx → pesan umum; gagal koneksi → "Tidak dapat terhubung ke server" | Tabel "Penanganan respons" di issue #29 |
+| Parameter kosong tidak dikirim (`URLSearchParams`); `PATCH` hanya berisi field yang berubah; "Tanpa kategori" dikirim sebagai `null` | Backend menolak `status=`, `categoryId=`, dan `page=` kosong, `categoryId: ""`, dan field asing (diuji terhadap DTO backend) |
+| Kategori diambil sekali per halaman lalu diteruskan ke `BookForm` | Ditemukan saat uji: form yang diisi ulang setelah disimpan sempat mengambil kategori lagi. Sudah diperbaiki |
+| Pencarian, filter, dan halaman disimpan di `useState` | `useSearchParams()` tanpa `<Suspense>` membuat `npm run build` gagal |
+| Grafik kategori memakai bar CSS, tanpa library | Cukup untuk "grafik sederhana" dan tidak menambah dependensi |
+| Tema terang saja (mode gelap bawaan template dihapus) | Warna `body` mode gelap menimpa kelas Tailwind sehingga kartu putih tidak terbaca |
+
+### Verifikasi
+
+`npm run lint` ✅ (0 error, 0 warning) dan `npm run build` ✅ (TypeScript bersih, 8 route), diulang setelah perbaikan kategori.
+
+Uji end-to-end di browser memakai build produksi frontend (`npm run start`), terhadap backend (`npm run start`) dan database lokal. Body setiap request diperiksa dengan perekam `fetch` yang disisipkan ke halaman.
+
+| Area | Hasil |
+|---|---|
+| Daftar akun | Form kosong → 3 pesan validasi tanpa request; berhasil → langsung `/books` dengan header "Halo, Tester A" |
+| Tambah buku | Judul berisi spasi saja dan penulis kosong ditolak sebelum dikirim; body `POST /books` hanya berisi `title`, `author`, `status`, `categoryId`; "Tanpa kategori" = `null`; buku terbaru paling atas |
+| Pindah halaman | 12 buku → halaman 1 berisi 10, halaman 2 berisi 2; tombol nonaktif di posisi yang benar; request `GET /books?page=2` |
+| Filter dan cari | Ganti filter di halaman 2 → kembali ke halaman 1; status + kategori digabung (4 buku); pilihan "Semua" menghapus parameter; cari "  cLeAn  " → `?search=cLeAn` menemukan "Clean Code"; tanpa hasil → "Tidak ada buku yang cocok." tanpa navigasi halaman; tidak ada request dengan parameter kosong |
+| Ganti status di daftar | Body `PATCH` = `{"status":"COMPLETED"}`; baris ikut berubah |
+| Detail, ubah, hapus | Tanggal tampil dalam waktu lokal; ubah judul → body hanya `{"title":…}`; "Tanpa kategori" → `{"categoryId":null}`; tanpa perubahan → "Tidak ada perubahan." tanpa request; konfirmasi hapus dibatalkan → tidak ada `DELETE`; hapus → `DELETE /books/:id`, kembali ke daftar (11 buku) |
+| Dashboard | Total, per status, dan per kategori sama dengan data `GET /books`; kategori terbanyak di atas; akun tanpa buku → "Belum ada buku." tanpa kartu atau grafik |
+| Alamat tidak valid | `/books/abc` (400) dan UUID yang tidak ada (404) → "Buku tidak ditemukan" |
+| Keluar dan perlindungan halaman | Keluar → token terhapus, ke `/login`; `/books` tanpa token → `/login`; token acak → `/login` dan token dihapus |
+| Dua akun | Akun B tidak melihat buku akun A; alamat buku milik A → "Buku tidak ditemukan" |
+| Error masuk dan daftar akun | Password salah → "Email atau password salah"; email yang sudah terdaftar (huruf besar) → "Email sudah terdaftar"; email berspasi tetap bisa masuk |
+| Rate limit (batas bawaan 5) | Percobaan masuk ke-6 dalam satu menit → "Terlalu banyak percobaan. Coba lagi nanti."; tombol nonaktif selama request |
+| Backend mati | "Tidak dapat terhubung ke server" |
+| Console browser | Tidak ada error aplikasi, selain log jaringan untuk respons 4xx yang memang diuji |
+
+Catatan pengujian:
+
+- Playwright MCP tidak bisa dipakai karena Google Chrome tidak terpasang di lokasi yang dicarinya. Pengujian memakai browser bawaan aplikasi Claude.
+- Perekam `fetch` versi pertama belum menangani objek `URL` dari router Next.js, sehingga beberapa perpindahan halaman jatuh ke muat ulang penuh. Ini kesalahan alat uji (stack trace menunjuk ke skrip sisipan), bukan aplikasi. Setelah perekam diperbaiki, perpindahan halaman tetap di sisi klien.
+- Proses backend yang dijalankan di latar belakang sempat tertinggal setelah dihentikan dan memakai port 3001. Proses itu dihentikan berdasarkan PID dan command line-nya sebelum uji rate limit diulang.
+- Dua akun uji (`fe-e2e-…@example.com`) beserta 11 bukunya dihapus dari database lokal setelah pengujian, dalam satu transaksi yang memastikan tepat 2 akun terhapus.
+
+### Koleksi Bruno: audit dan 4 kasus kontrak frontend
+
+Atas pertanyaan Team Lead apakah koleksi Bruno tertinggal: koleksi terakhir diubah 2026-11-17 (PR #25), dan sesudahnya tidak ada perubahan endpoint (rate limit PR #26 sengaja diuji di e2e; PR #27–#28 tanpa perubahan API). Dijalankan terhadap backend saat ini dengan CLI `@usebruno/cli@4.3.0`: ✅ 82/82 request, 129/129 tes.
+
+Empat perilaku yang kini diandalkan frontend (issue #31–#33) belum punya request uji. Ditambahkan 6 request di folder mandiri `06 Hardening` (seq 10–15), memakai user hardening milik run itu sendiri:
+
+| Seq | Request | Yang diuji |
+|---|---|---|
+| 10 | `GET /books?status=&categoryId=&page=` | 400 dengan tiga pesan validasi: status, categoryId, page |
+| 11 | `GET /books?search=` | 200; search kosong diabaikan, ketiga buku user tetap tampil |
+| 12 | `POST /books` dengan `"categoryId": null` | 201; `categoryId` dan `category` bernilai `null` (body yang dikirim frontend untuk "Tanpa kategori") |
+| 13 | `POST /books` dengan `"categoryId": ""` | 400 `categoryId must be a UUID` |
+| 14 | `PATCH /books/:id` dengan `"categoryId": ""` | 400 `categoryId must be a UUID` |
+| 15 | `PATCH /books/:id` berisi seluruh objek buku (`id`, `category`, `createdAt`, `updatedAt`, dan lainnya) | 400; setiap field asing disebut (`property … should not exist`) |
+
+| Verifikasi (backend dengan `AUTH_RATE_LIMIT_PER_MINUTE=50`) | Hasil |
+|---|---|
+| Seluruh koleksi | ✅ 88/88 request, 141/141 tes |
+| Folder `06 Hardening` saja (tetap mandiri) | ✅ 15/15 request, 26/26 tes |
+| Pesan validasi dicocokkan dengan DTO backend | ✅ termasuk `limit=` kosong → 400, dicatat di API Contract §4.4 |
+
+Akun uji dari run audit (6 akun) dan run verifikasi (7 akun) beserta bukunya dihapus dari database lokal setelah pengujian, masing-masing dalam transaksi yang memastikan jumlahnya tepat; jumlah user kembali 94 seperti sebelum pengujian.
+
+### Rilis ke GitHub
+
+Setelah Team Lead mengambil alih pekerjaan frontend, kode dikirim per tahap: satu branch dan satu PR per issue, di-merge berurutan dengan "Create a merge commit" setelah CI lolos. Lima file dipakai lintas tahap (`lib/api.ts`, `lib/validation.ts`, `README.md`, `components/AppHeader.tsx`, `app/(app)/books/page.tsx`). Versi per tahapnya dipotong dari kode akhir, sehingga setiap PR hanya berisi fitur tahapnya dan bagian yang sama identik dengan kode akhir. Sebelum setiap commit, `npm run lint` dan `npm run build` lolos dan file yang berubah sama persis dengan daftar file tahap.
+
+| Tahap | Issue | Branch | Commit | PR | Merge commit |
+|---|---|---|---|---|---|
+| 1 — Setup | #29 | `feature/frontend-setup` | `727be34` | #35 | `2ca49f9` |
+| 2 — Daftar akun, masuk, keluar | #30 | `feature/frontend-auth` | `cd92f47` | #36 | `c874245` |
+| 3 — Daftar dan tambah buku | #31 | `feature/frontend-books` | `c886156` | #37 | `b0bd861` |
+| 4 — Detail, ubah, hapus | #32 | `feature/frontend-book-detail` | `08c85d0` | #38 | `dd98ef5` |
+| 5 — Cari, filter, pindah halaman | #33 | `feature/frontend-books-search` | `f9a90f1` | #39 | `663892f` |
+| 6 — Dashboard | #34 | `feature/frontend-dashboard` | `b09e8b0` | #40 | `ede065b` |
+| Tes Bruno dan API Contract | — | `test/bruno-frontend-contract` | `729d97b`, `a1709f4` | #41 | `2559e7b` |
+
+- Issue #29–#34 tertutup otomatis oleh `Closes #…` di PR masing-masing. CI backend lolos di setiap PR.
+- Setelah PR #40, ke-32 file `frontend/` di `main` sama persis dengan kode yang diuji di browser.
+- Branch setiap PR dihapus setelah di-merge.
+
+**Uji akhir di `main` (`ede065b`):** build produksi frontend (`next start`) terhadap backend dan database lokal, memakai akun uji baru yang dihapus lagi setelahnya (jumlah user kembali 94). Kode frontend dan backend di `main` setelah PR #41 sama dengan yang diuji. Semua ✅:
+
+| Alur | Hasil |
+|---|---|
+| Daftar akun | Langsung masuk ke `/books`; header menampilkan nama pengguna serta menu Buku dan Dashboard; tampil "Belum ada buku." |
+| Tambah buku | Buku berkategori dan buku "Tanpa kategori" tampil, terbaru di atas, dengan jumlah "2 buku" |
+| Ganti status dari daftar | Tersimpan dan tetap sama setelah halaman dimuat ulang |
+| Ganti status yang gagal (#32) | Buku dihapus lewat API tanpa memuat ulang daftar, lalu statusnya diganti: tampil "Buku tidak ditemukan", pilihan kembali ke status lama dan aktif lagi |
+| Cari dan filter | "CLEAN code" menemukan "Clean Code Smoke" ("1 buku", "Halaman 1 dari 1"); ditambah filter Selesai dibaca → "Tidak ada buku yang cocok." tanpa navigasi halaman |
+| Dashboard | Total 1, Sedang dibaca 1, Technology 1 buku (100%); menu Dashboard ditandai aktif |
+| Detail, ubah, hapus | Dibuka dari tautan judul; tanggal dalam waktu lokal; ubah judul → "Perubahan disimpan"; hapus meminta konfirmasi berisi judul buku, lalu kembali ke daftar yang kosong |
+| Keluar dan token tidak valid | Keluar menghapus token dan membuka `/login`; `/books` sesudahnya diarahkan ke `/login`; token diganti teks acak → token dihapus dan diarahkan ke `/login` |
+
+### Dokumen yang disesuaikan
+
+`README.md` (stack, status, struktur, Quick Start frontend); `frontend/README.md` (baru); `backend/README.md` (jumlah request/tes Bruno); `docs/API-CONTRACT.md` (§4.2 `categoryId` string kosong, §4.4 parameter query kosong, jumlah tes, riwayat; tanpa perubahan endpoint); `docs/PRD.md` §12 (DoD frontend dicentang, kecuali demo); `docs/JOBDESK-PANJI.md` v1.10 (§9, §10, §11); dokumen ini.
+
+### Belum dikerjakan
+
+- Tes otomatis frontend dan job CI frontend (opsional di #12).
+- Telemetri anonim Next.js masih aktif; keputusan ada di Team Lead. Cara mematikannya tertulis di `frontend/README.md`.
+- Opsional untuk Bruno: folder 429 yang dijalankan terpisah dengan batas 5; pencarian `\`; `page=0`/`limit=0`; alamat yang tidak dikenal (404 JSON); mematok versi CLI di `backend/README.md`; README khusus koleksi.
+- Persiapan demo (#13).
+
+---
+
 ## Pekerjaan Tersisa
 
 Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/LIBRARY_PERSONAL/issues); tabel ini merangkumnya.
@@ -1248,7 +1401,10 @@ Sumber utama pelacakan adalah **GitHub Issues** (https://github.com/DDDdonutss/L
 | ~~Keputusan ObserveModule (isu keamanan #8)~~ | #10 | Panji | ✅ Dihapus — PR #18, issue ditutup 2026-11-15 |
 | ~~Konfirmasi daftar kategori final; apakah `GET /categories` perlu publik~~ | #11 | Tim | ✅ 6 kategori final, tetap wajib login — PR #19, issue ditutup 2026-11-15 |
 | ~~Hapus baris `OBSERVE_*` dari `backend/.env` lokal (tidak lagi dipakai aplikasi)~~ | — | Panji (Team Lead) | ✅ Dicek 2026-11-17: tidak ada baris `OBSERVE_*` tersisa. Dashboard Observe sudah tanpa API key |
-| Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`) | #12 | X (Frontend) + Panji | ⏳ Deskripsi dilengkapi 2026-11-17 (4 tahap, 28 butir); menunggu X diundang sebagai collaborator dan ditetapkan sebagai assignee |
+| ~~Frontend Next.js dan integrasi (termasuk logout = hapus token dan halaman dashboard dari `GET /books/stats`)~~ | #12, #29–#34 | Panji (Team Lead) | ✅ PR #35–#40, merged 2026-11-21 |
+| Tes otomatis dan job CI frontend | #12 (opsional) | Panji (Team Lead) | ⏳ Opsional |
+| Keputusan telemetri anonim Next.js | — | Panji (Team Lead) | ⏳ Masih aktif; cara mematikan ada di `frontend/README.md` |
+| Opsional: hapus branch lama tanpa PR (`feature/frontend-integration`, `docs/demo-preparation`, `chore/format-prisma`; isinya sudah ada di `main`) | — | Panji (Team Lead) | ⏳ Menunggu keputusan |
 | Persiapan demo | #13 | Tim | ⏳ |
 | ~~Hardening hasil audit kode 2026-11-17 (JWT expiry, `page`, search, error Prisma, trim email)~~ | #22 | Panji | ✅ PR #24, merged 2026-11-17. Item INFO opsional ditunda |
 | ~~Perbaikan hasil review ulang PR #24 (log filter, offset `page`, trim email di service)~~ | — | Panji | ✅ PR #25, merged 2026-11-17 |

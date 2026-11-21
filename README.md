@@ -6,7 +6,7 @@ Aplikasi web untuk mengelola koleksi buku pribadi dengan dukungan banyak akun. S
 
 | Layer | Teknologi |
 |---|---|
-| Frontend | Next.js |
+| Frontend | Next.js 16 (App Router, React 19, TypeScript, Tailwind CSS 4) |
 | Backend | NestJS 12 (REST API) |
 | Database | PostgreSQL |
 | ORM | Prisma 7 |
@@ -18,8 +18,8 @@ Aplikasi web untuk mengelola koleksi buku pribadi dengan dukungan banyak akun. S
 | Bagian | Status |
 |---|---|
 | Backend | ✅ Selesai untuk scope PRD v1.6 (termasuk `GET /books/stats` untuk dashboard) — semua endpoint diimplementasikan dan diuji |
-| Frontend | ⏳ Belum dimulai (tanggung jawab Frontend Developer), termasuk tampilan dashboard |
-| Integrasi frontend–backend | ⏳ Backend siap (CORS, API Contract) |
+| Frontend | ✅ Semua halaman selesai (issue #29–#34): daftar akun, masuk, keluar, kelola buku (cari, filter, pindah halaman, ubah status), dan dashboard. `npm run lint` dan `npm run build` lolos |
+| Integrasi frontend–backend | ✅ Alur lengkap diuji di browser terhadap backend dan database lokal, termasuk isolasi data antar-akun dan penanganan error |
 
 Rincian progres dan bukti pengujian: [`docs/IMPLEMENTATION-LOG.md`](docs/IMPLEMENTATION-LOG.md).
 
@@ -28,7 +28,7 @@ Rincian progres dan bukti pengujian: [`docs/IMPLEMENTATION-LOG.md`](docs/IMPLEME
 ```text
 personal-library-management/
 ├── backend/   # REST API NestJS — lihat backend/README.md
-├── frontend/  # Aplikasi Next.js (belum dibuat)
+├── frontend/  # Aplikasi Next.js — lihat frontend/README.md
 └── docs/      # Dokumentasi proyek
 ```
 
@@ -47,6 +47,19 @@ npm run start:dev
 ```
 
 API tersedia di `http://localhost:3001/api/v1`. Panduan lengkap (termasuk pembuatan database dan pengujian): [`backend/README.md`](backend/README.md).
+
+## Quick Start (Frontend)
+
+Jalankan backend lebih dulu, lalu dari terminal kedua:
+
+```bash
+cd LIBRARY_PERSONAL/frontend
+npm install
+cp .env.example .env.local    # berisi NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+npm run dev
+```
+
+Buka `http://localhost:3000` (port ini wajib karena CORS backend hanya mengizinkannya). Panduan lengkap: [`frontend/README.md`](frontend/README.md).
 
 ## Dokumentasi
 

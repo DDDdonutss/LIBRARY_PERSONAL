@@ -279,7 +279,7 @@ Detail request, response, dan error setiap endpoint ada di `docs/API-CONTRACT.md
 
 ## 12. Definition of Done
 
-Status per 2026-11-15 (bukti: `docs/IMPLEMENTATION-LOG.md`):
+Status per 2026-11-21 (bukti: `docs/IMPLEMENTATION-LOG.md`):
 
 - [x] Register berhasil.
 - [x] Login menghasilkan JWT.
@@ -291,11 +291,11 @@ Status per 2026-11-15 (bukti: `docs/IMPLEMENTATION-LOG.md`):
 - [x] Search berjalan.
 - [x] Filter berjalan.
 - [x] Pagination berjalan.
-- [x] Statistik koleksi tersedia (`GET /books/stats`). *(tampilan dashboard: frontend)*
-- [ ] Logout menghapus token. *(frontend)*
+- [x] Statistik koleksi tersedia (`GET /books/stats`) dan ditampilkan di halaman `/dashboard`.
+- [x] Logout menghapus token.
 - [x] Data tersimpan di PostgreSQL.
-- [ ] Frontend terintegrasi dengan backend. *(backend siap; menunggu frontend)*
-- [ ] README menjelaskan instalasi dan penggunaan. *(backend selesai; bagian frontend menyusul)*
+- [x] Frontend terintegrasi dengan backend.
+- [x] README menjelaskan instalasi dan penggunaan (`README.md`, `backend/README.md`, `frontend/README.md`).
 - [ ] Demo utama dapat dilakukan.
 
 ## 13. Team Responsibility

@@ -2,8 +2,8 @@
 # Backend, Database & Integration Developer
 
 **Project:** Personal Library Management  
-**Version:** 1.9  
-**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.9 menyinkronkan dengan hasil implementasi backend; lihat Riwayat Revisi)  
+**Version:** 1.10  
+**Status:** Final — Baseline Tanggung Jawab (v1.1–v1.10 menyinkronkan dengan hasil implementasi backend dan frontend; lihat Riwayat Revisi)  
 **Role:** Team Lead, Backend Developer, Database Developer, Integration Developer
 
 ---
@@ -308,7 +308,7 @@ Integrasi NestJS Observe (beserta `OBSERVE_APP_KEY`/`OBSERVE_APP_SECRET`) dihapu
 
 Ketentuan:
 - `.env` tidak boleh di-commit. ✅ Ter-ignore Git dan tidak pernah ada di riwayat commit.
-- `.env.example` harus disediakan. ✅ `backend/.env.example` (satu file per aplikasi; frontend akan memiliki miliknya sendiri).
+- `.env.example` harus disediakan. ✅ `backend/.env.example` dan `frontend/.env.example` (satu file per aplikasi).
 - Jangan menaruh credential asli di GitHub. ✅ Riwayat sudah diaudit sebelum push.
 - Gunakan secret yang aman di lingkungan deployment.
 
@@ -316,7 +316,7 @@ Ketentuan:
 
 ### Status dan Pemetaan
 
-Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; dokumen internal, tidak disertakan di repository). Pemetaan dan status per 2026-11-15:
+Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; dokumen internal, tidak disertakan di repository). Pemetaan dan status per 2026-11-21:
 
 | Phase (Jobdesk) | Phase (MASTER-PROMPT) | Status |
 |---|---|---|
@@ -326,8 +326,8 @@ Penomoran phase di dokumen ini berbeda dengan `MASTER-PROMPT.md` (Phase 0–9; d
 | 4 — Authentication | 4 | ✅ Selesai |
 | 5 — Book Management | 5 | ✅ Selesai |
 | 6 — Category | 6 | ✅ Selesai (daftar kategori final, issue #11) |
-| 7 — Integration | 8 | ⏳ Backend siap (CORS, API Contract); menunggu frontend |
-| 8 — Testing & Documentation | 7, 9 | ✅ Testing dan dokumentasi backend selesai; finalisasi menunggu integrasi |
+| 7 — Integration | 8 | ✅ Frontend terhubung ke backend; alur lengkap diuji di browser 2026-11-21 (issue #29–#34) |
+| 8 — Testing & Documentation | 7, 9 | ✅ Backend dan frontend teruji dan terdokumentasi; persiapan demo di issue #13 |
 
 Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, karena validasi `categoryId` pada buku membutuhkan kategori. Rincian bukti setiap phase ada di `docs/IMPLEMENTATION-LOG.md`.
 
@@ -388,7 +388,7 @@ Urutan pengerjaan aktual: Category API dikerjakan **sebelum** Book Management, k
 
 ## 11. Testing Checklist
 
-Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129 tes), e2e test (`npm run test:e2e`, 53 tes), dan unit test (`npm test`, 74 tes: `AuthService`, `BooksService`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Unit dan e2e test berjalan otomatis di CI GitHub Actions (`.github/workflows/ci.yml`) pada setiap pull request ke `main`. Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
+Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 88 request / 141 tes), e2e test (`npm run test:e2e`, 53 tes), dan unit test (`npm test`, 74 tes: `AuthService`, `BooksService`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `AUTH_RATE_LIMIT_PER_MINUTE`, validasi token, normalisasi email, batas `page`, pemetaan error Prisma). Unit dan e2e test berjalan otomatis di CI GitHub Actions (`.github/workflows/ci.yml`) pada setiap pull request ke `main`. Bukti per item ada di `docs/IMPLEMENTATION-LOG.md`.
 
 ### Authentication
 - [x] Register berhasil.
@@ -438,7 +438,7 @@ Semua item diverifikasi dengan koleksi Bruno (`backend/bruno/`, 82 request / 129
 - [x] Search dan filter berjalan.
 - [x] Pagination berjalan.
 - [x] API Contract sesuai implementasi.
-- [ ] Frontend dapat menggunakan API. *(menunggu frontend)*
+- [x] Frontend dapat menggunakan API. *(diuji end-to-end di browser 2026-11-21)*
 - [x] Dokumentasi backend tersedia.
 
 ## 13. Working Principles
@@ -487,3 +487,4 @@ Mulai 2026-11-15, pekerjaan yang masih terbuka dilacak sebagai GitHub Issue (#9�
 | 1.7 | 2026-11-17 | Issue #15 (opsi a): §6 token milik user terhapus ditolak; §8 file spec baru; §11 jumlah tes dan checklist token; §13 branch `fix/jwt-deleted-user` |
 | 1.8 | 2026-11-17 | Issue #14: §6 rate limiting login/register; §8 `rate-limit.config.ts`; §9 `AUTH_RATE_LIMIT_PER_MINUTE`; §11 jumlah tes dan checklist; §13 branch `feature/auth-rate-limit` |
 | 1.9 | 2026-11-17 | Issue #23: §11 jumlah tes dan CI GitHub Actions; §13 branch `chore/tests-ci` dan pemeriksaan CI pada setiap PR |
+| 1.10 | 2026-11-21 | Frontend selesai (issue #29–#34): §9 `frontend/.env.example`; §10 status Integration dan Testing & Documentation; §11 checklist "Frontend dapat menggunakan API" dan jumlah request/tes Bruno (88/141) |
