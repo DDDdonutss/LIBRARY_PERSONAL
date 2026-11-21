@@ -4,7 +4,7 @@
 **Status:** Lengkap untuk scope PRD v1.6 — diperbarui setiap kali endpoint berubah.
 **Pemilik:** Panji (Backend). Perubahan kontrak wajib diinformasikan ke Frontend Developer.
 
-Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 82 request / 129 tes) dan e2e test (`npm run test:e2e`, 53 tes), kecuali ditandai lain; unit dan e2e test juga berjalan otomatis di CI (GitHub Actions) pada setiap pull request. Unit test (`npm test`, 74 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN` dan rate limiting (§2.4), validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
+Setiap endpoint di dokumen ini sudah **diimplementasikan dan lolos uji** koleksi Bruno (`backend/bruno/`, 88 request / 141 tes) dan e2e test (`npm run test:e2e`, 53 tes), kecuali ditandai lain; unit dan e2e test juga berjalan otomatis di CI (GitHub Actions) pada setiap pull request. Unit test (`npm test`, 74 tes) mencakup logika `GET /books/stats`, konfigurasi `JWT_EXPIRES_IN` dan rate limiting (§2.4), validasi token (§1.3), normalisasi email, batas `page`, dan pemetaan error database (§1.5).
 
 ---
 
@@ -280,7 +280,7 @@ Buku milik user lain diperlakukan **sama dengan buku yang tidak ada** (`404`), s
 | `title` | Wajib | Opsional | String, tidak kosong setelah spasi awal/akhir dihapus, maks. 200 karakter. Spasi awal/akhir otomatis dihapus |
 | `author` | Wajib | Opsional | String, tidak kosong, maks. 150 karakter. Spasi awal/akhir otomatis dihapus |
 | `status` | Opsional (default `WANT_TO_READ`) | Opsional | Salah satu nilai enum |
-| `categoryId` | Opsional | Opsional | UUID kategori yang ada (dari `GET /categories`), atau `null` untuk tanpa kategori |
+| `categoryId` | Opsional | Opsional | UUID kategori yang ada (dari `GET /categories`), atau `null` untuk tanpa kategori. String kosong `""` ditolak 400 (`categoryId must be a UUID`) |
 
 - Pada **update**, field yang tidak dikirim tidak berubah. `title`, `author`, dan `status` **tidak boleh `null`**. Kirim `"categoryId": null` untuk menghapus kategori dari buku.
 - Field lain (termasuk `userId`) ditolak dengan 400.
@@ -311,6 +311,8 @@ Buku milik user lain diperlakukan **sama dengan buku yang tidak ada** (`404`), s
 | `categoryId` | UUID | — | ID kategori |
 
 Contoh: `GET /books?page=1&limit=10&search=clean&status=READING`
+
+Parameter yang tidak dipakai **jangan dikirim**. Parameter yang dikirim tanpa nilai (`status=`, `categoryId=`, `page=`, `limit=`) ditolak 400 dengan pesan validasi per parameter; hanya `search=` kosong yang diabaikan (semua buku ditampilkan).
 
 **Response `200 OK`** — diurutkan dari yang **terbaru** dibuat:
 
@@ -432,3 +434,4 @@ Ringkasan koleksi user yang sedang login, untuk halaman dashboard. Dihitung lang
 | 2026-11-17 | Rate limiting login dan register per IP (issue #14): status 429 dengan `Retry-After` (§1.5, §2.1, §2.2, §2.4). Bentuk response sukses tidak berubah; jumlah tes diperbarui |
 | 2026-11-17 | Tidak ada perubahan endpoint. Jumlah tes diperbarui dan CI GitHub Actions ditambahkan (issue #23) |
 | 2026-11-17 | §2.4: catatan bahwa `Retry-After` belum terbaca oleh JavaScript di browser (CORS). Tidak ada perubahan endpoint |
+| 2026-11-21 | Tidak ada perubahan endpoint. §4.2 dan §4.4 menuliskan perilaku yang sudah ada dan dipakai frontend: `categoryId` string kosong ditolak 400; parameter query tanpa nilai (`status=`, `categoryId=`, `page=`, `limit=`) ditolak 400, `search=` kosong diabaikan. Koleksi Bruno ditambah 6 request untuk kasus ini dan untuk field asing pada `PATCH` (88 request / 141 tes) |
