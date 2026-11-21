@@ -1,5 +1,5 @@
 // Pemeriksaan isian sebelum dikirim. Aturannya mengikuti backend
-// (docs/API-CONTRACT.md §2); backend tetap pemeriksa akhir.
+// (docs/API-CONTRACT.md §2 dan §4.2); backend tetap pemeriksa akhir.
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,6 +34,20 @@ export function validateLogin(values: { email: string; password: string }): stri
 
   if (!values.password) errors.push('Password wajib diisi.');
   else if (values.password.length > 72) errors.push('Password maksimal 72 karakter.');
+
+  return errors;
+}
+
+export function validateBook(values: { title: string; author: string }): string[] {
+  const errors: string[] = [];
+  const title = values.title.trim();
+  const author = values.author.trim();
+
+  if (!title) errors.push('Judul wajib diisi.');
+  else if (title.length > 200) errors.push('Judul maksimal 200 karakter.');
+
+  if (!author) errors.push('Penulis wajib diisi.');
+  else if (author.length > 150) errors.push('Penulis maksimal 150 karakter.');
 
   return errors;
 }

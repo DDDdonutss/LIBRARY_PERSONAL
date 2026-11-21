@@ -1,5 +1,13 @@
 import { clearToken, getToken } from './auth';
-import type { ApiErrorBody, AuthResponse, User } from './types';
+import type {
+  ApiErrorBody,
+  AuthResponse,
+  Book,
+  BookList,
+  BookStatus,
+  Category,
+  User,
+} from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -108,4 +116,29 @@ export function login(input: LoginInput) {
 
 export function getMe() {
   return apiFetch<User>('/auth/me');
+}
+
+// ---------------------------------------------------------- Categories
+
+export function getCategories() {
+  return apiFetch<Category[]>('/categories');
+}
+
+// --------------------------------------------------------------- Books
+
+/** Body untuk tambah/ubah buku. `categoryId: null` = tanpa kategori. */
+export interface BookInput {
+  title: string;
+  author: string;
+  status: BookStatus;
+  categoryId: string | null;
+}
+
+/** Halaman pertama daftar buku (10 buku terbaru). */
+export function getBooks() {
+  return apiFetch<BookList>('/books');
+}
+
+export function createBook(input: BookInput) {
+  return apiFetch<Book>('/books', { method: 'POST', body: input });
 }
