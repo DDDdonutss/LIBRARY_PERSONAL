@@ -6,6 +6,7 @@ import type {
   BookList,
   BookStatus,
   Category,
+  DeleteBookResponse,
   User,
 } from './types';
 
@@ -139,6 +140,24 @@ export function getBooks() {
   return apiFetch<BookList>('/books');
 }
 
+export function getBook(id: string) {
+  return apiFetch<Book>(`/books/${encodeURIComponent(id)}`);
+}
+
 export function createBook(input: BookInput) {
   return apiFetch<Book>('/books', { method: 'POST', body: input });
+}
+
+/** Kirim hanya field yang berubah (PATCH). */
+export function updateBook(id: string, changes: Partial<BookInput>) {
+  return apiFetch<Book>(`/books/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: changes,
+  });
+}
+
+export function deleteBook(id: string) {
+  return apiFetch<DeleteBookResponse>(`/books/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
 }
