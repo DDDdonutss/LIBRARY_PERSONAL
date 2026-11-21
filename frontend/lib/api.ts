@@ -4,6 +4,7 @@ import type {
   AuthResponse,
   Book,
   BookList,
+  BookStats,
   BookStatus,
   Category,
   DeleteBookResponse,
@@ -175,4 +176,8 @@ export function deleteBook(id: string) {
   return apiFetch<DeleteBookResponse>(`/books/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
+}
+
+export function getStats() {
+  return apiFetch<BookStats>('/books/stats');
 }
