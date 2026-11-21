@@ -1,5 +1,5 @@
 import { clearToken, getToken } from './auth';
-import type { ApiErrorBody } from './types';
+import type { ApiErrorBody, AuthResponse, User } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -83,4 +83,29 @@ function messagesFrom(data: unknown, status: number): string[] {
 /** Pesan yang siap ditampilkan untuk error apa pun. */
 export function errorMessages(error: unknown): string[] {
   return error instanceof ApiError ? error.messages : [GENERIC_ERROR_MESSAGE];
+}
+
+// ---------------------------------------------------------------- Auth
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export function register(input: RegisterInput) {
+  return apiFetch<AuthResponse>('/auth/register', { method: 'POST', body: input });
+}
+
+export function login(input: LoginInput) {
+  return apiFetch<AuthResponse>('/auth/login', { method: 'POST', body: input });
+}
+
+export function getMe() {
+  return apiFetch<User>('/auth/me');
 }
